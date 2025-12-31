@@ -87,7 +87,7 @@ export function SermonForm({ initialData, canEdit }: SermonFormProps) {
         return;
       }
 
-      router.push("/sermons");
+      router.push("/admin/sermons");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -141,7 +141,7 @@ export function SermonForm({ initialData, canEdit }: SermonFormProps) {
         return;
       }
 
-      router.push("/sermons");
+      router.push("/admin/sermons");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -268,7 +268,7 @@ export function SermonForm({ initialData, canEdit }: SermonFormProps) {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => router.push("/sermons")}
+            onClick={() => router.push("/admin/sermons")}
           >
             Cancel
           </Button>

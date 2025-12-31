@@ -99,7 +99,7 @@ export function EventForm({ initialData, canEdit }: EventFormProps) {
         return;
       }
 
-      router.push("/events");
+      router.push("/admin/events");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -153,7 +153,7 @@ export function EventForm({ initialData, canEdit }: EventFormProps) {
         return;
       }
 
-      router.push("/events");
+      router.push("/admin/events");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -281,7 +281,7 @@ export function EventForm({ initialData, canEdit }: EventFormProps) {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => router.push("/events")}
+            onClick={() => router.push("/admin/events")}
           >
             Cancel
           </Button>

@@ -1,7 +1,7 @@
 /**
- * Events List Page
+ * Sermons List Page
  *
- * Displays all events for the church with status and actions.
+ * Displays all sermons for the church with status and actions.
  */
 
 import Link from "next/link";
@@ -12,7 +12,7 @@ import { canEditContent } from "@/lib/auth/permissions";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 
-export default async function EventsPage() {
+export default async function SermonsPage() {
   const context = await getAuthContext();
   if (!context) redirect("/login");
 
@@ -20,8 +20,8 @@ export default async function EventsPage() {
   const db = getTenantPrisma(church.id);
   const canEdit = canEditContent(user.role);
 
-  const events = await db.event.findMany({
-    orderBy: { startDate: "desc" },
+  const sermons = await db.sermon.findMany({
+    orderBy: { date: "desc" },
   });
 
   return (
@@ -29,29 +29,29 @@ export default async function EventsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            Events
+            Sermons
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            {events.length} event{events.length !== 1 ? "s" : ""}
+            {sermons.length} sermon{sermons.length !== 1 ? "s" : ""}
           </p>
         </div>
         {canEdit && (
-          <Link href="/events/new">
-            <Button>Add Event</Button>
+          <Link href="/admin/sermons/new">
+            <Button>Add Sermon</Button>
           </Link>
         )}
       </div>
 
-      {events.length === 0 ? (
+      {sermons.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
           <p className="text-gray-500 dark:text-gray-400">
-            No events yet.{" "}
+            No sermons yet.{" "}
             {canEdit && (
               <Link
-                href="/events/new"
+                href="/admin/sermons/new"
                 className="text-blue-600 hover:underline"
               >
-                Add your first event
+                Add your first sermon
               </Link>
             )}
           </p>
@@ -62,13 +62,13 @@ export default async function EventsPage() {
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Event
+                  Title
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Date & Time
+                  Speaker
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Location
+                  Date
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Status
@@ -79,50 +79,37 @@ export default async function EventsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-              {events.map((event) => (
+              {sermons.map((sermon) => (
                 <tr
-                  key={event.id}
+                  key={sermon.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-900"
                 >
                   <td className="px-6 py-4">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {event.title}
+                      {sermon.title}
                     </div>
+                    {sermon.scripture && (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {sermon.scripture}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    <div>
-                      {new Date(event.startDate).toLocaleDateString("en-US", {
-                        weekday: "short",
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </div>
-                    <div className="text-xs">
-                      {new Date(event.startDate).toLocaleTimeString("en-US", {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
-                      {event.endDate && (
-                        <>
-                          {" - "}
-                          {new Date(event.endDate).toLocaleTimeString("en-US", {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
-                        </>
-                      )}
-                    </div>
+                    {sermon.speaker}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    {event.location || "-"}
+                    {new Date(sermon.date).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
                   </td>
                   <td className="px-6 py-4">
-                    <StatusBadge status={event.status} />
+                    <StatusBadge status={sermon.status} />
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link
-                      href={`/events/${event.id}/edit`}
+                      href={`/admin/sermons/${sermon.id}/edit`}
                       className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
                     >
                       {canEdit ? "Edit" : "View"}

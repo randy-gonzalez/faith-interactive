@@ -37,7 +37,7 @@ export default async function AnnouncementsPage() {
           </p>
         </div>
         {canEdit && (
-          <Link href="/announcements/new">
+          <Link href="/admin/announcements/new">
             <Button>Add Announcement</Button>
           </Link>
         )}
@@ -49,7 +49,7 @@ export default async function AnnouncementsPage() {
             No announcements yet.{" "}
             {canEdit && (
               <Link
-                href="/announcements/new"
+                href="/admin/announcements/new"
                 className="text-blue-600 hover:underline"
               >
                 Add your first announcement
@@ -130,7 +130,7 @@ export default async function AnnouncementsPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link
-                        href={`/announcements/${announcement.id}/edit`}
+                        href={`/admin/announcements/${announcement.id}/edit`}
                         className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
                       >
                         {canEdit ? "Edit" : "View"}

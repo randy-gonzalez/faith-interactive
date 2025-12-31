@@ -36,7 +36,7 @@ export default async function LeadershipPage() {
           </p>
         </div>
         {canEdit && (
-          <Link href="/leadership/new">
+          <Link href="/admin/leadership/new">
             <Button>Add Profile</Button>
           </Link>
         )}
@@ -48,7 +48,7 @@ export default async function LeadershipPage() {
             No leadership profiles yet.{" "}
             {canEdit && (
               <Link
-                href="/leadership/new"
+                href="/admin/leadership/new"
                 className="text-blue-600 hover:underline"
               >
                 Add your first profile
@@ -120,7 +120,7 @@ export default async function LeadershipPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link
-                      href={`/leadership/${profile.id}/edit`}
+                      href={`/admin/leadership/${profile.id}/edit`}
                       className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
                     >
                       {canEdit ? "Edit" : "View"}

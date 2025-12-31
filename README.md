@@ -86,18 +86,19 @@ https://grace-community.faithinteractive.com
 | `/contact` | Contact form with map |
 | `/p/[slug]` | Published pages |
 
-### Dashboard (Auth required)
+### Admin Dashboard (Auth required)
 
 | Route | Description | Access |
 |-------|-------------|--------|
-| `/dashboard` | Dashboard home | All |
-| `/pages` | Manage pages | Editor+ |
-| `/manage-sermons` | Manage sermons | Editor+ |
-| `/manage-events` | Manage events | Editor+ |
-| `/announcements` | Manage announcements | Editor+ |
-| `/leadership` | Manage staff profiles | Editor+ |
-| `/settings` | Site settings | Editor+ |
-| `/team` | Team management | Admin |
+| `/admin` | Redirects to dashboard | All |
+| `/admin/dashboard` | Dashboard home | All |
+| `/admin/pages` | Manage pages | Editor+ |
+| `/admin/sermons` | Manage sermons | Editor+ |
+| `/admin/events` | Manage events | Editor+ |
+| `/admin/announcements` | Manage announcements | Editor+ |
+| `/admin/leadership` | Manage staff profiles | Editor+ |
+| `/admin/settings` | Site settings | Editor+ |
+| `/admin/team` | Team management | Admin |
 
 ---
 
@@ -175,11 +176,11 @@ Works with Cloudflare CDN out of the box.
 fi-app/
 ├── app/
 │   ├── (auth)/             # Auth pages (login, reset password)
-│   ├── (dashboard)/        # Dashboard pages (protected)
-│   ├── (public)/           # Public website pages
+│   ├── (church)/           # Public church website (subdomains)
+│   ├── admin/              # Admin dashboard (/admin/*)
 │   └── api/                # API routes
 ├── components/
-│   ├── dashboard/          # Dashboard components
+│   ├── dashboard/          # Dashboard/admin components
 │   ├── public/             # Public website components
 │   └── ui/                 # Reusable UI components
 ├── lib/

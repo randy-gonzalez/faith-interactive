@@ -40,137 +40,98 @@ const nextConfig: NextConfig = {
       },
     ];
 
+    // Cache headers for public pages
+    const publicCacheHeaders = [
+      ...securityHeaders,
+      { key: "Cache-Control", value: "public, max-age=60, stale-while-revalidate=300" },
+    ];
+
+    // Cache headers for private/admin pages
+    const privateCacheHeaders = [
+      ...securityHeaders,
+      { key: "Cache-Control", value: "private, no-cache, no-store, must-revalidate" },
+    ];
+
     return [
-      // Public website routes - cacheable by CDN
+      // ============================================
+      // Public church website routes - cacheable
+      // ============================================
       {
         source: "/",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "public, max-age=60, stale-while-revalidate=300" },
-        ],
+        headers: publicCacheHeaders,
       },
       {
         source: "/sermons",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "public, max-age=60, stale-while-revalidate=300" },
-        ],
+        headers: publicCacheHeaders,
       },
       {
         source: "/sermons/:id",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "public, max-age=60, stale-while-revalidate=300" },
-        ],
+        headers: publicCacheHeaders,
       },
       {
         source: "/events",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "public, max-age=60, stale-while-revalidate=300" },
-        ],
+        headers: publicCacheHeaders,
       },
       {
         source: "/events/:id",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "public, max-age=60, stale-while-revalidate=300" },
-        ],
+        headers: publicCacheHeaders,
       },
       {
         source: "/staff",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "public, max-age=60, stale-while-revalidate=300" },
-        ],
+        headers: publicCacheHeaders,
       },
       {
         source: "/contact",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "public, max-age=60, stale-while-revalidate=300" },
-        ],
+        headers: publicCacheHeaders,
       },
       {
         source: "/p/:slug",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "public, max-age=60, stale-while-revalidate=300" },
-        ],
+        headers: publicCacheHeaders,
       },
-      // Dashboard routes - no caching
+
+      // ============================================
+      // Admin routes - no caching
+      // ============================================
       {
-        source: "/dashboard",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "private, no-cache, no-store, must-revalidate" },
-        ],
+        source: "/admin",
+        headers: privateCacheHeaders,
       },
       {
-        source: "/manage-sermons",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "private, no-cache, no-store, must-revalidate" },
-        ],
+        source: "/admin/:path*",
+        headers: privateCacheHeaders,
+      },
+
+      // ============================================
+      // Auth routes - no caching
+      // ============================================
+      {
+        source: "/login",
+        headers: privateCacheHeaders,
       },
       {
-        source: "/manage-sermons/:id",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "private, no-cache, no-store, must-revalidate" },
-        ],
+        source: "/forgot-password",
+        headers: privateCacheHeaders,
       },
       {
-        source: "/manage-events",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "private, no-cache, no-store, must-revalidate" },
-        ],
+        source: "/reset-password",
+        headers: privateCacheHeaders,
       },
       {
-        source: "/manage-events/:id",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "private, no-cache, no-store, must-revalidate" },
-        ],
+        source: "/accept-invite",
+        headers: privateCacheHeaders,
       },
+
+      // ============================================
+      // API routes - no caching
+      // ============================================
       {
-        source: "/pages",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "private, no-cache, no-store, must-revalidate" },
-        ],
+        source: "/api/:path*",
+        headers: privateCacheHeaders,
       },
-      {
-        source: "/pages/:id",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "private, no-cache, no-store, must-revalidate" },
-        ],
-      },
-      {
-        source: "/settings",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "private, no-cache, no-store, must-revalidate" },
-        ],
-      },
-      {
-        source: "/team",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "private, no-cache, no-store, must-revalidate" },
-        ],
-      },
-      // API routes - no caching by default
-      {
-        source: "/api/:path",
-        headers: [
-          ...securityHeaders,
-          { key: "Cache-Control", value: "private, no-cache, no-store, must-revalidate" },
-        ],
-      },
-      // All other routes - apply security headers
+
+      // ============================================
+      // All other routes - apply security headers only
+      // ============================================
       {
         source: "/:path*",
         headers: securityHeaders,

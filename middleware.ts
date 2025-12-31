@@ -2,9 +2,14 @@
  * Next.js Middleware
  *
  * This middleware runs on every request and handles:
- * 1. Subdomain extraction → tenant resolution
- * 2. Authentication checks for protected routes
- * 3. Rate limiting (foundation)
+ * 1. Hostname-based routing (marketing vs church subdomain)
+ * 2. Subdomain extraction → tenant resolution
+ * 3. Authentication checks for protected routes (/admin/*)
+ * 4. Rate limiting (foundation)
+ *
+ * Route Structure:
+ * - Main domain (faithinteractive.com) → Marketing site (marketing)
+ * - Subdomain (grace.faithinteractive.com) → Church site (church) + Admin (/admin/*)
  *
  * IMPORTANT: This runs on the Edge runtime, so we can't use
  * Prisma directly. We use fetch to call internal API routes
@@ -22,8 +27,8 @@ const TENANT_HEADER_NAME = "x-church-name";
 // Session cookie name
 const SESSION_COOKIE_NAME = "fi_session";
 
-// Routes that don't require authentication
-const PUBLIC_ROUTES = [
+// Routes that don't require authentication (on subdomains)
+const PUBLIC_AUTH_ROUTES = [
   "/login",
   "/forgot-password",
   "/reset-password",
@@ -34,28 +39,6 @@ const PUBLIC_ROUTES = [
   "/api/auth/accept-invite",
   "/api/health",
   "/api/contact",
-];
-
-// Public website paths (no auth required, tenant required)
-// These are the public-facing church website pages
-const PUBLIC_WEBSITE_PREFIXES = [
-  "/p/",      // Public pages
-  "/sermons", // Public sermons (when not under dashboard)
-  "/events",  // Public events (when not under dashboard)
-  "/staff",   // Public leadership/staff page
-  "/contact", // Contact page
-];
-
-// Dashboard routes that require authentication
-const DASHBOARD_ROUTES = [
-  "/dashboard",
-  "/pages",
-  "/manage-sermons",
-  "/manage-events",
-  "/announcements",
-  "/leadership",
-  "/team",
-  "/settings",
 ];
 
 // Routes that don't require tenant context (global routes)
@@ -136,32 +119,17 @@ function extractSubdomain(hostname: string): string | null {
 }
 
 /**
- * Check if a route is public (doesn't require auth)
+ * Check if a route requires authentication (admin routes)
  */
-function isPublicRoute(pathname: string): boolean {
-  // Check explicit public routes
-  if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
-    return true;
-  }
-
-  // Check public website prefixes
-  if (PUBLIC_WEBSITE_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
-    return true;
-  }
-
-  // Root path is public (home page)
-  if (pathname === "/" || pathname === "") {
-    return true;
-  }
-
-  return false;
+function isAdminRoute(pathname: string): boolean {
+  return pathname.startsWith("/admin");
 }
 
 /**
- * Check if a route requires authentication (dashboard routes)
+ * Check if a route is a public auth route (login, etc.)
  */
-function isDashboardRoute(pathname: string): boolean {
-  return DASHBOARD_ROUTES.some((route) => pathname.startsWith(route));
+function isPublicAuthRoute(pathname: string): boolean {
+  return PUBLIC_AUTH_ROUTES.some((route) => pathname.startsWith(route));
 }
 
 /**
@@ -225,35 +193,26 @@ export async function middleware(request: NextRequest) {
   // Extract subdomain for tenant resolution
   const subdomain = extractSubdomain(hostname);
 
-  // If no subdomain and not a global route, redirect to main site or show error
+  // No subdomain = main domain = marketing site
   if (!subdomain) {
-    return new NextResponse(
-      JSON.stringify({
-        error: "No tenant specified",
-        message: "Please access the application via a church subdomain (e.g., demo.localhost:3000)",
-        hint: "For local development, add '127.0.0.1 demo.localhost' to your /etc/hosts file",
-      }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    // Marketing site routes - rewrite to (marketing) route group
+    // The (marketing) layout/pages handle the main site
+    const response = NextResponse.next();
+    response.headers.set("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+    response.headers.set("x-site-type", "marketing");
+    return response;
   }
 
-  // Resolve tenant from subdomain
-  // Since we can't use Prisma in Edge middleware, we'll resolve via an API call
-  // For Phase 0, we'll use a simple approach: pass the subdomain and resolve in the route
-  // The actual church lookup happens in the API route/page
-
+  // Has subdomain = church site
   // Create response with tenant context in headers
   const requestHeaders = new Headers(request.headers);
 
-  // We pass the slug for now; the actual resolution happens in the server component/route
-  // This is a trade-off for Edge compatibility
+  // Pass the slug for tenant resolution in server components/routes
   requestHeaders.set(TENANT_HEADER_SLUG, subdomain);
+  requestHeaders.set("x-site-type", "church");
 
-  // For dashboard routes, check authentication
-  if (isDashboardRoute(pathname)) {
+  // For admin routes, check authentication
+  if (isAdminRoute(pathname)) {
     const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
     if (!sessionToken) {

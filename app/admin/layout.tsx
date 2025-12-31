@@ -1,7 +1,7 @@
 /**
- * Dashboard Layout
+ * Admin Layout
  *
- * Shared layout for all dashboard pages.
+ * Shared layout for all admin/dashboard pages.
  * Includes navigation sidebar and header.
  * Requires authentication.
  */
@@ -11,7 +11,7 @@ import { getAuthContext } from "@/lib/auth/guards";
 import { DashboardNav } from "@/components/dashboard/nav";
 import { DashboardHeader } from "@/components/dashboard/header";
 
-export default async function DashboardLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;

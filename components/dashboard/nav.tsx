@@ -20,14 +20,14 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Pages", href: "/pages" },
-  { label: "Sermons", href: "/manage-sermons" },
-  { label: "Events", href: "/manage-events" },
-  { label: "Announcements", href: "/announcements" },
-  { label: "Leadership", href: "/leadership" },
-  { label: "Site Settings", href: "/settings" },
-  { label: "Team", href: "/team", requiredRole: "ADMIN" },
+  { label: "Dashboard", href: "/admin/dashboard" },
+  { label: "Pages", href: "/admin/pages" },
+  { label: "Sermons", href: "/admin/sermons" },
+  { label: "Events", href: "/admin/events" },
+  { label: "Announcements", href: "/admin/announcements" },
+  { label: "Leadership", href: "/admin/leadership" },
+  { label: "Site Settings", href: "/admin/settings" },
+  { label: "Team", href: "/admin/team", requiredRole: "ADMIN" },
 ];
 
 interface DashboardNavProps {
@@ -58,8 +58,8 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
       <ul className="space-y-1">
         {visibleItems.map((item) => {
           const isActive =
-            item.href === "/dashboard"
-              ? pathname === "/dashboard"
+            item.href === "/admin/dashboard"
+              ? pathname === "/admin/dashboard" || pathname === "/admin"
               : pathname.startsWith(item.href);
 
           return (

@@ -133,7 +133,7 @@ export function PageForm({ initialData, canEdit }: PageFormProps) {
         return;
       }
 
-      router.push("/pages");
+      router.push("/admin/pages");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -217,7 +217,7 @@ export function PageForm({ initialData, canEdit }: PageFormProps) {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => router.push("/pages")}
+            onClick={() => router.push("/admin/pages")}
           >
             Cancel
           </Button>

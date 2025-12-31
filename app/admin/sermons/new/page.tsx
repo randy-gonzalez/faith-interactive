@@ -1,39 +1,35 @@
 /**
- * New Page
+ * New Sermon Page
  *
- * Create a new page.
+ * Create a new sermon.
  */
 
 import { redirect } from "next/navigation";
-import { getAuthContext } from "@/lib/auth/guards";
+import { requireAuthContext } from "@/lib/auth/guards";
 import { canEditContent } from "@/lib/auth/permissions";
-import { PageForm } from "@/components/dashboard/page-form";
+import { SermonForm } from "@/components/dashboard/sermon-form";
 
-export default async function NewPagePage() {
-  const context = await getAuthContext();
-  if (!context) redirect("/login");
+export default async function NewSermonPage() {
+  const context = await requireAuthContext();
+  const canEdit = canEditContent(context.user.role);
 
-  const { user } = context;
-  const canEdit = canEditContent(user.role);
-
-  // Viewers can't create pages
   if (!canEdit) {
-    redirect("/pages");
+    redirect("/admin/sermons");
   }
 
   return (
     <div className="max-w-3xl">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          New Page
+          Add Sermon
         </h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">
-          Create a new website page
+          Create a new sermon entry
         </p>
       </div>
 
       <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-        <PageForm canEdit={canEdit} />
+        <SermonForm canEdit={canEdit} />
       </div>
     </div>
   );

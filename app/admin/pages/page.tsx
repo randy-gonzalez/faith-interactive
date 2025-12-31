@@ -45,7 +45,7 @@ export default async function PagesListPage() {
           </p>
         </div>
         {canEdit && (
-          <Link href="/pages/new">
+          <Link href="/admin/pages/new">
             <Button>New Page</Button>
           </Link>
         )}
@@ -56,7 +56,7 @@ export default async function PagesListPage() {
         <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
           <p className="text-gray-500 dark:text-gray-400">No pages yet</p>
           {canEdit && (
-            <Link href="/pages/new" className="text-blue-600 hover:underline mt-2 inline-block">
+            <Link href="/admin/pages/new" className="text-blue-600 hover:underline mt-2 inline-block">
               Create your first page
             </Link>
           )}
@@ -105,14 +105,14 @@ export default async function PagesListPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                     {canEdit ? (
                       <Link
-                        href={`/pages/${page.id}/edit`}
+                        href={`/admin/pages/${page.id}/edit`}
                         className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                       >
                         Edit
                       </Link>
                     ) : (
                       <Link
-                        href={`/pages/${page.id}/edit`}
+                        href={`/admin/pages/${page.id}/edit`}
                         className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
                       >
                         View
