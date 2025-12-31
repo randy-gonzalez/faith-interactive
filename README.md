@@ -1,6 +1,9 @@
-# Faith Interactive (Fi) - Phase 0 Foundation
+# Faith Interactive (Fi)
 
-Multi-tenant SaaS platform for churches. This is the **Phase 0 foundation** - core infrastructure and authentication only.
+Multi-tenant SaaS platform for churches. This includes:
+- **Phase 0**: Core infrastructure and authentication
+- **Phase 1**: CMS dashboard and content management
+- **Phase 2**: Public website rendering
 
 ## Quick Start
 
@@ -16,7 +19,7 @@ cp .env.example .env.local
 pnpm db:generate
 
 # Run database migrations
-pnpm db:push
+pnpm db:migrate
 
 # Seed demo data
 pnpm db:seed
@@ -30,9 +33,13 @@ pnpm dev
 
 Then visit: **http://demo.localhost:3000**
 
-Test credentials:
-- Email: `demo@example.com`
-- Password: `password123`
+### Test Credentials
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@example.com` | `password123` |
+| Editor | `editor@example.com` | `password123` |
+| Viewer | `viewer@example.com` | `password123` |
 
 ---
 
@@ -55,12 +62,110 @@ https://grace-community.faithinteractive.com
 
 ### Tech Stack
 
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Database**: PostgreSQL
 - **ORM**: Prisma
 - **Auth**: Database sessions (not JWT-only)
-- **Styling**: Tailwind CSS (minimal)
+- **Styling**: Tailwind CSS
+
+---
+
+## Route Structure
+
+### Public Website (No auth required)
+
+| Route | Description |
+|-------|-------------|
+| `/` | Home page (configurable or default welcome) |
+| `/sermons` | Sermon listing |
+| `/sermons/[id]` | Sermon detail with video/audio |
+| `/events` | Events calendar |
+| `/events/[id]` | Event detail |
+| `/staff` | Leadership profiles |
+| `/contact` | Contact form with map |
+| `/p/[slug]` | Published pages |
+
+### Dashboard (Auth required)
+
+| Route | Description | Access |
+|-------|-------------|--------|
+| `/dashboard` | Dashboard home | All |
+| `/pages` | Manage pages | Editor+ |
+| `/manage-sermons` | Manage sermons | Editor+ |
+| `/manage-events` | Manage events | Editor+ |
+| `/announcements` | Manage announcements | Editor+ |
+| `/leadership` | Manage staff profiles | Editor+ |
+| `/settings` | Site settings | Editor+ |
+| `/team` | Team management | Admin |
+
+---
+
+## Site Settings
+
+Configure your church website in the dashboard under **Site Settings**:
+
+### Header
+- Logo URL
+- Navigation links (select from published pages)
+
+### Home Page
+- Choose a page as home, or use default welcome
+
+### Service Times & Location
+- Service schedule
+- Address
+- Phone
+- Contact email
+- Google Maps embed URL
+
+### Footer
+- Footer text
+- Footer navigation links
+- Social media URLs (Facebook, Instagram, YouTube)
+
+### SEO
+- Default meta title
+- Default meta description
+- Favicon URL
+
+### How to get Google Maps Embed URL:
+1. Go to Google Maps
+2. Search for your church address
+3. Click **Share** → **Embed a map**
+4. Copy the `src` URL from the iframe code
+
+---
+
+## Contact Form
+
+The contact page includes:
+- Contact information display
+- Google Maps embed (if configured)
+- Contact form with spam protection
+
+### Spam Protection
+- **Honeypot field**: Hidden field that bots fill, humans don't
+- **Rate limiting**: 5 submissions per hour per IP
+
+### Email Notifications
+Contact form submissions are emailed to the address configured in Site Settings → Contact Email.
+
+In development, emails are logged to the console. For production, configure your email provider in `lib/email/send.ts`.
+
+---
+
+## Caching Strategy
+
+Public pages are cached for CDN delivery:
+
+| Route Type | Cache Policy |
+|------------|--------------|
+| Public pages (`/`, `/sermons`, `/events`, etc.) | 60s cache, 5min stale-while-revalidate |
+| Dashboard routes | No cache (private) |
+| API routes | No cache (private) |
+
+Works with Cloudflare CDN out of the box.
 
 ---
 
@@ -68,25 +173,28 @@ https://grace-community.faithinteractive.com
 
 ```
 fi-app/
-├── app/                    # Next.js App Router
-│   ├── (auth)/            # Auth pages (login, reset password)
-│   ├── api/               # API routes
-│   │   ├── auth/          # Auth endpoints
-│   │   └── health/        # Health check
-│   ├── globals.css        # Global styles
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Home page
-├── lib/                    # Shared utilities
-│   ├── auth/              # Authentication logic
-│   ├── db/                # Database clients
-│   ├── logging/           # Centralized logging
-│   ├── security/          # Rate limiting
-│   ├── tenant/            # Tenant context
-│   └── validation/        # Zod schemas
-├── prisma/                 # Database schema
-├── scripts/                # Utility scripts
-├── types/                  # TypeScript types
-└── middleware.ts           # Request middleware
+├── app/
+│   ├── (auth)/             # Auth pages (login, reset password)
+│   ├── (dashboard)/        # Dashboard pages (protected)
+│   ├── (public)/           # Public website pages
+│   └── api/                # API routes
+├── components/
+│   ├── dashboard/          # Dashboard components
+│   ├── public/             # Public website components
+│   └── ui/                 # Reusable UI components
+├── lib/
+│   ├── auth/               # Authentication logic
+│   ├── db/                 # Database clients
+│   ├── email/              # Email service
+│   ├── logging/            # Centralized logging
+│   ├── public/             # Public site utilities
+│   ├── security/           # Rate limiting
+│   ├── tenant/             # Tenant context
+│   └── validation/         # Zod schemas
+├── prisma/                  # Database schema
+├── scripts/                 # Utility scripts
+├── types/                   # TypeScript types
+└── middleware.ts            # Request middleware
 ```
 
 ---
@@ -115,15 +223,45 @@ Copy `.env.example` to `.env.local` and configure:
 # Generate Prisma client after schema changes
 pnpm db:generate
 
-# Push schema to database (development)
-pnpm db:push
-
-# Create and run migrations (production)
+# Create and run migrations (recommended)
 pnpm db:migrate
+
+# Push schema to database (development only)
+pnpm db:push
 
 # Seed demo data
 pnpm db:seed
+
+# Reset database (development only)
+pnpm db:reset
 ```
+
+---
+
+## Content Publishing
+
+All content types support publishing workflow:
+
+| Status | Description |
+|--------|-------------|
+| **Draft** | Only visible in dashboard |
+| **Published** | Visible on public website |
+
+When you publish content:
+- `status` is set to `PUBLISHED`
+- `publishedAt` timestamp is recorded
+
+Only published content appears on the public website.
+
+---
+
+## Roles & Permissions
+
+| Role | Content | Team |
+|------|---------|------|
+| **Admin** | Full access | Full access |
+| **Editor** | Create, edit, publish, delete | View only |
+| **Viewer** | View only | View only |
 
 ---
 
@@ -151,31 +289,6 @@ pnpm build        # Production build
 pnpm start        # Start production server
 pnpm lint         # Run ESLint
 ```
-
----
-
-## Authentication
-
-### Session Flow
-
-1. User submits credentials → `/api/auth/login`
-2. Server validates → creates session in database
-3. Session token stored in HTTP-only cookie
-4. Subsequent requests validated via cookie
-
-### Password Reset (Development)
-
-In development, reset tokens are logged to the console:
-
-```
-=== PASSWORD RESET TOKEN ===
-Email: demo@example.com
-Token: abc123...
-Reset URL: http://demo.localhost:3000/reset-password?token=abc123...
-============================
-```
-
-In production, integrate an email service (Resend, SendGrid, etc.).
 
 ---
 
@@ -220,13 +333,6 @@ The app is designed to work behind Cloudflare:
 gunzip -c backups/fi-YYYYMMDD-HHMMSS.sql.gz | psql $DATABASE_URL
 ```
 
-### Backup Strategy
-
-- Daily compressed backups (`.sql.gz`)
-- 30-day retention
-- Stored in `backups/` directory
-- For production: Consider managed backup solutions (AWS RDS, Vercel Postgres, etc.)
-
 ---
 
 ## Security
@@ -242,6 +348,8 @@ gunzip -c backups/fi-YYYYMMDD-HHMMSS.sql.gz | psql $DATABASE_URL
 - ✅ Input validation (Zod)
 - ✅ Tenant isolation (Prisma extensions)
 - ✅ Credential filtering in logs
+- ✅ Honeypot spam protection
+- ✅ Contact form rate limiting
 
 ### Production Considerations
 
@@ -250,21 +358,7 @@ gunzip -c backups/fi-YYYYMMDD-HHMMSS.sql.gz | psql $DATABASE_URL
 - Enable Cloudflare WAF
 - Set up monitoring/alerting
 - Implement audit logging
-
----
-
-## What's NOT Included (Phase 0)
-
-- ❌ CMS dashboard
-- ❌ Content types / pages
-- ❌ Admin UI
-- ❌ Media uploads
-- ❌ Forms
-- ❌ Billing / payments
-- ❌ Social login
-- ❌ Email sending (tokens logged only)
-- ❌ Role-based access (prepared, not implemented)
-- ❌ Church onboarding UI
+- Configure production email service
 
 ---
 
@@ -290,25 +384,14 @@ gunzip -c backups/fi-YYYYMMDD-HHMMSS.sql.gz | psql $DATABASE_URL
 - Industry standard for SaaS
 - Clean, professional URLs
 - Easy to identify tenant context
-- Good for SEO (eventually)
+- Good for SEO
 
-### Why Prisma Extensions?
+### Why Navigation Stored as JSON?
 
-- Automatic query filtering (hard to bypass)
-- Type-safe
-- Centralized isolation logic
-- Works with all query types
-
----
-
-## Contributing
-
-This is Phase 0 foundation code. Keep changes:
-
-- **Minimal** - Only what's needed
-- **Explicit** - Clear over clever
-- **Documented** - Comments explain decisions
-- **Secure** - No shortcuts on security
+- Simple, no separate tables needed
+- Flexible structure
+- Easy to reorder
+- Suitable for small nav lists
 
 ---
 

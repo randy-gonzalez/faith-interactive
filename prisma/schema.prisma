@@ -65,6 +65,10 @@ model Church {
   announcements       Announcement[]
   leadershipProfiles  LeadershipProfile[]
 
+  // Site configuration
+  siteSettings        SiteSettings?
+  contactSubmissions  ContactSubmission[]
+
   @@index([slug])
 }
 
@@ -346,4 +350,88 @@ model LeadershipProfile {
   @@index([churchId])
   @@index([status])
   @@index([sortOrder])
+}
+
+// ==============================================================================
+// SITE SETTINGS MODEL
+// ==============================================================================
+// Stores church website configuration including header, footer, service info,
+// and SEO defaults. One-to-one relationship with Church.
+// ==============================================================================
+
+model SiteSettings {
+  id        String @id @default(cuid())
+  // Tenant reference - one settings per church
+  churchId  String @unique
+  church    Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  // Header settings
+  logoUrl           String?
+  // Navigation: JSON array of {pageId, label, order} objects
+  // Stored as JSON for flexibility without a separate NavItem table
+  headerNavigation  Json?   @default("[]")
+
+  // Footer settings
+  footerText        String?
+  // Footer links: JSON array of {pageId, label, order} objects
+  footerNavigation  Json?   @default("[]")
+  // Social links (simple URL strings)
+  facebookUrl       String?
+  instagramUrl      String?
+  youtubeUrl        String?
+
+  // Service info (displayed on home and/or contact page)
+  serviceTimes      String? @db.Text
+  address           String?
+  phone             String?
+  contactEmail      String?
+
+  // SEO defaults
+  metaTitle         String?
+  metaDescription   String?
+  faviconUrl        String?
+
+  // Google Maps embed URL (optional, for contact page)
+  mapEmbedUrl       String?
+
+  // Home page configuration
+  // If set, this page ID is used as the home page; otherwise default welcome
+  homePageId        String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==============================================================================
+// CONTACT SUBMISSION MODEL
+// ==============================================================================
+// Stores contact form submissions from the public website.
+// Tenant-scoped for isolation.
+// ==============================================================================
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  // Tenant reference
+  churchId  String
+  church    Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  // Form fields
+  name      String
+  email     String
+  message   String   @db.Text
+
+  // Metadata for spam tracking
+  ipAddress String?
+  userAgent String?
+
+  // Status tracking
+  isRead    Boolean  @default(false)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@index([churchId])
+  @@index([createdAt])
+  @@index([isRead])
 }

@@ -131,3 +131,58 @@ The Faith Interactive Team
 
   await sendEmail({ to: email, subject, text, html });
 }
+
+/**
+ * Send a contact form notification email to the church admin.
+ */
+export async function sendContactNotificationEmail(
+  toEmail: string,
+  churchName: string,
+  senderName: string,
+  senderEmail: string,
+  message: string
+): Promise<void> {
+  const subject = `New Contact Form Submission - ${churchName}`;
+
+  const text = `
+New Contact Form Submission
+
+From: ${senderName}
+Email: ${senderEmail}
+
+Message:
+${message}
+
+---
+This message was sent through your ${churchName} website contact form.
+`.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h1 style="color: #1a1a1a; font-size: 24px; margin-bottom: 20px;">New Contact Form Submission</h1>
+
+  <div style="background-color: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+    <p style="margin: 0 0 8px 0;"><strong>From:</strong> ${senderName}</p>
+    <p style="margin: 0;"><strong>Email:</strong> <a href="mailto:${senderEmail}" style="color: #2563eb;">${senderEmail}</a></p>
+  </div>
+
+  <h2 style="color: #1a1a1a; font-size: 18px; margin-bottom: 12px;">Message:</h2>
+  <div style="background-color: #fff; border: 1px solid #e5e7eb; padding: 16px; border-radius: 8px; white-space: pre-wrap;">${message}</div>
+
+  <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;">
+
+  <p style="color: #999; font-size: 12px;">
+    This message was sent through your ${churchName} website contact form.
+  </p>
+</body>
+</html>
+`.trim();
+
+  await sendEmail({ to: toEmail, subject, text, html });
+}

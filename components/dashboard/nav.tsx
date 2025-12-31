@@ -22,10 +22,11 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Pages", href: "/pages" },
-  { label: "Sermons", href: "/sermons" },
-  { label: "Events", href: "/events" },
+  { label: "Sermons", href: "/manage-sermons" },
+  { label: "Events", href: "/manage-events" },
   { label: "Announcements", href: "/announcements" },
   { label: "Leadership", href: "/leadership" },
+  { label: "Site Settings", href: "/settings" },
   { label: "Team", href: "/team", requiredRole: "ADMIN" },
 ];
 

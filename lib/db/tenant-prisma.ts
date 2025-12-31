@@ -35,6 +35,7 @@ const TENANT_SCOPED_MODELS = [
   "Event",
   "Announcement",
   "LeadershipProfile",
+  "ContactSubmission",
 ] as const;
 type TenantScopedModel = (typeof TENANT_SCOPED_MODELS)[number];
 

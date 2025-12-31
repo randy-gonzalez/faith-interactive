@@ -27,10 +27,35 @@ const PUBLIC_ROUTES = [
   "/login",
   "/forgot-password",
   "/reset-password",
+  "/accept-invite",
   "/api/auth/login",
   "/api/auth/forgot-password",
   "/api/auth/reset-password",
+  "/api/auth/accept-invite",
   "/api/health",
+  "/api/contact",
+];
+
+// Public website paths (no auth required, tenant required)
+// These are the public-facing church website pages
+const PUBLIC_WEBSITE_PREFIXES = [
+  "/p/",      // Public pages
+  "/sermons", // Public sermons (when not under dashboard)
+  "/events",  // Public events (when not under dashboard)
+  "/staff",   // Public leadership/staff page
+  "/contact", // Contact page
+];
+
+// Dashboard routes that require authentication
+const DASHBOARD_ROUTES = [
+  "/dashboard",
+  "/pages",
+  "/manage-sermons",
+  "/manage-events",
+  "/announcements",
+  "/leadership",
+  "/team",
+  "/settings",
 ];
 
 // Routes that don't require tenant context (global routes)
@@ -114,7 +139,29 @@ function extractSubdomain(hostname: string): string | null {
  * Check if a route is public (doesn't require auth)
  */
 function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+  // Check explicit public routes
+  if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
+    return true;
+  }
+
+  // Check public website prefixes
+  if (PUBLIC_WEBSITE_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    return true;
+  }
+
+  // Root path is public (home page)
+  if (pathname === "/" || pathname === "") {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Check if a route requires authentication (dashboard routes)
+ */
+function isDashboardRoute(pathname: string): boolean {
+  return DASHBOARD_ROUTES.some((route) => pathname.startsWith(route));
 }
 
 /**
@@ -180,23 +227,12 @@ export async function middleware(request: NextRequest) {
 
   // If no subdomain and not a global route, redirect to main site or show error
   if (!subdomain) {
-    // For development, we'll allow requests without subdomain to show a helpful message
-    if (pathname === "/" || pathname === "") {
-      return new NextResponse(
-        JSON.stringify({
-          error: "No tenant specified",
-          message: "Please access the application via a church subdomain (e.g., demo.localhost:3000)",
-          hint: "For local development, add '127.0.0.1 demo.localhost' to your /etc/hosts file",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-    // For other routes, also return 400
     return new NextResponse(
-      JSON.stringify({ error: "Tenant subdomain required" }),
+      JSON.stringify({
+        error: "No tenant specified",
+        message: "Please access the application via a church subdomain (e.g., demo.localhost:3000)",
+        hint: "For local development, add '127.0.0.1 demo.localhost' to your /etc/hosts file",
+      }),
       {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -216,8 +252,8 @@ export async function middleware(request: NextRequest) {
   // This is a trade-off for Edge compatibility
   requestHeaders.set(TENANT_HEADER_SLUG, subdomain);
 
-  // For protected routes, check authentication
-  if (!isPublicRoute(pathname)) {
+  // For dashboard routes, check authentication
+  if (isDashboardRoute(pathname)) {
     const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
     if (!sessionToken) {

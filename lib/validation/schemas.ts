@@ -216,3 +216,70 @@ export const userRoleUpdateSchema = z.object({
 });
 
 export type UserRoleUpdateInput = z.infer<typeof userRoleUpdateSchema>;
+
+// ==============================================================================
+// SITE SETTINGS SCHEMAS
+// ==============================================================================
+
+/**
+ * Navigation item schema (used in header/footer nav arrays)
+ */
+export const navItemSchema = z.object({
+  pageId: z.string().min(1),
+  label: z.string().min(1).max(50),
+  order: z.number().int().min(0),
+});
+
+export type NavItem = z.infer<typeof navItemSchema>;
+
+/**
+ * Site settings validation
+ */
+export const siteSettingsSchema = z.object({
+  // Header
+  logoUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  headerNavigation: z.array(navItemSchema).optional().default([]),
+
+  // Footer
+  footerText: z.string().max(500, "Footer text too long").optional().nullable(),
+  footerNavigation: z.array(navItemSchema).optional().default([]),
+  facebookUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  instagramUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  youtubeUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+
+  // Service info
+  serviceTimes: z.string().max(1000, "Service times too long").optional().nullable(),
+  address: z.string().max(500, "Address too long").optional().nullable(),
+  phone: z.string().max(50, "Phone too long").optional().nullable(),
+  contactEmail: z.string().email("Invalid email").optional().nullable().or(z.literal("")),
+
+  // SEO
+  metaTitle: z.string().max(60, "Meta title too long").optional().nullable(),
+  metaDescription: z.string().max(160, "Meta description too long").optional().nullable(),
+  faviconUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+
+  // Map
+  mapEmbedUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+
+  // Home page
+  homePageId: z.string().optional().nullable(),
+});
+
+export type SiteSettingsInput = z.infer<typeof siteSettingsSchema>;
+
+// ==============================================================================
+// CONTACT FORM SCHEMAS
+// ==============================================================================
+
+/**
+ * Contact form submission validation
+ */
+export const contactFormSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100, "Name too long"),
+  email: z.string().min(1, "Email is required").email("Invalid email").max(255, "Email too long"),
+  message: z.string().min(1, "Message is required").max(5000, "Message too long"),
+  // Honeypot field - should be empty if submitted by a human
+  website: z.string().max(0, "Invalid submission").optional(),
+});
+
+export type ContactFormInput = z.infer<typeof contactFormSchema>;
