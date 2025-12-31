@@ -186,3 +186,140 @@ This message was sent through your ${churchName} website contact form.
 
   await sendEmail({ to: toEmail, subject, text, html });
 }
+
+/**
+ * Send a prayer request notification email to designated recipients.
+ */
+export async function sendPrayerRequestNotificationEmail(
+  toEmails: string[],
+  churchName: string,
+  senderName: string | null,
+  senderEmail: string | null,
+  prayerRequest: string
+): Promise<void> {
+  const subject = `New Prayer Request - ${churchName}`;
+  const isAnonymous = !senderName && !senderEmail;
+
+  const text = `
+New Prayer Request
+
+${isAnonymous ? "From: Anonymous" : `From: ${senderName || "Not provided"}`}
+${senderEmail ? `Email: ${senderEmail}` : ""}
+
+Prayer Request:
+${prayerRequest}
+
+---
+This prayer request was submitted through your ${churchName} website.
+`.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h1 style="color: #1a1a1a; font-size: 24px; margin-bottom: 20px;">New Prayer Request</h1>
+
+  <div style="background-color: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+    <p style="margin: 0 0 8px 0;"><strong>From:</strong> ${isAnonymous ? "Anonymous" : senderName || "Not provided"}</p>
+    ${senderEmail ? `<p style="margin: 0;"><strong>Email:</strong> <a href="mailto:${senderEmail}" style="color: #2563eb;">${senderEmail}</a></p>` : ""}
+  </div>
+
+  <h2 style="color: #1a1a1a; font-size: 18px; margin-bottom: 12px;">Prayer Request:</h2>
+  <div style="background-color: #fff; border: 1px solid #e5e7eb; padding: 16px; border-radius: 8px; white-space: pre-wrap;">${prayerRequest}</div>
+
+  <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;">
+
+  <p style="color: #999; font-size: 12px;">
+    This prayer request was submitted through your ${churchName} website.
+  </p>
+</body>
+</html>
+`.trim();
+
+  // Send to all recipients
+  await Promise.all(
+    toEmails.map((email) => sendEmail({ to: email, subject, text, html }))
+  );
+}
+
+/**
+ * Send a volunteer signup notification email to designated recipients.
+ */
+export async function sendVolunteerSignupNotificationEmail(
+  toEmails: string[],
+  churchName: string,
+  name: string,
+  email: string,
+  phone: string | null,
+  interests: string[],
+  message: string | null
+): Promise<void> {
+  const subject = `New Volunteer Signup - ${churchName}`;
+
+  const interestsText = interests.length > 0
+    ? interests.join(", ")
+    : "None specified";
+
+  const text = `
+New Volunteer Signup
+
+Name: ${name}
+Email: ${email}
+${phone ? `Phone: ${phone}` : ""}
+
+Areas of Interest:
+${interestsText}
+
+${message ? `Additional Message:\n${message}` : ""}
+
+---
+This volunteer signup was submitted through your ${churchName} website.
+`.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h1 style="color: #1a1a1a; font-size: 24px; margin-bottom: 20px;">New Volunteer Signup</h1>
+
+  <div style="background-color: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+    <p style="margin: 0 0 8px 0;"><strong>Name:</strong> ${name}</p>
+    <p style="margin: 0 0 8px 0;"><strong>Email:</strong> <a href="mailto:${email}" style="color: #2563eb;">${email}</a></p>
+    ${phone ? `<p style="margin: 0;"><strong>Phone:</strong> ${phone}</p>` : ""}
+  </div>
+
+  <h2 style="color: #1a1a1a; font-size: 18px; margin-bottom: 12px;">Areas of Interest:</h2>
+  <div style="background-color: #fff; border: 1px solid #e5e7eb; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+    ${interests.length > 0
+      ? interests.map((i) => `<span style="display: inline-block; background-color: #e0e7ff; color: #3730a3; padding: 4px 12px; border-radius: 16px; margin: 4px 4px 4px 0; font-size: 14px;">${i}</span>`).join("")
+      : "<em>None specified</em>"
+    }
+  </div>
+
+  ${message ? `
+  <h2 style="color: #1a1a1a; font-size: 18px; margin-bottom: 12px;">Additional Message:</h2>
+  <div style="background-color: #fff; border: 1px solid #e5e7eb; padding: 16px; border-radius: 8px; white-space: pre-wrap;">${message}</div>
+  ` : ""}
+
+  <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;">
+
+  <p style="color: #999; font-size: 12px;">
+    This volunteer signup was submitted through your ${churchName} website.
+  </p>
+</body>
+</html>
+`.trim();
+
+  // Send to all recipients
+  await Promise.all(
+    toEmails.map((toEmail) => sendEmail({ to: toEmail, subject, text, html }))
+  );
+}

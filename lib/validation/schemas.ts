@@ -283,3 +283,68 @@ export const contactFormSchema = z.object({
 });
 
 export type ContactFormInput = z.infer<typeof contactFormSchema>;
+
+// ==============================================================================
+// PHASE 3: PRAYER REQUEST FORM
+// ==============================================================================
+
+/**
+ * Prayer request form submission validation
+ * Name and email are optional to allow anonymous requests.
+ */
+export const prayerRequestSchema = z.object({
+  name: z.string().max(100, "Name too long").optional().nullable(),
+  email: z.string().email("Invalid email").max(255, "Email too long").optional().nullable().or(z.literal("")),
+  request: z.string().min(1, "Prayer request is required").max(5000, "Request too long"),
+  // Honeypot field - should be empty if submitted by a human
+  website: z.string().max(0, "Invalid submission").optional(),
+});
+
+export type PrayerRequestInput = z.infer<typeof prayerRequestSchema>;
+
+// ==============================================================================
+// PHASE 3: VOLUNTEER SIGNUP FORM
+// ==============================================================================
+
+/**
+ * Volunteer signup form submission validation
+ */
+export const volunteerSignupSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100, "Name too long"),
+  email: z.string().min(1, "Email is required").email("Invalid email").max(255, "Email too long"),
+  phone: z.string().max(20, "Phone number too long").optional().nullable(),
+  interests: z.array(z.string().max(100)).max(20, "Too many interests").optional().default([]),
+  message: z.string().max(2000, "Message too long").optional().nullable(),
+  // Honeypot field - should be empty if submitted by a human
+  website: z.string().max(0, "Invalid submission").optional(),
+});
+
+export type VolunteerSignupInput = z.infer<typeof volunteerSignupSchema>;
+
+// ==============================================================================
+// PHASE 3: MEDIA UPLOAD
+// ==============================================================================
+
+/**
+ * Media alt text update validation
+ */
+export const mediaUpdateSchema = z.object({
+  alt: z.string().max(500, "Alt text too long").optional().nullable(),
+});
+
+export type MediaUpdateInput = z.infer<typeof mediaUpdateSchema>;
+
+// ==============================================================================
+// EXTENDED SITE SETTINGS (PHASE 3)
+// ==============================================================================
+
+/**
+ * Extended site settings with notification recipients
+ */
+export const siteSettingsExtendedSchema = siteSettingsSchema.extend({
+  // Phase 3: Notification recipients (comma-separated emails)
+  prayerNotifyEmails: z.string().max(500, "Too many emails").optional().nullable(),
+  volunteerNotifyEmails: z.string().max(500, "Too many emails").optional().nullable(),
+});
+
+export type SiteSettingsExtendedInput = z.infer<typeof siteSettingsExtendedSchema>;

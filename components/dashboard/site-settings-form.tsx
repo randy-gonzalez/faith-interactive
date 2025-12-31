@@ -70,6 +70,9 @@ export function SiteSettingsForm({
   const [faviconUrl, setFaviconUrl] = useState(settings.faviconUrl || "");
   const [mapEmbedUrl, setMapEmbedUrl] = useState(settings.mapEmbedUrl || "");
   const [homePageId, setHomePageId] = useState(settings.homePageId || "");
+  // Phase 3: Notification settings
+  const [prayerNotifyEmails, setPrayerNotifyEmails] = useState(settings.prayerNotifyEmails || "");
+  const [volunteerNotifyEmails, setVolunteerNotifyEmails] = useState(settings.volunteerNotifyEmails || "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +103,8 @@ export function SiteSettingsForm({
           faviconUrl,
           mapEmbedUrl,
           homePageId: homePageId || null,
+          prayerNotifyEmails: prayerNotifyEmails || null,
+          volunteerNotifyEmails: volunteerNotifyEmails || null,
         }),
       });
 
@@ -474,6 +479,48 @@ export function SiteSettingsForm({
                 disabled={!canEdit}
               />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Notifications Section */}
+      <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          Form Notifications
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Configure email addresses to receive notifications when forms are submitted.
+          If left empty, notifications will be sent to the Contact Email above.
+        </p>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Prayer Request Notification Emails
+            </label>
+            <Input
+              value={prayerNotifyEmails}
+              onChange={(e) => setPrayerNotifyEmails(e.target.value)}
+              placeholder="pastor@church.com, prayer-team@church.com"
+              disabled={!canEdit}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Comma-separated list of emails to receive prayer request notifications
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Volunteer Signup Notification Emails
+            </label>
+            <Input
+              value={volunteerNotifyEmails}
+              onChange={(e) => setVolunteerNotifyEmails(e.target.value)}
+              placeholder="volunteer-coordinator@church.com"
+              disabled={!canEdit}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Comma-separated list of emails to receive volunteer signup notifications
+            </p>
           </div>
         </div>
       </section>

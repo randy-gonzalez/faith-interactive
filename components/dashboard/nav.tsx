@@ -19,15 +19,47 @@ interface NavItem {
   requiredRole?: UserRole;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/admin/dashboard" },
-  { label: "Pages", href: "/admin/pages" },
-  { label: "Sermons", href: "/admin/sermons" },
-  { label: "Events", href: "/admin/events" },
-  { label: "Announcements", href: "/admin/announcements" },
-  { label: "Leadership", href: "/admin/leadership" },
-  { label: "Site Settings", href: "/admin/settings" },
-  { label: "Team", href: "/admin/team", requiredRole: "ADMIN" },
+interface NavSection {
+  title?: string;
+  items: NavItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    items: [
+      { label: "Dashboard", href: "/admin/dashboard" },
+    ],
+  },
+  {
+    title: "Content",
+    items: [
+      { label: "Pages", href: "/admin/pages" },
+      { label: "Sermons", href: "/admin/sermons" },
+      { label: "Events", href: "/admin/events" },
+      { label: "Announcements", href: "/admin/announcements" },
+      { label: "Leadership", href: "/admin/leadership" },
+    ],
+  },
+  {
+    title: "Forms",
+    items: [
+      { label: "Prayer Requests", href: "/admin/prayer-requests" },
+      { label: "Volunteer Signups", href: "/admin/volunteer-signups" },
+    ],
+  },
+  {
+    title: "Media",
+    items: [
+      { label: "Media Library", href: "/admin/media" },
+    ],
+  },
+  {
+    title: "Settings",
+    items: [
+      { label: "Site Settings", href: "/admin/settings" },
+      { label: "Team", href: "/admin/team", requiredRole: "ADMIN" },
+    ],
+  },
 ];
 
 interface DashboardNavProps {
@@ -38,11 +70,14 @@ interface DashboardNavProps {
 export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
   const pathname = usePathname();
 
-  // Filter items based on user role
-  const visibleItems = NAV_ITEMS.filter((item) => {
-    if (!item.requiredRole) return true;
-    return item.requiredRole === userRole;
-  });
+  // Filter sections and items based on user role
+  const visibleSections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => {
+      if (!item.requiredRole) return true;
+      return item.requiredRole === userRole;
+    }),
+  })).filter((section) => section.items.length > 0);
 
   return (
     <nav className="w-64 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 min-h-screen p-4">
@@ -54,33 +89,44 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
         <p className="text-sm text-gray-500 dark:text-gray-400">Dashboard</p>
       </div>
 
-      {/* Navigation items */}
-      <ul className="space-y-1">
-        {visibleItems.map((item) => {
-          const isActive =
-            item.href === "/admin/dashboard"
-              ? pathname === "/admin/dashboard" || pathname === "/admin"
-              : pathname.startsWith(item.href);
+      {/* Navigation sections */}
+      <div className="space-y-6">
+        {visibleSections.map((section, sectionIndex) => (
+          <div key={section.title || sectionIndex}>
+            {section.title && (
+              <h2 className="px-3 mb-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                {section.title}
+              </h2>
+            )}
+            <ul className="space-y-1">
+              {section.items.map((item) => {
+                const isActive =
+                  item.href === "/admin/dashboard"
+                    ? pathname === "/admin/dashboard" || pathname === "/admin"
+                    : pathname.startsWith(item.href);
 
-          return (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={`
-                  block px-3 py-2 rounded-md text-sm font-medium transition-colors
-                  ${
-                    isActive
-                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
-                      : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                  }
-                `}
-              >
-                {item.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`
+                        block px-3 py-2 rounded-md text-sm font-medium transition-colors
+                        ${
+                          isActive
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+                            : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                        }
+                      `}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
     </nav>
   );
 }

@@ -69,6 +69,11 @@ model Church {
   siteSettings        SiteSettings?
   contactSubmissions  ContactSubmission[]
 
+  // Phase 3: Media + Forms
+  media               Media[]
+  prayerRequests      PrayerRequest[]
+  volunteerSignups    VolunteerSignup[]
+
   @@index([slug])
 }
 
@@ -101,6 +106,7 @@ model User {
   // Relations
   sessions            Session[]
   passwordResetTokens PasswordResetToken[]
+  uploadedMedia       Media[]
 
   // Email is unique within a church, not globally
   // This allows the same email to be used across different tenants
@@ -398,6 +404,11 @@ model SiteSettings {
   // If set, this page ID is used as the home page; otherwise default welcome
   homePageId        String?
 
+  // Phase 3: Notification recipients (comma-separated emails)
+  // If null, falls back to contactEmail
+  prayerNotifyEmails    String?
+  volunteerNotifyEmails String?
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -434,4 +445,126 @@ model ContactSubmission {
   @@index([churchId])
   @@index([createdAt])
   @@index([isRead])
+}
+
+// ==============================================================================
+// PHASE 3: MEDIA LIBRARY
+// ==============================================================================
+// Tenant-scoped media storage for images and PDFs.
+// Supports multiple sizes for images (original + resized versions).
+// ==============================================================================
+
+model Media {
+  id        String   @id @default(cuid())
+  // Tenant reference
+  churchId  String
+  church    Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  // Upload tracking
+  uploadedById String
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  // File metadata
+  filename     String   // Original filename for display
+  mimeType     String   // e.g., "image/jpeg", "application/pdf"
+  size         Int      // File size in bytes
+
+  // Storage paths (relative to storage root)
+  // For images: stores path to original
+  storagePath  String
+  // For images: JSON with resized versions { "small": "path", "medium": "path" }
+  // For PDFs: null
+  variants     Json?
+
+  // Display info
+  alt          String?  // Alt text for images
+
+  // Soft delete support
+  deletedAt    DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([churchId])
+  @@index([uploadedById])
+  @@index([mimeType])
+  @@index([deletedAt])
+  @@index([createdAt])
+}
+
+// ==============================================================================
+// PHASE 3: PRAYER REQUEST FORM
+// ==============================================================================
+// Private prayer request submissions from the public website.
+// Only visible to Admin/Editor in dashboard.
+// ==============================================================================
+
+model PrayerRequest {
+  id        String   @id @default(cuid())
+  // Tenant reference
+  churchId  String
+  church    Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  // Form fields (name/email optional for anonymous requests)
+  name      String?
+  email     String?
+  request   String   @db.Text
+
+  // Metadata for spam tracking
+  ipAddress String?
+  userAgent String?
+
+  // Status tracking
+  isRead      Boolean   @default(false)
+  isArchived  Boolean   @default(false)
+  archivedAt  DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@index([churchId])
+  @@index([createdAt])
+  @@index([isRead])
+  @@index([isArchived])
+}
+
+// ==============================================================================
+// PHASE 3: VOLUNTEER SIGNUP FORM
+// ==============================================================================
+// Volunteer signup submissions from the public website.
+// Visible to Admin/Editor in dashboard.
+// ==============================================================================
+
+model VolunteerSignup {
+  id        String   @id @default(cuid())
+  // Tenant reference
+  churchId  String
+  church    Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  // Form fields
+  name      String
+  email     String
+  phone     String?
+  // Areas of interest as JSON array of strings
+  // Allows flexibility without a separate table
+  interests Json?    @default("[]")
+  message   String?  @db.Text
+
+  // Metadata for spam tracking
+  ipAddress String?
+  userAgent String?
+
+  // Status tracking
+  isRead      Boolean   @default(false)
+  isArchived  Boolean   @default(false)
+  archivedAt  DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@index([churchId])
+  @@index([createdAt])
+  @@index([isRead])
+  @@index([isArchived])
 }

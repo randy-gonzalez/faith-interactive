@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 import { requireContentEditor, getAuthContext } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logging/logger";
-import { siteSettingsSchema, formatZodError } from "@/lib/validation/schemas";
+import { siteSettingsExtendedSchema, formatZodError } from "@/lib/validation/schemas";
 
 /**
  * GET /api/site-settings
@@ -61,7 +61,7 @@ export async function PUT(request: Request) {
     const user = await requireContentEditor();
 
     const body = await request.json();
-    const result = siteSettingsSchema.safeParse(body);
+    const result = siteSettingsExtendedSchema.safeParse(body);
 
     if (!result.success) {
       return NextResponse.json(
@@ -90,6 +90,9 @@ export async function PUT(request: Request) {
       faviconUrl: data.faviconUrl || null,
       mapEmbedUrl: data.mapEmbedUrl || null,
       homePageId: data.homePageId || null,
+      // Phase 3: Notification settings
+      prayerNotifyEmails: data.prayerNotifyEmails || null,
+      volunteerNotifyEmails: data.volunteerNotifyEmails || null,
     };
 
     // Upsert settings

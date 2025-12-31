@@ -36,6 +36,10 @@ const TENANT_SCOPED_MODELS = [
   "Announcement",
   "LeadershipProfile",
   "ContactSubmission",
+  // Phase 3: Media + Forms
+  "Media",
+  "PrayerRequest",
+  "VolunteerSignup",
 ] as const;
 type TenantScopedModel = (typeof TENANT_SCOPED_MODELS)[number];
 
