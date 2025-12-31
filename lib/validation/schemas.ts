@@ -339,12 +339,14 @@ export type MediaUpdateInput = z.infer<typeof mediaUpdateSchema>;
 // ==============================================================================
 
 /**
- * Extended site settings with notification recipients
+ * Extended site settings with notification recipients and Phase 4 features
  */
 export const siteSettingsExtendedSchema = siteSettingsSchema.extend({
   // Phase 3: Notification recipients (comma-separated emails)
   prayerNotifyEmails: z.string().max(500, "Too many emails").optional().nullable(),
   volunteerNotifyEmails: z.string().max(500, "Too many emails").optional().nullable(),
+  // Phase 4: Maintenance mode
+  maintenanceMode: z.boolean().optional().default(false),
 });
 
 export type SiteSettingsExtendedInput = z.infer<typeof siteSettingsExtendedSchema>;

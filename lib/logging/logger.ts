@@ -8,6 +8,7 @@
  * - Structured JSON output for log aggregation
  * - Automatic credential filtering (won't log passwords, tokens, etc.)
  * - Contextual metadata support
+ * - Request ID correlation (Phase 5)
  *
  * USAGE:
  * ```typescript
@@ -15,8 +16,15 @@
  *
  * logger.info("User logged in", { userId: "123", churchId: "abc" });
  * logger.error("Database error", error, { query: "SELECT ..." });
+ *
+ * // With request context (automatically included when available)
+ * import { getRequestContextFromHeaders } from "@/lib/logging/request-context";
+ * const ctx = await getRequestContextFromHeaders();
+ * logger.withContext(ctx).info("Processing request");
  * ```
  */
+
+import { requestContext, type RequestContextData } from "./request-context";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -111,14 +119,27 @@ function formatLog(
   level: LogLevel,
   message: string,
   error?: Error | null,
-  meta?: LogMeta
+  meta?: LogMeta,
+  context?: RequestContextData
 ): string {
+  // Try to get request context from AsyncLocalStorage if not provided
+  const ctx = context || requestContext.get();
+
   const entry: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
     level,
     message,
     env: process.env.NODE_ENV || "development",
   };
+
+  // Add request context if available (Phase 5)
+  if (ctx) {
+    entry.requestId = ctx.requestId;
+    if (ctx.churchId) entry.churchId = ctx.churchId;
+    if (ctx.churchSlug) entry.churchSlug = ctx.churchSlug;
+    if (ctx.route) entry.route = ctx.route;
+    if (ctx.method) entry.method = ctx.method;
+  }
 
   if (error) {
     entry.error = {
@@ -188,5 +209,34 @@ export const logger = {
     if (shouldLog("info")) {
       this.info(`${method} ${path} ${statusCode} ${durationMs}ms`, meta);
     }
+  },
+
+  /**
+   * Create a logger with explicit request context (Phase 5)
+   * Useful when AsyncLocalStorage context isn't available
+   */
+  withContext(context: RequestContextData) {
+    return {
+      debug: (message: string, meta?: LogMeta): void => {
+        if (shouldLog("debug")) {
+          console.log(formatLog("debug", message, null, meta, context));
+        }
+      },
+      info: (message: string, meta?: LogMeta): void => {
+        if (shouldLog("info")) {
+          console.log(formatLog("info", message, null, meta, context));
+        }
+      },
+      warn: (message: string, meta?: LogMeta): void => {
+        if (shouldLog("warn")) {
+          console.warn(formatLog("warn", message, null, meta, context));
+        }
+      },
+      error: (message: string, error?: Error | null, meta?: LogMeta): void => {
+        if (shouldLog("error")) {
+          console.error(formatLog("error", message, error, meta, context));
+        }
+      },
+    };
   },
 };

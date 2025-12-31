@@ -5,6 +5,8 @@
  *
  * Authenticates a user with email and password.
  * Creates a session and sets a secure cookie.
+ *
+ * Phase 5: Includes account lockout protection and audit logging.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -15,6 +17,8 @@ import { createSession } from "@/lib/auth/session";
 import { createSessionCookieHeader } from "@/lib/auth/cookies";
 import { loginSchema, formatZodError } from "@/lib/validation/schemas";
 import { logger } from "@/lib/logging/logger";
+import { accountLockout } from "@/lib/security/account-lockout";
+import { auditLog } from "@/lib/audit/audit-log";
 import type { LoginResponse, SafeUser } from "@/types";
 
 export async function POST(request: NextRequest) {
@@ -57,6 +61,37 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = parseResult.data;
 
+    // Get client IP for lockout tracking
+    const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+                     request.headers.get("cf-connecting-ip") ||
+                     request.headers.get("x-real-ip") ||
+                     "unknown";
+
+    // Phase 5: Check for account lockout
+    const lockoutCheck = await accountLockout.checkAllowed(
+      church.id,
+      email,
+      clientIp
+    );
+
+    if (!lockoutCheck.allowed) {
+      const errorMessage = lockoutCheck.reason === "too_many_attempts"
+        ? `Too many failed attempts. Please try again in ${lockoutCheck.lockoutMinutesRemaining} minutes.`
+        : "Too many login attempts from this location. Please try again later.";
+
+      logger.warn("Login blocked by lockout", {
+        churchId: church.id,
+        email: email.toLowerCase(),
+        reason: lockoutCheck.reason,
+        clientIp,
+      });
+
+      return NextResponse.json<LoginResponse>(
+        { success: false, error: errorMessage },
+        { status: 429 }
+      );
+    }
+
     // Find user by email within the church
     const user = await prisma.user.findUnique({
       where: {
@@ -83,11 +118,32 @@ export async function POST(request: NextRequest) {
     const passwordValid = await verifyPassword(password, hashToVerify);
 
     if (!user || !passwordValid || !user.isActive) {
+      const failReason = !user ? "user_not_found" : !passwordValid ? "invalid_password" : "inactive_user";
+
       logger.warn("Failed login attempt", {
         churchId: church.id,
         email: email.toLowerCase(),
-        reason: !user ? "user_not_found" : !passwordValid ? "invalid_password" : "inactive_user",
+        reason: failReason,
       });
+
+      // Phase 5: Record failed attempt for lockout tracking
+      await accountLockout.recordAttempt(
+        church.id,
+        email,
+        clientIp,
+        false,
+        failReason
+      );
+
+      // Phase 5: Audit log for failed login
+      await auditLog.logAuthEvent(
+        church.id,
+        "LOGIN_FAILED",
+        email.toLowerCase(),
+        user?.id ?? null,
+        clientIp,
+        { reason: failReason }
+      );
 
       // Generic error message to prevent user enumeration
       return NextResponse.json<LoginResponse>(
@@ -98,14 +154,28 @@ export async function POST(request: NextRequest) {
 
     // Create session
     const userAgent = request.headers.get("user-agent") || undefined;
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ||
-               request.headers.get("cf-connecting-ip") ||
-               "unknown";
 
     const sessionToken = await createSession(user.id, church.id, {
       userAgent,
-      ipAddress: ip,
+      ipAddress: clientIp,
     });
+
+    // Phase 5: Record successful login attempt
+    await accountLockout.recordAttempt(
+      church.id,
+      email,
+      clientIp,
+      true
+    );
+
+    // Phase 5: Audit log for successful login
+    await auditLog.logAuthEvent(
+      church.id,
+      "LOGIN_SUCCESS",
+      user.email,
+      user.id,
+      clientIp
+    );
 
     // Prepare user response (without sensitive data)
     const safeUser: SafeUser = {

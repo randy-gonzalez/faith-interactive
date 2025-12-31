@@ -111,12 +111,19 @@ export interface ApiResponse<T = unknown> {
 
 /**
  * Health check response
+ * Phase 5: Enhanced with storage check
  */
 export interface HealthCheckResponse {
-  status: "ok" | "error";
+  status: "ok" | "degraded" | "error";
   timestamp: string;
   database: "connected" | "disconnected";
+  storage?: "ok" | "error" | "unknown";
   version: string;
+  uptime?: number; // Seconds since process start
+  checks?: {
+    database: { status: "ok" | "error"; latencyMs?: number };
+    storage?: { status: "ok" | "error" | "unknown"; message?: string };
+  };
 }
 
 // ==============================================================================

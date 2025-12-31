@@ -73,6 +73,8 @@ export function SiteSettingsForm({
   // Phase 3: Notification settings
   const [prayerNotifyEmails, setPrayerNotifyEmails] = useState(settings.prayerNotifyEmails || "");
   const [volunteerNotifyEmails, setVolunteerNotifyEmails] = useState(settings.volunteerNotifyEmails || "");
+  // Phase 4: Maintenance mode
+  const [maintenanceMode, setMaintenanceMode] = useState(settings.maintenanceMode || false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +107,7 @@ export function SiteSettingsForm({
           homePageId: homePageId || null,
           prayerNotifyEmails: prayerNotifyEmails || null,
           volunteerNotifyEmails: volunteerNotifyEmails || null,
+          maintenanceMode,
         }),
       });
 
@@ -520,6 +523,55 @@ export function SiteSettingsForm({
             />
             <p className="mt-1 text-xs text-gray-500">
               Comma-separated list of emails to receive volunteer signup notifications
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Maintenance Mode Section */}
+      <section className={`border rounded-lg p-6 ${
+        maintenanceMode
+          ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
+          : "bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-800"
+      }`}>
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          Maintenance Mode
+        </h2>
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 pt-0.5">
+            <button
+              type="button"
+              onClick={() => canEdit && setMaintenanceMode(!maintenanceMode)}
+              disabled={!canEdit}
+              className={`
+                relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full
+                border-2 border-transparent transition-colors duration-200 ease-in-out
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                ${maintenanceMode ? "bg-yellow-500" : "bg-gray-200 dark:bg-gray-700"}
+                ${!canEdit ? "opacity-50 cursor-not-allowed" : ""}
+              `}
+            >
+              <span
+                className={`
+                  pointer-events-none inline-block h-5 w-5 transform rounded-full
+                  bg-white shadow ring-0 transition duration-200 ease-in-out
+                  ${maintenanceMode ? "translate-x-5" : "translate-x-0"}
+                `}
+              />
+            </button>
+          </div>
+          <div className="flex-1">
+            <p className={`font-medium ${
+              maintenanceMode
+                ? "text-yellow-900 dark:text-yellow-200"
+                : "text-gray-900 dark:text-white"
+            }`}>
+              {maintenanceMode ? "Maintenance Mode is ON" : "Maintenance Mode is OFF"}
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {maintenanceMode
+                ? "Visitors will see a \"Site is being prepared\" message. The admin dashboard remains accessible."
+                : "Your site is live and visible to the public. Enable maintenance mode to hide the site while making changes."}
             </p>
           </div>
         </div>

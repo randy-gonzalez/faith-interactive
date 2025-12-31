@@ -93,6 +93,8 @@ export async function PUT(request: Request) {
       // Phase 3: Notification settings
       prayerNotifyEmails: data.prayerNotifyEmails || null,
       volunteerNotifyEmails: data.volunteerNotifyEmails || null,
+      // Phase 4: Maintenance mode
+      maintenanceMode: data.maintenanceMode ?? false,
     };
 
     // Upsert settings

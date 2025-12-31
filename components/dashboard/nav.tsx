@@ -54,6 +54,14 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    title: "Launch",
+    items: [
+      { label: "Launch Checklist", href: "/admin/launch", requiredRole: "ADMIN" },
+      { label: "Custom Domains", href: "/admin/domains", requiredRole: "ADMIN" },
+      { label: "Redirects", href: "/admin/redirects", requiredRole: "ADMIN" },
+    ],
+  },
+  {
     title: "Settings",
     items: [
       { label: "Site Settings", href: "/admin/settings" },

@@ -40,6 +40,10 @@ const TENANT_SCOPED_MODELS = [
   "Media",
   "PrayerRequest",
   "VolunteerSignup",
+  // Phase 4: Domains & Launch Tools
+  "CustomDomain",
+  "RedirectRule",
+  "LaunchChecklistItem",
 ] as const;
 type TenantScopedModel = (typeof TENANT_SCOPED_MODELS)[number];
 
