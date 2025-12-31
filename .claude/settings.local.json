@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app:*)",
+      "Bash(pnpm install:*)",
+      "Bash(npm install:*)",
+      "Bash(pnpm add:*)",
+      "Bash(chmod:*)",
+      "Bash(pnpm exec prisma generate:*)",
+      "Bash(pnpm build:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(pnpm exec prisma migrate:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" pnpm exec prisma migrate reset:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

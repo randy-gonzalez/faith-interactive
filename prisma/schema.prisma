@@ -1,0 +1,349 @@
+// ==============================================================================
+// Faith Interactive - Prisma Schema
+// ==============================================================================
+// Multi-tenant data model for a church SaaS platform.
+// Every table (except Church) has a churchId foreign key for tenant isolation.
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==============================================================================
+// ENUMS
+// ==============================================================================
+
+// User roles for access control
+// Admin: full access including user management
+// Editor: can create/edit/publish content, no user management
+// Viewer: read-only dashboard access
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// Content publication status
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+}
+
+// ==============================================================================
+// TENANT MODEL
+// ==============================================================================
+// The Church model represents a tenant in the multi-tenant system.
+// Each church has its own isolated data set.
+// ==============================================================================
+
+model Church {
+  id        String   @id @default(cuid())
+  // Subdomain slug - used to identify the tenant from the URL
+  // e.g., "grace-community" for grace-community.faithinteractive.com
+  slug      String   @unique
+  // Display name of the church
+  name      String
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations - all tenant-scoped data
+  users               User[]
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+  userInvites         UserInvite[]
+
+  // Content types
+  pages               Page[]
+  sermons             Sermon[]
+  events              Event[]
+  announcements       Announcement[]
+  leadershipProfiles  LeadershipProfile[]
+
+  @@index([slug])
+}
+
+// ==============================================================================
+// USER MODEL
+// ==============================================================================
+// Users belong to exactly one church (tenant).
+// Email uniqueness is scoped to the church - the same email can exist
+// in different churches.
+// ==============================================================================
+
+model User {
+  id           String   @id @default(cuid())
+  // Tenant reference - REQUIRED for all operations
+  churchId     String
+  church       Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  // User credentials
+  email        String
+  passwordHash String?
+  // Profile
+  name         String?
+  // Role determines permissions (Admin, Editor, Viewer)
+  role         UserRole @default(VIEWER)
+  // Status flags
+  isActive     Boolean  @default(true)
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+
+  // Email is unique within a church, not globally
+  // This allows the same email to be used across different tenants
+  @@unique([churchId, email])
+  // Index for efficient lookups
+  @@index([churchId])
+  @@index([email])
+}
+
+// ==============================================================================
+// SESSION MODEL
+// ==============================================================================
+// Database-backed sessions for secure, revocable authentication.
+// Sessions are stored server-side with a token reference in a secure cookie.
+// This approach is more secure than JWT-only because:
+// - Sessions can be revoked immediately
+// - No token refresh complexity
+// - Session data isn't exposed to the client
+// ==============================================================================
+
+model Session {
+  id        String   @id @default(cuid())
+  // Tenant reference
+  churchId  String
+  church    Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  // User who owns this session
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Session token - stored in HTTP-only cookie on client
+  token     String   @unique
+  // Expiration - sessions are valid until this time
+  expiresAt DateTime
+  // Metadata for security auditing
+  userAgent String?
+  ipAddress String?
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@index([churchId])
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+// ==============================================================================
+// PASSWORD RESET TOKEN MODEL
+// ==============================================================================
+// Secure tokens for password reset flow.
+// Tokens are single-use and expire after a short time (default 1 hour).
+// ==============================================================================
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  // Tenant reference
+  churchId  String
+  church    Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  // User requesting the reset
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // The reset token - sent via email (in production)
+  token     String   @unique
+  // Expiration - tokens are short-lived for security
+  expiresAt DateTime
+  // Whether this token has been used
+  usedAt    DateTime?
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@index([churchId])
+  @@index([userId])
+  @@index([token])
+}
+
+// ==============================================================================
+// USER INVITE MODEL
+// ==============================================================================
+// Invitations for new users to join a church.
+// Token-based invite flow: Admin creates invite → email sent → user clicks link → sets password.
+// ==============================================================================
+
+model UserInvite {
+  id        String   @id @default(cuid())
+  // Tenant reference
+  churchId  String
+  church    Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  // Invite details
+  email     String
+  role      UserRole
+  // Secure token for the invite link
+  token     String   @unique
+  // Expiration - invites expire after 7 days by default
+  expiresAt DateTime
+  // Who sent this invite
+  invitedById String?
+  // Tracking
+  acceptedAt DateTime?
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Email is unique per church for pending invites
+  @@unique([churchId, email])
+  @@index([churchId])
+  @@index([token])
+}
+
+// ==============================================================================
+// CONTENT MODELS
+// ==============================================================================
+// All content types are tenant-scoped via churchId.
+// Status can be DRAFT or PUBLISHED.
+// publishedAt tracks when content was first published.
+// ==============================================================================
+
+// Pages - general website pages (About, Contact, etc.)
+model Page {
+  id        String        @id @default(cuid())
+  churchId  String
+  church    Church        @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  title     String
+  // Body stored as HTML string. Chose HTML over JSON because:
+  // 1. Simpler to render without a custom parser
+  // 2. Standard format that any rich text editor can produce
+  // 3. Easy to sanitize on save
+  body      String        @db.Text
+  // URL-friendly identifier for the page
+  urlPath   String?
+  // Optional featured image (URL string, no uploads in Phase 1)
+  featuredImageUrl String?
+
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // urlPath unique within a church
+  @@unique([churchId, urlPath])
+  @@index([churchId])
+  @@index([status])
+}
+
+// Sermons - recorded messages/teachings
+model Sermon {
+  id        String        @id @default(cuid())
+  churchId  String
+  church    Church        @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  title       String
+  // The date the sermon was preached
+  date        DateTime
+  speaker     String
+  // Scripture reference (e.g., "John 3:16")
+  scripture   String?
+  // Brief description of the sermon
+  description String?       @db.Text
+  // Video URL (YouTube, Vimeo, etc.)
+  videoUrl    String?
+  // Audio URL (for podcast/MP3 version)
+  audioUrl    String?
+
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([churchId])
+  @@index([status])
+  @@index([date])
+}
+
+// Events - church calendar events
+model Event {
+  id        String        @id @default(cuid())
+  churchId  String
+  church    Church        @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  title           String
+  startDate       DateTime
+  endDate         DateTime?
+  location        String?
+  // Description as plain text for simplicity
+  description     String?   @db.Text
+  // Optional registration link
+  registrationUrl String?
+  // Optional featured image URL
+  featuredImageUrl String?
+
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([churchId])
+  @@index([status])
+  @@index([startDate])
+}
+
+// Announcements - time-sensitive church announcements
+model Announcement {
+  id        String        @id @default(cuid())
+  churchId  String
+  church    Church        @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  title     String
+  // Body as plain text for simplicity
+  body      String        @db.Text
+  // When this announcement expires (null = no expiration)
+  // Expired announcements are filtered at query time, not auto-deleted
+  expiresAt DateTime?
+
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([churchId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+// LeadershipProfile - staff and leadership team members
+model LeadershipProfile {
+  id        String        @id @default(cuid())
+  churchId  String
+  church    Church        @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  name      String
+  // Role/title at the church (e.g., "Senior Pastor", "Worship Director")
+  title     String
+  bio       String?       @db.Text
+  // Photo URL (no uploads in Phase 1)
+  photoUrl  String?
+  email     String?
+  // For ordering profiles in display
+  sortOrder Int           @default(0)
+
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([churchId])
+  @@index([status])
+  @@index([sortOrder])
+}
