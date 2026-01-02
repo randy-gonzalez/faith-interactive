@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuthContext, requireContentEditor, AuthError } from "@/lib/auth/guards";
 import { getTenantPrisma } from "@/lib/db/tenant-prisma";
 import { pageSchema, formatZodError } from "@/lib/validation/schemas";
+import { isReservedSlug } from "@/lib/constants/reserved-slugs";
 import { logger } from "@/lib/logging/logger";
 import type { ApiResponse } from "@/types";
 
@@ -22,15 +23,24 @@ export async function GET() {
     const db = getTenantPrisma(context.church.id);
 
     const pages = await db.page.findMany({
-      orderBy: { updatedAt: "desc" },
+      orderBy: [{ sortOrder: "asc" }, { title: "asc" }],
       select: {
         id: true,
         title: true,
         urlPath: true,
+        parentId: true,
+        sortOrder: true,
         status: true,
+        isHomePage: true,
         publishedAt: true,
         createdAt: true,
         updatedAt: true,
+        parent: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
       },
     });
 
@@ -74,7 +84,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, body: content, urlPath, featuredImageUrl } = parseResult.data;
+    const {
+      title,
+      blocks,
+      urlPath,
+      featuredImageUrl,
+      parentId,
+      sortOrder,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
+      ogImage,
+      noIndex,
+      isHomePage,
+    } = parseResult.data;
+
+    // Check for reserved slugs
+    if (urlPath && isReservedSlug(urlPath)) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: `The URL path "${urlPath}" is reserved and cannot be used` },
+        { status: 400 }
+      );
+    }
 
     // Check for duplicate urlPath if provided
     if (urlPath) {
@@ -89,15 +120,44 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validate parentId if provided (must exist and belong to same church)
+    if (parentId) {
+      const parentPage = await db.page.findFirst({
+        where: { id: parentId },
+      });
+      if (!parentPage) {
+        return NextResponse.json<ApiResponse>(
+          { success: false, error: "Parent page not found" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // If setting this page as homepage, first unset any existing homepage
+    if (isHomePage) {
+      await db.page.updateMany({
+        where: { isHomePage: true },
+        data: { isHomePage: false },
+      });
+    }
+
     // Create the page (default status is DRAFT)
     // churchId is automatically injected by tenant-prisma extension
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const page = await (db.page.create as any)({
       data: {
         title,
-        body: content,
+        blocks: blocks || [],
         urlPath: urlPath || null,
         featuredImageUrl: featuredImageUrl || null,
+        parentId: parentId || null,
+        sortOrder: sortOrder || 0,
+        metaTitle: metaTitle || null,
+        metaDescription: metaDescription || null,
+        metaKeywords: metaKeywords || null,
+        ogImage: ogImage || null,
+        noIndex: noIndex || false,
+        isHomePage: isHomePage || false,
       },
     });
 

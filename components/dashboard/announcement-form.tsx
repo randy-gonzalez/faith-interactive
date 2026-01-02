@@ -147,7 +147,7 @@ export function AnnouncementForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-md">
+        <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
           {error}
         </div>
       )}
@@ -186,7 +186,7 @@ export function AnnouncementForm({
       />
 
       {canEdit && (
-        <div className="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
           <Button type="submit" disabled={saving}>
             {saving
               ? "Saving..."

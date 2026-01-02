@@ -27,7 +27,7 @@ export default async function AdminLayout({
   const { user, church } = context;
 
   return (
-    <div className="flex min-h-screen bg-white dark:bg-gray-950">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar navigation */}
       <DashboardNav userRole={user.role} churchName={church.name} />
 
@@ -38,6 +38,8 @@ export default async function AdminLayout({
           userName={user.name}
           userEmail={user.email}
           userRole={user.role}
+          platformRole={user.platformRole}
+          currentChurch={church}
         />
 
         {/* Page content */}

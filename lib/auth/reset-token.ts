@@ -33,18 +33,13 @@ function getTokenExpiration(): Date {
  * Create a password reset token for a user.
  *
  * @param userId - User ID
- * @param churchId - Church/tenant ID
  * @returns The reset token
  */
-export async function createPasswordResetToken(
-  userId: string,
-  churchId: string
-): Promise<string> {
+export async function createPasswordResetToken(userId: string): Promise<string> {
   // Invalidate any existing tokens for this user
   await prisma.passwordResetToken.updateMany({
     where: {
       userId,
-      churchId,
       usedAt: null,
     },
     data: {
@@ -59,12 +54,11 @@ export async function createPasswordResetToken(
     data: {
       token,
       userId,
-      churchId,
       expiresAt,
     },
   });
 
-  logger.info("Password reset token created", { userId, churchId });
+  logger.info("Password reset token created", { userId });
   return token;
 }
 
@@ -72,17 +66,16 @@ export async function createPasswordResetToken(
  * Validate a password reset token.
  *
  * @param token - The reset token to validate
- * @returns User ID and church ID if valid, null otherwise
+ * @returns User ID if valid, null otherwise
  */
 export async function validatePasswordResetToken(
   token: string
-): Promise<{ userId: string; churchId: string } | null> {
+): Promise<{ userId: string } | null> {
   const resetToken = await prisma.passwordResetToken.findUnique({
     where: { token },
     select: {
       id: true,
       userId: true,
-      churchId: true,
       expiresAt: true,
       usedAt: true,
     },
@@ -105,7 +98,6 @@ export async function validatePasswordResetToken(
 
   return {
     userId: resetToken.userId,
-    churchId: resetToken.churchId,
   };
 }
 

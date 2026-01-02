@@ -38,10 +38,10 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       {/* Welcome message */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-semibold text-gray-900">
           Welcome back{user.name ? `, ${user.name}` : ""}
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">
+        <p className="text-gray-500 mt-1">
           {church.name} Dashboard
         </p>
       </div>
@@ -52,12 +52,12 @@ export default async function DashboardPage() {
           <a
             key={stat.label}
             href={stat.href}
-            className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
+            className="p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"
           >
-            <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+            <p className="text-2xl font-semibold text-gray-900">
               {stat.count}
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500">
               {stat.label}
             </p>
           </a>
@@ -65,11 +65,11 @@ export default async function DashboardPage() {
       </div>
 
       {/* Getting started section */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-100 dark:border-blue-800">
-        <h2 className="text-lg font-medium text-blue-900 dark:text-blue-100 mb-2">
+      <div className="bg-blue-50 rounded-lg p-6 border border-blue-100">
+        <h2 className="text-lg font-medium text-blue-900 mb-2">
           Getting Started
         </h2>
-        <p className="text-blue-700 dark:text-blue-300 text-sm">
+        <p className="text-blue-700 text-sm">
           Use the navigation on the left to manage your church content.
           Create pages, add sermons, schedule events, and more.
         </p>

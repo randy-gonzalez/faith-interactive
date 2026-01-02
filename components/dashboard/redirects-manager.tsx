@@ -148,14 +148,14 @@ export function RedirectsManager({ initialRedirects }: RedirectsManagerProps) {
   return (
     <div className="space-y-6">
       {/* Add Redirect Form */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
           Add Redirect
         </h2>
         <form onSubmit={handleAdd} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 From Path
               </label>
               <Input
@@ -165,12 +165,12 @@ export function RedirectsManager({ initialRedirects }: RedirectsManagerProps) {
                 onChange={(e) => setSourcePath(e.target.value)}
                 disabled={adding}
               />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-xs text-gray-500">
                 The path visitors will be redirected from
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 To URL
               </label>
               <Input
@@ -180,7 +180,7 @@ export function RedirectsManager({ initialRedirects }: RedirectsManagerProps) {
                 onChange={(e) => setDestinationUrl(e.target.value)}
                 disabled={adding}
               />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-xs text-gray-500">
                 The destination URL or path
               </p>
             </div>
@@ -198,32 +198,32 @@ export function RedirectsManager({ initialRedirects }: RedirectsManagerProps) {
 
       {/* Error message */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
 
       {/* Existing Redirects */}
       {redirects.length > 0 ? (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   From
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   To
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+            <tbody className="divide-y divide-gray-200">
               {redirects.map((redirect) => (
                 <tr key={redirect.id}>
                   {editingId === redirect.id ? (
@@ -266,12 +266,12 @@ export function RedirectsManager({ initialRedirects }: RedirectsManagerProps) {
                   ) : (
                     <>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-mono text-gray-900 dark:text-white">
+                        <div className="text-sm font-mono text-gray-900">
                           {redirect.sourcePath}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-mono text-gray-600 dark:text-gray-400 break-all">
+                        <div className="text-sm font-mono text-gray-600 break-all">
                           {redirect.destinationUrl}
                         </div>
                       </td>
@@ -281,8 +281,8 @@ export function RedirectsManager({ initialRedirects }: RedirectsManagerProps) {
                           className={`
                             inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
                             ${redirect.isActive
-                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                              : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-600"
                             }
                           `}
                         >
@@ -313,8 +313,8 @@ export function RedirectsManager({ initialRedirects }: RedirectsManagerProps) {
           </table>
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-8 text-center">
-          <p className="text-gray-500 dark:text-gray-400">
+        <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+          <p className="text-gray-500">
             No redirects configured yet. Add your first redirect above.
           </p>
         </div>

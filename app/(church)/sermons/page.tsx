@@ -60,7 +60,7 @@ export default async function SermonsPage() {
                     {sermon.title}
                   </h2>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
-                    <span>{sermon.speaker}</span>
+                    <span>{sermon.speakerName || "Unknown Speaker"}</span>
                     <span>
                       {new Date(sermon.date).toLocaleDateString("en-US", {
                         month: "long",

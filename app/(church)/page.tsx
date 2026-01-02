@@ -2,7 +2,8 @@
  * Public Home Page
  *
  * Displays either:
- * - A designated home page (if configured in Site Settings)
+ * - A designated home page (page with isHomePage: true)
+ * - A fallback via Site Settings homePageId (legacy support)
  * - A default welcome page with service times and upcoming events
  */
 
@@ -10,6 +11,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSiteData } from "@/lib/public/get-site-data";
 import { prisma } from "@/lib/db/prisma";
+import { BlockRenderer } from "@/components/blocks/block-renderer";
 
 export default async function HomePage() {
   const siteData = await getSiteData();
@@ -20,9 +22,22 @@ export default async function HomePage() {
 
   const { church, settings } = siteData;
 
-  // If a home page is configured, display that page's content
+  // First, check for a page with isHomePage flag set (preferred method)
+  const homePage = await prisma.page.findFirst({
+    where: {
+      churchId: church.id,
+      isHomePage: true,
+      status: "PUBLISHED",
+    },
+  });
+
+  if (homePage) {
+    return <BlockRenderer blocks={homePage.blocks} />;
+  }
+
+  // Fallback: check legacy homePageId in SiteSettings
   if (settings.homePageId) {
-    const homePage = await prisma.page.findUnique({
+    const legacyHomePage = await prisma.page.findUnique({
       where: {
         id: settings.homePageId,
         churchId: church.id,
@@ -30,15 +45,8 @@ export default async function HomePage() {
       },
     });
 
-    if (homePage) {
-      return (
-        <article className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
-          <div
-            className="prose dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: homePage.body }}
-          />
-        </article>
-      );
+    if (legacyHomePage) {
+      return <BlockRenderer blocks={legacyHomePage.blocks} />;
     }
   }
 
@@ -230,7 +238,7 @@ export default async function HomePage() {
                     {sermon.title}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {sermon.speaker}
+                    {sermon.speakerName || "Unknown Speaker"}
                   </p>
                   {sermon.scripture && (
                     <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">

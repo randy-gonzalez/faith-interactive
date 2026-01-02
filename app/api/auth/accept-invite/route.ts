@@ -1,7 +1,11 @@
 /**
  * Accept Invite API Route
  *
- * POST /api/auth/accept-invite - Accept an invite and create account
+ * POST /api/auth/accept-invite - Accept an invite and create account/membership
+ *
+ * NEW MODEL:
+ * - If user already exists (by email), create a ChurchMembership
+ * - If user doesn't exist, create User + ChurchMembership
  */
 
 import { NextResponse } from "next/server";
@@ -31,6 +35,11 @@ export async function POST(request: Request) {
     // Find the invite
     const invite = await prisma.userInvite.findUnique({
       where: { token: result.data.token },
+      include: {
+        church: {
+          select: { name: true, slug: true },
+        },
+      },
     });
 
     if (!invite) {
@@ -54,55 +63,103 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if email is already registered
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        email: invite.email,
-        churchId: invite.churchId,
+    // Check if user already exists (globally unique email)
+    const existingUser = await prisma.user.findUnique({
+      where: { email: invite.email },
+      include: {
+        memberships: {
+          where: { churchId: invite.churchId },
+        },
       },
     });
 
-    if (existingUser) {
+    // If user exists and already has membership in this church, error
+    if (existingUser && existingUser.memberships.length > 0) {
       return NextResponse.json(
-        { error: "An account with this email already exists" },
+        { error: "You already have access to this organization" },
         { status: 400 }
       );
     }
 
-    // Create the user and mark invite as accepted
     const passwordHash = await hashPassword(result.data.password);
 
-    const [user] = await prisma.$transaction([
-      prisma.user.create({
+    if (existingUser) {
+      // User exists - just add membership to this church
+      await prisma.$transaction([
+        prisma.churchMembership.create({
+          data: {
+            userId: existingUser.id,
+            churchId: invite.churchId,
+            role: invite.role,
+            isPrimary: false, // Not primary since user already has an account
+            isActive: true,
+          },
+        }),
+        prisma.userInvite.update({
+          where: { id: invite.id },
+          data: { acceptedAt: new Date() },
+        }),
+      ]);
+
+      logger.info("Invite accepted - membership added to existing user", {
+        userId: existingUser.id,
+        email: existingUser.email,
+        churchId: invite.churchId,
+        role: invite.role,
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `You now have access to ${invite.church.name}. You can log in with your existing password.`,
+        existingUser: true,
+      });
+    }
+
+    // User doesn't exist - create new user + membership
+    const user = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
         data: {
           email: invite.email,
           name: result.data.name,
           passwordHash,
-          role: invite.role,
-          churchId: invite.churchId,
+          isActive: true,
         },
         select: {
           id: true,
           email: true,
           name: true,
-          role: true,
         },
-      }),
-      prisma.userInvite.update({
+      });
+
+      await tx.churchMembership.create({
+        data: {
+          userId: newUser.id,
+          churchId: invite.churchId,
+          role: invite.role,
+          isPrimary: true, // First church is primary
+          isActive: true,
+        },
+      });
+
+      await tx.userInvite.update({
         where: { id: invite.id },
         data: { acceptedAt: new Date() },
-      }),
-    ]);
+      });
 
-    logger.info("Invite accepted", {
+      return newUser;
+    });
+
+    logger.info("Invite accepted - new user created", {
       userId: user.id,
       email: user.email,
       churchId: invite.churchId,
+      role: invite.role,
     });
 
     return NextResponse.json({
       success: true,
       message: "Account created successfully. You can now log in.",
+      existingUser: false,
     });
   } catch (error) {
     logger.error("Failed to accept invite", error as Error);

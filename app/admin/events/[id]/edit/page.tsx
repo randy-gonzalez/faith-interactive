@@ -26,6 +26,12 @@ export default async function EditEventPage({ params }: EditEventProps) {
 
   const event = await db.event.findUnique({
     where: { id },
+    include: {
+      venue: true,
+      _count: {
+        select: { registrations: true },
+      },
+    },
   });
 
   if (!event) {
@@ -36,17 +42,17 @@ export default async function EditEventPage({ params }: EditEventProps) {
     <div className="max-w-3xl">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-semibold text-gray-900">
             {canEdit ? "Edit Event" : "View Event"}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-gray-500 mt-1">
             {event.title}
           </p>
         </div>
         <StatusBadge status={event.status} />
       </div>
 
-      <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
         <EventForm initialData={event} canEdit={canEdit} />
       </div>
     </div>

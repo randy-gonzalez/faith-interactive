@@ -4,42 +4,60 @@ Multi-tenant SaaS platform for churches. This includes:
 - **Phase 0**: Core infrastructure and authentication
 - **Phase 1**: CMS dashboard and content management
 - **Phase 2**: Public website rendering
+- **Phase 3**: Platform panel for Fi staff
 
 ## Quick Start
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
 # Set up environment
 cp .env.example .env.local
 # Edit .env.local with your PostgreSQL connection string
 
 # Generate Prisma client
-pnpm db:generate
+npm run db:generate
 
 # Run database migrations
-pnpm db:migrate
+npm run db:migrate
 
 # Seed demo data
-pnpm db:seed
+npm run db:seed
 
 # Add to /etc/hosts for subdomain testing
 echo "127.0.0.1 demo.localhost" | sudo tee -a /etc/hosts
+echo "127.0.0.1 hope-community.localhost" | sudo tee -a /etc/hosts
 
 # Start development server
-pnpm dev
+npm run dev
 ```
 
-Then visit: **http://demo.localhost:3000**
+### Access Points
+
+| Site | URL | Description |
+|------|-----|-------------|
+| Grace Community Church | http://demo.localhost:3000 | Demo church #1 |
+| Hope Community Church | http://hope-community.localhost:3000 | Demo church #2 |
+| Marketing Site | http://localhost:3000 | Faith Interactive marketing site |
+| Platform Admin | http://localhost:3000/platform | Fi staff admin panel |
 
 ### Test Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | `admin@example.com` | `password123` |
-| Editor | `editor@example.com` | `password123` |
-| Viewer | `viewer@example.com` | `password123` |
+All accounts use password: `password123`
+
+**Grace Community Church (demo.localhost):**
+| Role | Email | Notes |
+|------|-------|-------|
+| Admin | `admin@example.com` | Full access + PLATFORM_ADMIN |
+| Editor | `editor@example.com` | Can edit content |
+| Viewer | `viewer@example.com` | Read-only access |
+
+**Hope Community Church (hope-community.localhost):**
+| Role | Email |
+|------|-------|
+| Admin | `admin@hopecommunity.example.com` |
+| Editor | `editor@hopecommunity.example.com` |
 
 ---
 
@@ -62,7 +80,7 @@ https://grace-community.faithinteractive.com
 
 ### Tech Stack
 
-- **Framework**: Next.js 16 (App Router)
+- **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
 - **Database**: PostgreSQL
 - **ORM**: Prisma
@@ -99,6 +117,20 @@ https://grace-community.faithinteractive.com
 | `/admin/leadership` | Manage staff profiles | Editor+ |
 | `/admin/settings` | Site settings | Editor+ |
 | `/admin/team` | Team management | Admin |
+
+### Platform Dashboard (Platform staff only)
+
+| Route | Description | Access |
+|-------|-------------|--------|
+| `/platform` | Overview dashboard | Platform User |
+| `/platform/churches` | Church management | Platform User |
+| `/platform/churches/new` | Create new church | Platform Admin |
+| `/platform/churches/[id]` | Church detail & users | Platform User |
+| `/platform/marketing/pages` | Marketing pages | Platform User |
+| `/platform/marketing/pages/new` | Create marketing page | Platform Admin |
+| `/platform/marketing/pages/[id]` | Edit marketing page | Platform Admin |
+| `/platform/marketing/settings` | Marketing site settings | Platform Admin |
+| `/platform/audit-log` | Platform audit log | Platform User |
 
 ---
 
@@ -177,14 +209,21 @@ fi-app/
 ├── app/
 │   ├── (auth)/             # Auth pages (login, reset password)
 │   ├── (church)/           # Public church website (subdomains)
+│   ├── (public)/           # Public page routes
 │   ├── admin/              # Admin dashboard (/admin/*)
-│   └── api/                # API routes
+│   ├── platform/           # Fi staff admin panel (/platform/*)
+│   └── api/
+│       ├── auth/           # Auth API routes
+│       ├── platform/       # Platform API routes
+│       └── ...             # Other API routes
 ├── components/
 │   ├── dashboard/          # Dashboard/admin components
 │   ├── public/             # Public website components
+│   ├── platform/           # Platform admin components
 │   └── ui/                 # Reusable UI components
 ├── lib/
 │   ├── auth/               # Authentication logic
+│   ├── audit/              # Audit logging (tenant + platform)
 │   ├── db/                 # Database clients
 │   ├── email/              # Email service
 │   ├── logging/            # Centralized logging
@@ -222,19 +261,19 @@ Copy `.env.example` to `.env.local` and configure:
 
 ```bash
 # Generate Prisma client after schema changes
-pnpm db:generate
+npm run db:generate
 
 # Create and run migrations (recommended)
-pnpm db:migrate
+npm run db:migrate
 
 # Push schema to database (development only)
-pnpm db:push
+npm run db:push
 
 # Seed demo data
-pnpm db:seed
+npm run db:seed
 
 # Reset database (development only)
-pnpm db:reset
+npm run db:reset
 ```
 
 ---
@@ -258,11 +297,55 @@ Only published content appears on the public website.
 
 ## Roles & Permissions
 
+### Church Roles (Per-Tenant)
+
 | Role | Content | Team |
 |------|---------|------|
 | **Admin** | Full access | Full access |
 | **Editor** | Create, edit, publish, delete | View only |
 | **Viewer** | View only | View only |
+
+### Platform Roles (Fi Staff Only)
+
+| Role | Description | Access |
+|------|-------------|--------|
+| **PLATFORM_ADMIN** | Full platform access | Create/edit churches, marketing pages, settings |
+| **PLATFORM_STAFF** | Limited platform access | View churches, marketing pages, audit log |
+
+Platform roles are **separate** from church roles. A user can have both:
+- A church role (for their church dashboard)
+- A platform role (for platform panel access)
+
+---
+
+## Platform Panel
+
+The platform panel at `/platform` is for Faith Interactive staff to manage:
+
+### Church Management
+- Create new churches (tenants)
+- Edit church name, slug, contact email
+- Suspend/unsuspend churches
+- Soft-delete churches (sets `deletedAt`)
+- Manage church users from platform context
+
+### Marketing Website
+- Create/edit marketing pages (Home, Pricing, Features, etc.)
+- Manage site settings (logo, navigation, footer)
+- Configure home page
+- Set SEO metadata
+
+### Platform Audit Log
+All platform-level actions are logged:
+- Church creation/update/suspension/deletion
+- Marketing page changes
+- Settings updates
+- User management actions
+
+### How to Access Platform Panel
+1. Navigate to http://localhost:3000/platform
+2. Sign in with credentials that have `platformRole` set to `PLATFORM_ADMIN` or `PLATFORM_STAFF`
+3. Use `admin@example.com` / `password123` for demo access
 
 ---
 
@@ -285,10 +368,10 @@ Then access: `http://demo.localhost:3000`
 ### Running the App
 
 ```bash
-pnpm dev          # Start dev server with Turbopack
-pnpm build        # Production build
-pnpm start        # Start production server
-pnpm lint         # Run ESLint
+npm run dev          # Start dev server with Turbopack
+npm run build        # Production build
+npm run start        # Start production server
+npm run lint         # Run ESLint
 ```
 
 ---

@@ -86,17 +86,17 @@ export function LaunchChecklist({ items, initialProgress }: LaunchChecklistProps
       {itemsByCategory.map((category) => (
         <div
           key={category.key}
-          className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden"
+          className="bg-white border border-gray-200 rounded-lg overflow-hidden"
         >
           {/* Category Header */}
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-            <h2 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
               {category.label}
             </h2>
           </div>
 
           {/* Items */}
-          <ul className="divide-y divide-gray-200 dark:divide-gray-800">
+          <ul className="divide-y divide-gray-200">
             {category.items.map((item) => {
               const isUpdating = updating === item.key;
 
@@ -114,7 +114,7 @@ export function LaunchChecklist({ items, initialProgress }: LaunchChecklistProps
                           w-5 h-5 rounded border-2 cursor-pointer
                           ${item.isComplete
                             ? "bg-green-500 border-green-500 text-white"
-                            : "border-gray-300 dark:border-gray-600"
+                            : "border-gray-300"
                           }
                           ${isUpdating ? "opacity-50" : ""}
                           focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
@@ -126,16 +126,16 @@ export function LaunchChecklist({ items, initialProgress }: LaunchChecklistProps
                     <div className="flex-1 min-w-0">
                       <div className={`font-medium ${
                         item.isComplete
-                          ? "text-gray-500 dark:text-gray-400 line-through"
-                          : "text-gray-900 dark:text-white"
+                          ? "text-gray-500 line-through"
+                          : "text-gray-900"
                       }`}>
                         {item.label}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                      <div className="text-sm text-gray-500 mt-0.5">
                         {item.description}
                       </div>
                       {item.completedAt && (
-                        <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+                        <div className="text-xs text-green-600 mt-1">
                           Completed {new Date(item.completedAt).toLocaleDateString()}
                         </div>
                       )}
@@ -159,7 +159,7 @@ export function LaunchChecklist({ items, initialProgress }: LaunchChecklistProps
                         </svg>
                       ) : (
                         <svg
-                          className="w-5 h-5 text-gray-300 dark:text-gray-600"
+                          className="w-5 h-5 text-gray-300"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -177,26 +177,26 @@ export function LaunchChecklist({ items, initialProgress }: LaunchChecklistProps
       ))}
 
       {/* Quick Links */}
-      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h3 className="text-sm font-medium text-gray-900 mb-3">
           Quick Links
         </h3>
         <div className="flex flex-wrap gap-3">
           <a
-            href="/admin/domains"
-            className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            href="/admin/settings/domains"
+            className="text-sm text-blue-600 hover:text-blue-700"
           >
             Manage Domains &rarr;
           </a>
           <a
             href="/admin/settings"
-            className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            className="text-sm text-blue-600 hover:text-blue-700"
           >
             Site Settings &rarr;
           </a>
           <a
             href="/admin/pages"
-            className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            className="text-sm text-blue-600 hover:text-blue-700"
           >
             Manage Pages &rarr;
           </a>

@@ -6,7 +6,7 @@
 
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "outline" | "destructive";
+type ButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "outline" | "destructive" | "success";
 type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -19,15 +19,17 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary:
     "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 disabled:bg-blue-400",
   secondary:
-    "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700",
+    "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500",
   danger:
     "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:bg-red-400",
   ghost:
-    "bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500 dark:text-gray-300 dark:hover:bg-gray-800",
+    "bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500",
   outline:
-    "bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800",
+    "bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500",
   destructive:
     "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:bg-red-400",
+  success:
+    "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 disabled:bg-green-400",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

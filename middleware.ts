@@ -6,13 +6,16 @@
  * 2. Custom domain resolution (preferred) → subdomain extraction → tenant resolution
  * 3. Redirect rules for tenant public routes
  * 4. Maintenance mode check
- * 5. Authentication checks for protected routes (/admin/*)
+ * 5. Authentication checks for protected routes on main domain (/admin/*)
  * 6. Rate limiting (foundation)
  *
  * Route Structure:
- * - Main domain (faithinteractive.com) → Marketing site (marketing)
- * - Subdomain (grace.faithinteractive.com) → Church site (church) + Admin (/admin/*)
- * - Custom domain (www.gracechurch.org) → Church site (church) + Admin (/admin/*)
+ * - Main domain (faithinteractive.com) → Marketing site + Admin (/admin/*)
+ * - Subdomain (grace.faithinteractive.com) → Church public site only (no admin)
+ * - Custom domain (www.gracechurch.org) → Church public site only (no admin)
+ *
+ * IMPORTANT: All admin routes are on the main domain only.
+ * Subdomains/custom domains redirect /admin/* to main domain.
  *
  * Tenant Resolution Priority:
  * 1. Custom domain lookup (active domains only)
@@ -37,20 +40,6 @@ const REQUEST_ID_HEADER = "x-request-id";
 
 // Session cookie name
 const SESSION_COOKIE_NAME = "fi_session";
-
-// Routes that don't require authentication (on subdomains)
-const PUBLIC_AUTH_ROUTES = [
-  "/login",
-  "/forgot-password",
-  "/reset-password",
-  "/accept-invite",
-  "/api/auth/login",
-  "/api/auth/forgot-password",
-  "/api/auth/reset-password",
-  "/api/auth/accept-invite",
-  "/api/health",
-  "/api/contact",
-];
 
 // Routes that don't require tenant context (global routes)
 const GLOBAL_ROUTES = [
@@ -140,13 +129,6 @@ function isAdminRoute(pathname: string): boolean {
 }
 
 /**
- * Check if a route is a public auth route (login, etc.)
- */
-function isPublicAuthRoute(pathname: string): boolean {
-  return PUBLIC_AUTH_ROUTES.some((route) => pathname.startsWith(route));
-}
-
-/**
  * Check if a route is global (doesn't require tenant context)
  */
 function isGlobalRoute(pathname: string): boolean {
@@ -227,6 +209,49 @@ function getOrGenerateRequestId(request: NextRequest): string {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 10);
   return `req_${timestamp}_${random}`;
+}
+
+/**
+ * Get the main domain URL (without subdomain) for redirects.
+ *
+ * Examples:
+ * - demo.localhost:3000 → http://localhost:3000
+ * - grace.faithinteractive.com → https://faithinteractive.com
+ * - www.gracechurch.org (custom domain) → uses NEXT_PUBLIC_APP_URL
+ */
+function getMainDomainUrl(request: NextRequest): string {
+  // Use environment variable if set (recommended for production)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (appUrl) {
+    return appUrl;
+  }
+
+  const hostname = request.headers.get("host") || "";
+  const protocol = request.nextUrl.protocol;
+  const host = hostname.split(":")[0];
+  const port = hostname.includes(":") ? `:${hostname.split(":")[1]}` : "";
+
+  // Handle localhost development
+  for (const localhost of LOCALHOST_PATTERNS) {
+    if (host.endsWith(`.${localhost}`)) {
+      // demo.localhost → localhost
+      return `${protocol}//${localhost}${port}`;
+    }
+    if (host === localhost) {
+      return `${protocol}//${localhost}${port}`;
+    }
+  }
+
+  // Handle production domains (e.g., grace.faithinteractive.com → faithinteractive.com)
+  const parts = host.split(".");
+  if (parts.length >= 3) {
+    // Remove subdomain: grace.faithinteractive.com → faithinteractive.com
+    const mainDomain = parts.slice(1).join(".");
+    return `${protocol}//${mainDomain}${port}`;
+  }
+
+  // Already on main domain
+  return `${protocol}//${hostname}`;
 }
 
 export async function middleware(request: NextRequest) {
@@ -316,7 +341,7 @@ export async function middleware(request: NextRequest) {
     tenantSlug = extractSubdomain(hostname);
   }
 
-  // No tenant = main domain = marketing site
+  // No tenant = main domain = marketing site + admin
   if (!tenantSlug) {
     // Check if this was an unrecognized custom domain
     if (isPotentialCustomDomain(hostname)) {
@@ -328,7 +353,22 @@ export async function middleware(request: NextRequest) {
       // For now, just continue to marketing site
     }
 
-    // Marketing site routes - rewrite to (marketing) route group
+    // Check authentication for admin routes on main domain
+    if (isAdminRoute(pathname)) {
+      const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+
+      if (!sessionToken) {
+        // Redirect to login with return URL
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set("returnTo", pathname);
+        return NextResponse.redirect(loginUrl);
+      }
+
+      // Note: Full session validation happens in the route handler
+      // We just check for cookie presence here to avoid database calls in Edge
+    }
+
+    // Main domain routes
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set(REQUEST_ID_HEADER, requestId);
 
@@ -447,7 +487,33 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Create response with tenant context in headers
+  // Redirect admin and auth routes on subdomains to the main domain
+  // All admin functionality lives on the main domain only
+  const routesToRedirectToMainDomain = [
+    "/admin",
+    "/login",
+    "/forgot-password",
+    "/reset-password",
+    "/select-church",
+  ];
+
+  const shouldRedirectToMainDomain = routesToRedirectToMainDomain.some((route) =>
+    pathname === route || pathname.startsWith(`${route}/`)
+  );
+
+  if (shouldRedirectToMainDomain) {
+    const mainDomainUrl = getMainDomainUrl(request);
+    const redirectUrl = new URL(pathname, mainDomainUrl);
+
+    // Preserve query params
+    request.nextUrl.searchParams.forEach((value, key) => {
+      redirectUrl.searchParams.set(key, value);
+    });
+
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Create response with tenant context in headers (for public pages only)
   const requestHeaders = new Headers(request.headers);
 
   // Pass request ID for correlation (Phase 5)
@@ -460,21 +526,6 @@ export async function middleware(request: NextRequest) {
   // Mark if this was resolved via custom domain
   if (isCustomDomain && customDomainHostname) {
     requestHeaders.set(TENANT_HEADER_CUSTOM_DOMAIN, customDomainHostname);
-  }
-
-  // For admin routes, check authentication
-  if (isAdminRoute(pathname)) {
-    const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
-
-    if (!sessionToken) {
-      // Redirect to login with return URL
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("returnTo", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // Note: Full session validation happens in the route handler
-    // We just check for cookie presence here to avoid database calls in Edge
   }
 
   const response = NextResponse.next({

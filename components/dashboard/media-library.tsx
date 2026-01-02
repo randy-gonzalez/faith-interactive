@@ -159,8 +159,8 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
                 px-3 py-1.5 text-sm rounded-md transition-colors
                 ${
                   filterType === type
-                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }
               `}
             >
@@ -215,10 +215,10 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
               <img
                 src={item.variantUrls?.small || item.url}
                 alt={item.alt || item.filename}
-                className="w-full h-full object-cover bg-gray-100 dark:bg-gray-800"
+                className="w-full h-full object-cover bg-gray-100"
               />
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 p-2">
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 p-2">
                 <svg
                   className="w-12 h-12 text-red-500"
                   fill="currentColor"
@@ -226,7 +226,7 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
                 >
                   <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
                 </svg>
-                <span className="mt-2 text-xs text-gray-500 dark:text-gray-400 truncate w-full text-center">
+                <span className="mt-2 text-xs text-gray-500 truncate w-full text-center">
                   {item.filename}
                 </span>
               </div>
@@ -236,21 +236,21 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
       </div>
 
       {filteredMedia.length === 0 && (
-        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+        <div className="text-center py-12 text-gray-500">
           No media files found. Upload some files to get started.
         </div>
       )}
 
       {/* Detail Panel (Sidebar) */}
       {selectedItem && (
-        <div className="fixed inset-y-0 right-0 w-80 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 shadow-xl p-6 overflow-y-auto z-50">
+        <div className="fixed inset-y-0 right-0 w-80 bg-white border-l border-gray-200 shadow-xl p-6 overflow-y-auto z-50">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-gray-900">
               Details
             </h3>
             <button
               onClick={() => setSelectedItem(null)}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="text-gray-400 hover:text-gray-600"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -264,10 +264,10 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
               <img
                 src={selectedItem.variantUrls?.medium || selectedItem.url}
                 alt={selectedItem.alt || selectedItem.filename}
-                className="w-full rounded-lg bg-gray-100 dark:bg-gray-800"
+                className="w-full rounded-lg bg-gray-100"
               />
             ) : (
-              <div className="aspect-video flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg">
+              <div className="aspect-video flex items-center justify-center bg-gray-100 rounded-lg">
                 <svg className="w-16 h-16 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
                 </svg>
@@ -278,24 +278,24 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
           {/* Info */}
           <div className="space-y-3 text-sm">
             <div>
-              <span className="text-gray-500 dark:text-gray-400">Filename:</span>
-              <p className="text-gray-900 dark:text-white break-all">{selectedItem.filename}</p>
+              <span className="text-gray-500">Filename:</span>
+              <p className="text-gray-900 break-all">{selectedItem.filename}</p>
             </div>
             <div>
-              <span className="text-gray-500 dark:text-gray-400">Size:</span>
-              <p className="text-gray-900 dark:text-white">{formatSize(selectedItem.size)}</p>
+              <span className="text-gray-500">Size:</span>
+              <p className="text-gray-900">{formatSize(selectedItem.size)}</p>
             </div>
             <div>
-              <span className="text-gray-500 dark:text-gray-400">Type:</span>
-              <p className="text-gray-900 dark:text-white">{selectedItem.mimeType}</p>
+              <span className="text-gray-500">Type:</span>
+              <p className="text-gray-900">{selectedItem.mimeType}</p>
             </div>
             <div>
-              <span className="text-gray-500 dark:text-gray-400">Uploaded:</span>
-              <p className="text-gray-900 dark:text-white">{formatDate(selectedItem.createdAt)}</p>
+              <span className="text-gray-500">Uploaded:</span>
+              <p className="text-gray-900">{formatDate(selectedItem.createdAt)}</p>
             </div>
             <div>
-              <span className="text-gray-500 dark:text-gray-400">Uploaded by:</span>
-              <p className="text-gray-900 dark:text-white">
+              <span className="text-gray-500">Uploaded by:</span>
+              <p className="text-gray-900">
                 {selectedItem.uploadedBy.name || selectedItem.uploadedBy.email}
               </p>
             </div>
@@ -303,7 +303,7 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
             {/* Alt text */}
             {isImage(selectedItem.mimeType) && (
               <div>
-                <span className="text-gray-500 dark:text-gray-400">Alt text:</span>
+                <span className="text-gray-500">Alt text:</span>
                 {editingAlt ? (
                   <div className="mt-1 space-y-2">
                     <Input
@@ -329,7 +329,7 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 mt-1">
-                    <p className="text-gray-900 dark:text-white flex-1">
+                    <p className="text-gray-900 flex-1">
                       {selectedItem.alt || <em className="text-gray-400">Not set</em>}
                     </p>
                     <button
@@ -345,14 +345,14 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
           </div>
 
           {/* URL */}
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <span className="text-gray-500 dark:text-gray-400 text-sm">URL:</span>
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <span className="text-gray-500 text-sm">URL:</span>
             <div className="mt-1 flex gap-2">
               <input
                 type="text"
                 readOnly
                 value={selectedItem.url}
-                className="flex-1 text-xs bg-gray-100 dark:bg-gray-800 border-0 rounded px-2 py-1"
+                className="flex-1 text-xs bg-gray-100 border-0 rounded px-2 py-1"
               />
               <Button
                 size="sm"
@@ -365,7 +365,7 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
           </div>
 
           {/* Actions */}
-          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+          <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">
             <a
               href={selectedItem.url}
               target="_blank"

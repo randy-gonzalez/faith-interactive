@@ -42,7 +42,7 @@ export async function generateMetadata({
 
   return {
     title: sermon.title,
-    description: sermon.description || `${sermon.title} by ${sermon.speaker}`,
+    description: sermon.description || `${sermon.title} by ${sermon.speakerName || "Unknown Speaker"}`,
   };
 }
 
@@ -149,7 +149,7 @@ export default async function SermonDetailPage({ params }: PageProps) {
           {sermon.title}
         </h1>
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-gray-600 dark:text-gray-400">
-          <span className="font-medium">{sermon.speaker}</span>
+          <span className="font-medium">{sermon.speakerName || "Unknown Speaker"}</span>
           <span>
             {new Date(sermon.date).toLocaleDateString("en-US", {
               month: "long",

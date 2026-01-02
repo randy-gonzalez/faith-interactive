@@ -44,6 +44,15 @@ const TENANT_SCOPED_MODELS = [
   "CustomDomain",
   "RedirectRule",
   "LaunchChecklistItem",
+  // Sermon-related entities
+  "SermonSeries",
+  "Speaker",
+  "SermonTopic",
+  "SermonTopicLink",
+  // Events Enhancement
+  "Venue",
+  "EventRegistration",
+  "NotificationSubscription",
 ] as const;
 type TenantScopedModel = (typeof TENANT_SCOPED_MODELS)[number];
 

@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuthContext, requireContentEditor, AuthError } from "@/lib/auth/guards";
 import { getTenantPrisma } from "@/lib/db/tenant-prisma";
 import { pageSchema, formatZodError } from "@/lib/validation/schemas";
+import { isReservedSlug } from "@/lib/constants/reserved-slugs";
 import { logger } from "@/lib/logging/logger";
 import type { ApiResponse } from "@/types";
 
@@ -92,7 +93,29 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const { title, body: content, urlPath, featuredImageUrl } = parseResult.data;
+    const {
+      title,
+      blocks,
+      urlPath,
+      featuredImageUrl,
+      parentId,
+      sortOrder,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
+      ogImage,
+      noIndex,
+      isHomePage,
+      status,
+    } = parseResult.data;
+
+    // Check for reserved slugs
+    if (urlPath && isReservedSlug(urlPath)) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: `The URL path "${urlPath}" is reserved and cannot be used` },
+        { status: 400 }
+      );
+    }
 
     // Check for duplicate urlPath if changed
     if (urlPath && urlPath !== existing.urlPath) {
@@ -107,14 +130,68 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       }
     }
 
+    // Validate parentId if provided
+    if (parentId) {
+      // Cannot set self as parent
+      if (parentId === id) {
+        return NextResponse.json<ApiResponse>(
+          { success: false, error: "A page cannot be its own parent" },
+          { status: 400 }
+        );
+      }
+      // Parent must exist and belong to same church
+      const parentPage = await db.page.findFirst({
+        where: { id: parentId },
+      });
+      if (!parentPage) {
+        return NextResponse.json<ApiResponse>(
+          { success: false, error: "Parent page not found" },
+          { status: 400 }
+        );
+      }
+      // Prevent circular references - check if parent is a descendant of this page
+      let currentParent = parentPage;
+      while (currentParent.parentId) {
+        if (currentParent.parentId === id) {
+          return NextResponse.json<ApiResponse>(
+            { success: false, error: "Cannot create circular parent reference" },
+            { status: 400 }
+          );
+        }
+        const nextParent = await db.page.findFirst({
+          where: { id: currentParent.parentId },
+        });
+        if (!nextParent) break;
+        currentParent = nextParent;
+      }
+    }
+
+    // If setting this page as homepage, first unset any existing homepage
+    if (isHomePage && !existing.isHomePage) {
+      await db.page.updateMany({
+        where: { isHomePage: true, id: { not: id } },
+        data: { isHomePage: false },
+      });
+    }
+
     // Update the page
     const page = await db.page.update({
       where: { id },
       data: {
         title,
-        body: content,
+        blocks: blocks || existing.blocks,
         urlPath: urlPath || null,
         featuredImageUrl: featuredImageUrl || null,
+        parentId: parentId || null,
+        sortOrder: sortOrder ?? existing.sortOrder,
+        metaTitle: metaTitle || null,
+        metaDescription: metaDescription || null,
+        metaKeywords: metaKeywords || null,
+        ogImage: ogImage || null,
+        noIndex: noIndex ?? existing.noIndex,
+        isHomePage: isHomePage ?? existing.isHomePage,
+        ...(status && { status }),
+        ...(status === "PUBLISHED" && !existing.publishedAt && { publishedAt: new Date() }),
       },
     });
 

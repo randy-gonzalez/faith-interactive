@@ -38,17 +38,17 @@ export default async function EditLeadershipPage({
     <div className="max-w-3xl">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-semibold text-gray-900">
             {canEdit ? "Edit Profile" : "View Profile"}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-gray-500 mt-1">
             {profile.name}
           </p>
         </div>
         <StatusBadge status={profile.status} />
       </div>
 
-      <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
         <LeadershipForm initialData={profile} canEdit={canEdit} />
       </div>
     </div>

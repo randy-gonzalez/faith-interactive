@@ -192,7 +192,7 @@ export function SiteSettingsForm({
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="block text-sm font-medium text-gray-700">
             {label} Navigation
           </label>
           {canEdit && (
@@ -208,7 +208,7 @@ export function SiteSettingsForm({
         </div>
 
         {nav.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500">
             No navigation links configured
           </p>
         ) : (
@@ -216,13 +216,13 @@ export function SiteSettingsForm({
             {nav.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded"
+                className="flex items-center gap-2 p-2 bg-gray-50 rounded"
               >
                 <select
                   value={item.pageId}
                   onChange={(e) => updateNavItem(type, index, "pageId", e.target.value)}
                   disabled={!canEdit}
-                  className="flex-1 text-sm rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  className="flex-1 text-sm rounded border-gray-300"
                 >
                   {pages.map((page) => (
                     <option key={page.id} value={page.id}>
@@ -279,24 +279,24 @@ export function SiteSettingsForm({
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Error/Success Messages */}
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
           {error}
         </div>
       )}
       {success && (
-        <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-600 dark:text-green-400">
+        <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-600">
           Settings saved successfully!
         </div>
       )}
 
       {/* Header Section */}
-      <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <section className="bg-white border border-gray-200 rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
           Header
         </h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Logo URL
             </label>
             <Input
@@ -316,19 +316,19 @@ export function SiteSettingsForm({
       </section>
 
       {/* Home Page Section */}
-      <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <section className="bg-white border border-gray-200 rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
           Home Page
         </h2>
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Home Page Content
           </label>
           <select
             value={homePageId}
             onChange={(e) => setHomePageId(e.target.value)}
             disabled={!canEdit}
-            className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 text-sm"
+            className="w-full rounded-md border-gray-300 text-sm"
           >
             <option value="">Default welcome message</option>
             {pages.map((page) => (
@@ -344,13 +344,13 @@ export function SiteSettingsForm({
       </section>
 
       {/* Service Info Section */}
-      <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <section className="bg-white border border-gray-200 rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
           Service Times & Location
         </h2>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Service Times
             </label>
             <Textarea
@@ -366,7 +366,7 @@ export function SiteSettingsForm({
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Address
             </label>
             <Input
@@ -378,7 +378,7 @@ export function SiteSettingsForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Phone
             </label>
             <Input
@@ -391,7 +391,7 @@ export function SiteSettingsForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Contact Email
             </label>
             <Input
@@ -407,7 +407,7 @@ export function SiteSettingsForm({
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Google Maps Embed URL
             </label>
             <Input
@@ -425,13 +425,13 @@ export function SiteSettingsForm({
       </section>
 
       {/* Footer Section */}
-      <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <section className="bg-white border border-gray-200 rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
           Footer
         </h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Footer Text
             </label>
             <Textarea
@@ -445,9 +445,9 @@ export function SiteSettingsForm({
 
           {renderNavEditor("footer")}
 
-          <div className="grid gap-4 md:grid-cols-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="grid gap-4 md:grid-cols-3 pt-4 border-t border-gray-200">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Facebook URL
               </label>
               <Input
@@ -459,7 +459,7 @@ export function SiteSettingsForm({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Instagram URL
               </label>
               <Input
@@ -471,7 +471,7 @@ export function SiteSettingsForm({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 YouTube URL
               </label>
               <Input
@@ -487,17 +487,17 @@ export function SiteSettingsForm({
       </section>
 
       {/* Notifications Section */}
-      <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <section className="bg-white border border-gray-200 rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
           Form Notifications
         </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Configure email addresses to receive notifications when forms are submitted.
           If left empty, notifications will be sent to the Contact Email above.
         </p>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Prayer Request Notification Emails
             </label>
             <Input
@@ -512,7 +512,7 @@ export function SiteSettingsForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Volunteer Signup Notification Emails
             </label>
             <Input
@@ -531,10 +531,10 @@ export function SiteSettingsForm({
       {/* Maintenance Mode Section */}
       <section className={`border rounded-lg p-6 ${
         maintenanceMode
-          ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
-          : "bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-800"
+          ? "bg-yellow-50 border-yellow-200"
+          : "bg-white border-gray-200"
       }`}>
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
           Maintenance Mode
         </h2>
         <div className="flex items-start gap-4">
@@ -547,7 +547,7 @@ export function SiteSettingsForm({
                 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full
                 border-2 border-transparent transition-colors duration-200 ease-in-out
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                ${maintenanceMode ? "bg-yellow-500" : "bg-gray-200 dark:bg-gray-700"}
+                ${maintenanceMode ? "bg-yellow-500" : "bg-gray-200"}
                 ${!canEdit ? "opacity-50 cursor-not-allowed" : ""}
               `}
             >
@@ -563,12 +563,12 @@ export function SiteSettingsForm({
           <div className="flex-1">
             <p className={`font-medium ${
               maintenanceMode
-                ? "text-yellow-900 dark:text-yellow-200"
-                : "text-gray-900 dark:text-white"
+                ? "text-yellow-900"
+                : "text-gray-900"
             }`}>
               {maintenanceMode ? "Maintenance Mode is ON" : "Maintenance Mode is OFF"}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm text-gray-600 mt-1">
               {maintenanceMode
                 ? "Visitors will see a \"Site is being prepared\" message. The admin dashboard remains accessible."
                 : "Your site is live and visible to the public. Enable maintenance mode to hide the site while making changes."}
@@ -578,13 +578,13 @@ export function SiteSettingsForm({
       </section>
 
       {/* SEO Section */}
-      <section className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <section className="bg-white border border-gray-200 rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
           SEO & Metadata
         </h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Default Page Title
             </label>
             <Input
@@ -600,7 +600,7 @@ export function SiteSettingsForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Default Meta Description
             </label>
             <Textarea
@@ -617,7 +617,7 @@ export function SiteSettingsForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Favicon URL
             </label>
             <Input

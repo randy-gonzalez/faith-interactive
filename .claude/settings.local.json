@@ -18,7 +18,15 @@
       "Bash(GIT_SSH_COMMAND=\"ssh -i ~/.ssh/shyft -o IdentitiesOnly=yes\" git push origin main)",
       "Bash(git commit:*)",
       "Bash(npm run build:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(xargs sed:*)",
+      "Bash(npx prisma validate:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" npx prisma migrate reset:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" npx prisma db push:*)",
+      "Bash(pnpm exec prisma db seed:*)",
+      "Bash(npm run db:seed:*)"
     ]
   }
 }

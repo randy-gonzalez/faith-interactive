@@ -1,13 +1,17 @@
 /**
  * Single Team Member API Routes
  *
- * PUT /api/team/[id] - Update user role
- * DELETE /api/team/[id] - Remove user or cancel invite
+ * PUT /api/team/[id] - Update member role
+ * DELETE /api/team/[id] - Remove member or cancel invite
+ *
+ * NEW MODEL:
+ * - Role is stored on ChurchMembership, not User
+ * - Members are managed through memberships
  */
 
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db/prisma";
 import { requireTeamManager } from "@/lib/auth/guards";
-import { getTenantPrisma } from "@/lib/db/tenant-prisma";
 import { logger } from "@/lib/logging/logger";
 import { z } from "zod";
 
@@ -23,7 +27,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
     const currentUser = await requireTeamManager();
-    const db = getTenantPrisma(currentUser.churchId);
 
     // Can't change your own role
     if (id === currentUser.id) {
@@ -33,12 +36,26 @@ export async function PUT(request: Request, { params }: RouteParams) {
       );
     }
 
-    const user = await db.user.findUnique({
-      where: { id },
+    // Find the membership for this user in the current church
+    const membership = await prisma.churchMembership.findFirst({
+      where: {
+        userId: id,
+        churchId: currentUser.churchId,
+        isActive: true,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          },
+        },
+      },
     });
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!membership) {
+      return NextResponse.json({ error: "User not found in this organization" }, { status: 404 });
     }
 
     const body = await request.json();
@@ -51,19 +68,21 @@ export async function PUT(request: Request, { params }: RouteParams) {
       );
     }
 
-    const updatedUser = await db.user.update({
-      where: { id },
+    // Update the membership role
+    await prisma.churchMembership.update({
+      where: { id: membership.id },
       data: { role: result.data.role },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-      },
     });
 
-    return NextResponse.json({ user: updatedUser });
+    return NextResponse.json({
+      user: {
+        id: membership.user.id,
+        email: membership.user.email,
+        name: membership.user.name,
+        role: result.data.role,
+        createdAt: membership.createdAt,
+      },
+    });
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -83,7 +102,6 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
     const currentUser = await requireTeamManager();
-    const db = getTenantPrisma(currentUser.churchId);
 
     // Can't delete yourself
     if (id === currentUser.id) {
@@ -93,29 +111,35 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Check if it's a user or an invite
-    const user = await db.user.findUnique({
-      where: { id },
+    // Check if it's a membership
+    const membership = await prisma.churchMembership.findFirst({
+      where: {
+        userId: id,
+        churchId: currentUser.churchId,
+        isActive: true,
+      },
     });
 
-    if (user) {
-      // Delete user and their sessions
-      await db.session.deleteMany({
-        where: { userId: id },
-      });
-      await db.user.delete({
-        where: { id },
+    if (membership) {
+      // Soft delete the membership (set isActive to false)
+      await prisma.churchMembership.update({
+        where: { id: membership.id },
+        data: { isActive: false },
       });
       return NextResponse.json({ success: true, type: "user" });
     }
 
     // Check if it's an invite
-    const invite = await db.userInvite.findUnique({
-      where: { id },
+    const invite = await prisma.userInvite.findFirst({
+      where: {
+        id,
+        churchId: currentUser.churchId,
+        acceptedAt: null, // Only pending invites
+      },
     });
 
     if (invite) {
-      await db.userInvite.delete({
+      await prisma.userInvite.delete({
         where: { id },
       });
       return NextResponse.json({ success: true, type: "invite" });

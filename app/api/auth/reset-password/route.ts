@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { userId, churchId } = tokenData;
+    const { userId } = tokenData;
 
     // Hash the new password
     const passwordHash = await hashPassword(password);
@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
 
     // Invalidate all existing sessions for security
     // User will need to log in again with new password
-    await deleteAllUserSessions(userId, churchId);
+    await deleteAllUserSessions(userId);
 
-    logger.info("Password reset completed", { userId, churchId });
+    logger.info("Password reset completed", { userId });
 
     return NextResponse.json<ApiResponse>(
       {

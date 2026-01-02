@@ -5,10 +5,10 @@
  * These types are designed to work with the Prisma schema.
  */
 
-import type { UserRole, ContentStatus } from "@prisma/client";
+import type { UserRole, ContentStatus, PlatformRole, ChurchStatus } from "@prisma/client";
 
 // Re-export Prisma enums for convenience
-export type { UserRole, ContentStatus } from "@prisma/client";
+export type { UserRole, ContentStatus, PlatformRole, ChurchStatus } from "@prisma/client";
 
 // ==============================================================================
 // TENANT TYPES
@@ -29,20 +29,69 @@ export interface TenantContext {
 
 /**
  * Safe user object without sensitive fields (for API responses)
+ * Note: Role is now on ChurchMembership, but we include it here
+ * for backward compatibility in API responses (represents active church role)
  */
 export interface SafeUser {
   id: string;
   email: string;
   name: string | null;
-  role: UserRole;
+  role?: UserRole; // From active church membership (optional for backward compat)
+  platformRole: PlatformRole | null;
   isActive: boolean;
   createdAt: Date;
 }
 
 /**
- * User with tenant context (for authenticated requests)
+ * Church membership - links a user to a church with a role
+ */
+export interface ChurchMembershipInfo {
+  id: string;
+  churchId: string;
+  role: UserRole;
+  isPrimary: boolean;
+  isActive: boolean;
+  church?: {
+    id: string;
+    slug: string;
+    name: string;
+  };
+}
+
+/**
+ * User with active church context (for authenticated requests)
+ * The role comes from the membership, not the user
  */
 export interface AuthenticatedUser extends SafeUser {
+  activeChurchId: string | null;
+  activeChurch?: {
+    id: string;
+    slug: string;
+    name: string;
+  } | null;
+  // Role in the active church (from membership or implicit for platform users)
+  role: UserRole;
+  // All memberships for church switching
+  memberships?: ChurchMembershipInfo[];
+  // Backward compatibility alias for activeChurchId
+  // Use this when you need the current church context
+  churchId: string;
+}
+
+/**
+ * Platform user (for Super Admin panel)
+ * Has platform role and may or may not have church context
+ */
+export interface PlatformUser extends SafeUser {
+  platformRole: PlatformRole;
+  activeChurchId: string | null;
+  activeChurch?: {
+    id: string;
+    slug: string;
+    name: string;
+  } | null;
+  role: UserRole; // Implicit ADMIN when accessing any church
+  // Backward compatibility alias for activeChurchId
   churchId: string;
 }
 
@@ -52,11 +101,12 @@ export interface AuthenticatedUser extends SafeUser {
 
 /**
  * Session data stored in database
+ * Note: activeChurchId is nullable - platform users may have no active church
  */
 export interface SessionData {
   id: string;
   userId: string;
-  churchId: string;
+  activeChurchId: string | null;
   expiresAt: Date;
 }
 

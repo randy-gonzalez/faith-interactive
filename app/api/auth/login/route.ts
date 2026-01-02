@@ -1,10 +1,15 @@
 /**
- * Login API Route
+ * Tenant-Scoped Login API Route
  *
  * POST /api/auth/login
  *
- * Authenticates a user with email and password.
- * Creates a session and sets a secure cookie.
+ * Authenticates a user with email and password for a specific church (subdomain).
+ * Creates a session with the active church set to this church.
+ *
+ * NEW MODEL:
+ * - User is found by globally unique email
+ * - User must have an active membership in this church
+ * - Role comes from ChurchMembership, not User
  *
  * Phase 5: Includes account lockout protection and audit logging.
  */
@@ -19,7 +24,7 @@ import { loginSchema, formatZodError } from "@/lib/validation/schemas";
 import { logger } from "@/lib/logging/logger";
 import { accountLockout } from "@/lib/security/account-lockout";
 import { auditLog } from "@/lib/audit/audit-log";
-import type { LoginResponse, SafeUser } from "@/types";
+import type { LoginResponse } from "@/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,10 +67,11 @@ export async function POST(request: NextRequest) {
     const { email, password } = parseResult.data;
 
     // Get client IP for lockout tracking
-    const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
-                     request.headers.get("cf-connecting-ip") ||
-                     request.headers.get("x-real-ip") ||
-                     "unknown";
+    const clientIp =
+      request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+      request.headers.get("cf-connecting-ip") ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
 
     // Phase 5: Check for account lockout
     const lockoutCheck = await accountLockout.checkAllowed(
@@ -75,9 +81,10 @@ export async function POST(request: NextRequest) {
     );
 
     if (!lockoutCheck.allowed) {
-      const errorMessage = lockoutCheck.reason === "too_many_attempts"
-        ? `Too many failed attempts. Please try again in ${lockoutCheck.lockoutMinutesRemaining} minutes.`
-        : "Too many login attempts from this location. Please try again later.";
+      const errorMessage =
+        lockoutCheck.reason === "too_many_attempts"
+          ? `Too many failed attempts. Please try again in ${lockoutCheck.lockoutMinutesRemaining} minutes.`
+          : "Too many login attempts from this location. Please try again later.";
 
       logger.warn("Login blocked by lockout", {
         churchId: church.id,
@@ -92,33 +99,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user by email within the church
+    // Find user by globally unique email
     const user = await prisma.user.findUnique({
-      where: {
-        churchId_email: {
-          churchId: church.id,
-          email: email.toLowerCase(),
-        },
-      },
+      where: { email: email.toLowerCase() },
       select: {
         id: true,
         email: true,
         name: true,
-        role: true,
         passwordHash: true,
         isActive: true,
         createdAt: true,
+        platformRole: true,
+        memberships: {
+          where: { churchId: church.id, isActive: true },
+          select: { role: true },
+          take: 1,
+        },
       },
     });
 
     // Use constant-time comparison to prevent timing attacks
     // Even if user doesn't exist, we verify against a dummy hash
-    const dummyHash = "$2a$12$dummy.hash.to.prevent.timing.attacks.placeholder";
+    const dummyHash =
+      "$2a$12$dummy.hash.to.prevent.timing.attacks.placeholder";
     const hashToVerify = user?.passwordHash || dummyHash;
     const passwordValid = await verifyPassword(password, hashToVerify);
 
-    if (!user || !passwordValid || !user.isActive) {
-      const failReason = !user ? "user_not_found" : !passwordValid ? "invalid_password" : "inactive_user";
+    // User must exist, be active, have valid password, and have membership in this church
+    // Platform users get implicit access to any church
+    const hasMembership = user?.memberships && user.memberships.length > 0;
+    const isPlatformUser = user?.platformRole !== null;
+    const hasAccess = hasMembership || isPlatformUser;
+
+    if (!user || !passwordValid || !user.isActive || !hasAccess) {
+      const failReason = !user
+        ? "user_not_found"
+        : !passwordValid
+          ? "invalid_password"
+          : !user.isActive
+            ? "inactive_user"
+            : "no_membership";
 
       logger.warn("Failed login attempt", {
         churchId: church.id,
@@ -152,7 +172,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create session
+    // Get role from membership or use ADMIN for platform users
+    const role = hasMembership ? user.memberships[0].role : "ADMIN";
+
+    // Create session with this church as active
     const userAgent = request.headers.get("user-agent") || undefined;
 
     const sessionToken = await createSession(user.id, church.id, {
@@ -161,12 +184,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Phase 5: Record successful login attempt
-    await accountLockout.recordAttempt(
-      church.id,
-      email,
-      clientIp,
-      true
-    );
+    await accountLockout.recordAttempt(church.id, email, clientIp, true);
 
     // Phase 5: Audit log for successful login
     await auditLog.logAuthEvent(
@@ -178,13 +196,15 @@ export async function POST(request: NextRequest) {
     );
 
     // Prepare user response (without sensitive data)
-    const safeUser: SafeUser = {
+    // Note: SafeUser no longer has role, but we include it for backward compat
+    const safeUser = {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role,
+      role, // From membership or implicit
       isActive: user.isActive,
       createdAt: user.createdAt,
+      platformRole: user.platformRole,
     };
 
     logger.info("User logged in", {

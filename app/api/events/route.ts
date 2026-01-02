@@ -8,7 +8,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth, requireContentEditor } from "@/lib/auth/guards";
 import { getTenantPrisma } from "@/lib/db/tenant-prisma";
-import { eventSchema } from "@/lib/validation/schemas";
+import { eventExtendedSchema } from "@/lib/validation/schemas";
 import { logger } from "@/lib/logging/logger";
 
 export async function GET() {
@@ -18,6 +18,12 @@ export async function GET() {
 
     const events = await db.event.findMany({
       orderBy: { startDate: "desc" },
+      include: {
+        venue: true,
+        _count: {
+          select: { registrations: true },
+        },
+      },
     });
 
     return NextResponse.json({ events });
@@ -39,7 +45,7 @@ export async function POST(request: Request) {
     const db = getTenantPrisma(churchId);
 
     const body = await request.json();
-    const result = eventSchema.safeParse(body);
+    const result = eventExtendedSchema.safeParse(body);
 
     if (!result.success) {
       return NextResponse.json(
@@ -56,9 +62,29 @@ export async function POST(request: Request) {
         description: result.data.description || null,
         startDate: new Date(result.data.startDate),
         endDate: result.data.endDate ? new Date(result.data.endDate) : null,
+        venueId: result.data.venueId || null,
         location: result.data.location || null,
         registrationUrl: result.data.registrationUrl || null,
         featuredImageUrl: result.data.featuredImageUrl || null,
+        featuredMediaId: result.data.featuredMediaId || null,
+        // Registration settings
+        registrationEnabled: result.data.registrationEnabled ?? false,
+        capacity: result.data.capacity || null,
+        waitlistEnabled: result.data.waitlistEnabled ?? false,
+        registrationDeadline: result.data.registrationDeadline
+          ? new Date(result.data.registrationDeadline)
+          : null,
+        // Recurrence settings
+        isRecurring: result.data.isRecurring ?? false,
+        recurrenceFrequency: result.data.recurrenceFrequency || null,
+        recurrenceInterval: result.data.recurrenceInterval || null,
+        recurrenceDaysOfWeek: result.data.recurrenceDaysOfWeek || null,
+        recurrenceDayOfMonth: result.data.recurrenceDayOfMonth || null,
+        recurrenceEndDate: result.data.recurrenceEndDate
+          ? new Date(result.data.recurrenceEndDate)
+          : null,
+        recurrenceCount: result.data.recurrenceCount || null,
+        timezone: result.data.timezone || "America/New_York",
         status: "DRAFT",
       },
     });

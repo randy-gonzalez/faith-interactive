@@ -10,6 +10,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth, requireContentEditor } from "@/lib/auth/guards";
 import { getTenantPrisma } from "@/lib/db/tenant-prisma";
+import { prisma } from "@/lib/db/prisma";
 import { sermonSchema } from "@/lib/validation/schemas";
 import { logger } from "@/lib/logging/logger";
 
@@ -25,6 +26,21 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     const sermon = await db.sermon.findUnique({
       where: { id },
+      include: {
+        speaker: true,
+        series: true,
+        topics: {
+          include: {
+            topic: true,
+          },
+        },
+        scriptureReferences: {
+          include: {
+            book: true,
+          },
+          orderBy: { sortOrder: "asc" },
+        },
+      },
     });
 
     if (!sermon) {
@@ -68,17 +84,77 @@ export async function PUT(request: Request, { params }: RouteParams) {
       );
     }
 
-    const sermon = await db.sermon.update({
-      where: { id },
-      data: {
-        title: result.data.title,
-        speaker: result.data.speaker,
-        date: new Date(result.data.date),
-        description: result.data.description || null,
-        videoUrl: result.data.videoUrl || null,
-        audioUrl: result.data.audioUrl || null,
-        scripture: result.data.scripture || null,
-      },
+    const data = result.data;
+
+    // Use a transaction to update sermon with relations
+    const sermon = await prisma.$transaction(async (tx) => {
+      // Update the sermon
+      await tx.sermon.update({
+        where: { id },
+        data: {
+          title: data.title,
+          date: new Date(data.date),
+          speakerId: data.speakerId || null,
+          speakerName: data.speakerId ? null : data.speakerName || null,
+          seriesId: data.seriesId || null,
+          seriesOrder: data.seriesOrder || null,
+          scripture: data.scripture || null,
+          description: data.description || null,
+          notes: data.notes || null,
+          videoUrl: data.videoUrl || null,
+          audioUrl: data.audioUrl || null,
+          artworkUrl: data.artworkUrl || null,
+        },
+      });
+
+      // Update scripture references - delete existing and recreate
+      await tx.scriptureReference.deleteMany({
+        where: { sermonId: id },
+      });
+
+      if (data.scriptureReferences && data.scriptureReferences.length > 0) {
+        await tx.scriptureReference.createMany({
+          data: data.scriptureReferences.map((ref, index) => ({
+            sermonId: id,
+            bookId: ref.bookId,
+            startChapter: ref.startChapter,
+            startVerse: ref.startVerse || null,
+            endChapter: ref.endChapter || null,
+            endVerse: ref.endVerse || null,
+            sortOrder: index,
+          })),
+        });
+      }
+
+      // Update topic links - delete existing and recreate
+      await tx.sermonTopicLink.deleteMany({
+        where: { sermonId: id },
+      });
+
+      if (data.topicIds && data.topicIds.length > 0) {
+        await tx.sermonTopicLink.createMany({
+          data: data.topicIds.map((topicId) => ({
+            sermonId: id,
+            topicId,
+          })),
+        });
+      }
+
+      // Return sermon with relations
+      return tx.sermon.findUnique({
+        where: { id },
+        include: {
+          speaker: true,
+          series: true,
+          topics: {
+            include: { topic: true },
+          },
+          scriptureReferences: {
+            include: { book: true },
+            orderBy: { sortOrder: "asc" },
+          },
+        },
+      });
     });
 
     return NextResponse.json({ sermon });
@@ -111,8 +187,17 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Sermon not found" }, { status: 404 });
     }
 
-    await db.sermon.delete({
-      where: { id },
+    // Delete related records first (cascade should handle this, but be explicit)
+    await prisma.$transaction(async (tx) => {
+      await tx.scriptureReference.deleteMany({
+        where: { sermonId: id },
+      });
+      await tx.sermonTopicLink.deleteMany({
+        where: { sermonId: id },
+      });
+      await tx.sermon.delete({
+        where: { id },
+      });
     });
 
     return NextResponse.json({ success: true });

@@ -141,7 +141,7 @@ export async function getNavigationPages(
       const page = pageMap.get(item.pageId)!;
       return {
         label: item.label,
-        href: page.urlPath ? `/p/${page.urlPath}` : `/p/${page.id}`,
+        href: page.urlPath ? `/${page.urlPath}` : `/${page.id}`,
         order: item.order,
       };
     })

@@ -13,13 +13,18 @@
  * 1. User logs in → create session in DB → store token in cookie
  * 2. Request comes in → read token from cookie → validate against DB
  * 3. User logs out → delete session from DB → clear cookie
+ *
+ * NEW MODEL (User System Redesign):
+ * - Users are no longer bound to a single church
+ * - Session has activeChurchId which can be switched
+ * - Role comes from ChurchMembership, not User
+ * - Platform users get implicit ADMIN access to all churches
  */
 
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/db/prisma";
-import { getTenantPrisma } from "@/lib/db/tenant-prisma";
 import { logger } from "@/lib/logging/logger";
-import type { SessionData, SafeUser } from "@/types";
+import type { SessionData, AuthenticatedUser } from "@/types";
 
 /**
  * Generate a cryptographically secure session token
@@ -40,13 +45,13 @@ function getSessionDuration(): number {
  * Create a new session for a user.
  *
  * @param userId - User ID
- * @param churchId - Church/tenant ID
+ * @param activeChurchId - Initial active church (nullable for platform-only sessions)
  * @param metadata - Optional metadata (user agent, IP)
  * @returns Session token to be stored in cookie
  */
 export async function createSession(
   userId: string,
-  churchId: string,
+  activeChurchId: string | null,
   metadata?: {
     userAgent?: string;
     ipAddress?: string;
@@ -55,20 +60,18 @@ export async function createSession(
   const token = generateSessionToken();
   const expiresAt = new Date(Date.now() + getSessionDuration());
 
-  // Use raw prisma here since we're creating the session
-  // and need to set churchId explicitly
   await prisma.session.create({
     data: {
       token,
       userId,
-      churchId,
+      activeChurchId,
       expiresAt,
       userAgent: metadata?.userAgent,
       ipAddress: metadata?.ipAddress,
     },
   });
 
-  logger.info("Session created", { userId, churchId });
+  logger.info("Session created", { userId, activeChurchId });
   return token;
 }
 
@@ -90,7 +93,7 @@ export async function validateSession(
     select: {
       id: true,
       userId: true,
-      churchId: true,
+      activeChurchId: true,
       expiresAt: true,
     },
   });
@@ -116,28 +119,48 @@ export async function validateSession(
 /**
  * Get the user associated with a session.
  *
+ * Fetches the user with their active church context and role.
+ * - For regular users: role comes from ChurchMembership
+ * - For platform users: implicit ADMIN role for any church
+ *
  * @param token - Session token
- * @returns User data if session is valid, null otherwise
+ * @returns User data with active church context if session is valid, null otherwise
  */
 export async function getUserFromSession(
   token: string
-): Promise<(SafeUser & { churchId: string }) | null> {
+): Promise<AuthenticatedUser | null> {
   const session = await validateSession(token);
   if (!session) {
     return null;
   }
 
-  const db = getTenantPrisma(session.churchId);
-  const user = await db.user.findUnique({
+  // Fetch user with their memberships
+  const user = await prisma.user.findUnique({
     where: { id: session.userId },
     select: {
       id: true,
       email: true,
       name: true,
-      role: true,
+      platformRole: true,
       isActive: true,
       createdAt: true,
-      churchId: true,
+      memberships: {
+        where: { isActive: true },
+        select: {
+          id: true,
+          churchId: true,
+          role: true,
+          isPrimary: true,
+          isActive: true,
+          church: {
+            select: {
+              id: true,
+              slug: true,
+              name: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -145,7 +168,50 @@ export async function getUserFromSession(
     return null;
   }
 
-  return user;
+  // Determine the role for the active church
+  let role: "ADMIN" | "EDITOR" | "VIEWER" = "VIEWER";
+  let activeChurch: { id: string; slug: string; name: string } | null = null;
+
+  if (session.activeChurchId) {
+    // Find membership for active church
+    const membership = user.memberships.find(
+      (m) => m.churchId === session.activeChurchId
+    );
+
+    if (membership) {
+      role = membership.role;
+      activeChurch = membership.church;
+    } else if (user.platformRole) {
+      // Platform users get implicit ADMIN access to any church
+      const church = await prisma.church.findUnique({
+        where: { id: session.activeChurchId },
+        select: { id: true, slug: true, name: true },
+      });
+      if (church) {
+        role = "ADMIN";
+        activeChurch = church;
+      }
+    }
+  }
+
+  // churchId is required - if no active church, this is an error state
+  // for routes that require church context
+  const churchId = session.activeChurchId || "";
+
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    platformRole: user.platformRole,
+    isActive: user.isActive,
+    createdAt: user.createdAt,
+    activeChurchId: session.activeChurchId,
+    activeChurch,
+    role,
+    memberships: user.memberships,
+    // Backward compatibility - always provide churchId
+    churchId,
+  };
 }
 
 /**
@@ -168,19 +234,83 @@ export async function deleteSession(token: string): Promise<void> {
  * Delete all sessions for a user (logout from all devices).
  *
  * @param userId - User ID
- * @param churchId - Church/tenant ID
  */
-export async function deleteAllUserSessions(
-  userId: string,
-  churchId: string
-): Promise<void> {
+export async function deleteAllUserSessions(userId: string): Promise<void> {
   await prisma.session.deleteMany({
-    where: {
-      userId,
-      churchId,
+    where: { userId },
+  });
+  logger.info("All sessions deleted for user", { userId });
+}
+
+/**
+ * Switch the active church for a session.
+ *
+ * @param token - Session token
+ * @param churchId - New active church ID
+ * @returns true if successful, false otherwise
+ */
+export async function switchActiveChurch(
+  token: string,
+  churchId: string
+): Promise<boolean> {
+  const session = await validateSession(token);
+  if (!session) {
+    return false;
+  }
+
+  // Get the user to verify they have access to this church
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: {
+      platformRole: true,
+      memberships: {
+        where: {
+          churchId,
+          isActive: true,
+        },
+      },
     },
   });
-  logger.info("All sessions deleted for user", { userId, churchId });
+
+  if (!user) {
+    return false;
+  }
+
+  // Check if user has access: either via membership or platform role
+  const hasMembership = user.memberships.length > 0;
+  const isPlatformUser = user.platformRole !== null;
+
+  if (!hasMembership && !isPlatformUser) {
+    logger.warn("User attempted to switch to unauthorized church", {
+      userId: session.userId,
+      churchId,
+    });
+    return false;
+  }
+
+  // Verify the church exists
+  const church = await prisma.church.findUnique({
+    where: { id: churchId },
+    select: { id: true },
+  });
+
+  if (!church) {
+    return false;
+  }
+
+  // Update the session
+  await prisma.session.update({
+    where: { id: session.id },
+    data: { activeChurchId: churchId },
+  });
+
+  logger.info("Session church switched", {
+    userId: session.userId,
+    oldChurchId: session.activeChurchId,
+    newChurchId: churchId,
+  });
+
+  return true;
 }
 
 /**

@@ -3,6 +3,9 @@
  *
  * Secure cookie handling for session tokens.
  *
+ * All admin functionality is on the main domain, so cookies are scoped
+ * to the main domain only (no cross-subdomain needed).
+ *
  * SECURITY CONSIDERATIONS:
  * - HttpOnly: Prevents JavaScript access (XSS mitigation)
  * - Secure: Only sent over HTTPS (in production)
@@ -33,6 +36,7 @@ function getMaxAge(): number {
 
 /**
  * Get cookie options for the session cookie.
+ * Cookie is scoped to the main domain only (no cross-subdomain).
  */
 function getCookieOptions(): Partial<ResponseCookie> {
   return {
@@ -41,8 +45,7 @@ function getCookieOptions(): Partial<ResponseCookie> {
     sameSite: "lax",
     path: "/",
     maxAge: getMaxAge(),
-    // In production, you might want to set domain for cross-subdomain cookies
-    // domain: isProduction() ? ".faithinteractive.com" : undefined,
+    // No domain specified = cookie scoped to exact host only
   };
 }
 

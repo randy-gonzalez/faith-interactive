@@ -44,6 +44,7 @@ export async function GET() {
       role: user.role,
       isActive: user.isActive,
       createdAt: user.createdAt,
+      platformRole: user.platformRole,
     };
 
     return NextResponse.json<ApiResponse<{ user: SafeUser }>>(

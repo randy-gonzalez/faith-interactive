@@ -3,11 +3,16 @@
  *
  * GET /api/team - List all team members for the church
  * POST /api/team - Create a new invite
+ *
+ * NEW MODEL:
+ * - Team members are users with active memberships in this church
+ * - Role is stored on ChurchMembership, not User
+ * - Users can belong to multiple churches
  */
 
 import { NextResponse } from "next/server";
 import { requireTeamManager } from "@/lib/auth/guards";
-import { getTenantPrisma } from "@/lib/db/tenant-prisma";
+import { prisma } from "@/lib/db/prisma";
 import { inviteSchema } from "@/lib/validation/schemas";
 import { logger } from "@/lib/logging/logger";
 import { generateToken } from "@/lib/auth/password";
@@ -17,27 +22,47 @@ import { headers } from "next/headers";
 export async function GET() {
   try {
     const currentUser = await requireTeamManager();
-    const db = getTenantPrisma(currentUser.churchId);
 
-    const [users, invites] = await Promise.all([
-      db.user.findMany({
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          role: true,
-          createdAt: true,
+    // Get all active memberships for this church with user details
+    // Exclude platform users (super admins) - they have implicit access but aren't "team members"
+    const memberships = await prisma.churchMembership.findMany({
+      where: {
+        churchId: currentUser.churchId,
+        isActive: true,
+        user: {
+          platformRole: null, // Exclude platform users
         },
-      }),
-      db.userInvite.findMany({
-        where: {
-          acceptedAt: null,
-          expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          },
         },
-        orderBy: { createdAt: "desc" },
-      }),
-    ]);
+      },
+    });
+
+    // Get pending invites for this church
+    const invites = await prisma.userInvite.findMany({
+      where: {
+        churchId: currentUser.churchId,
+        acceptedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Transform memberships to user format for backward compatibility
+    const users = memberships.map((m) => ({
+      id: m.user.id,
+      email: m.user.email,
+      name: m.user.name,
+      role: m.role,
+      createdAt: m.createdAt,
+    }));
 
     return NextResponse.json({ users, invites });
   } catch (error) {
@@ -58,7 +83,6 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const currentUser = await requireTeamManager();
-    const db = getTenantPrisma(currentUser.churchId);
 
     const body = await request.json();
     const result = inviteSchema.safeParse(body);
@@ -70,22 +94,27 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user already exists
-    const existingUser = await db.user.findFirst({
-      where: { email: result.data.email },
+    // Check if user already has a membership in this church
+    const existingMembership = await prisma.churchMembership.findFirst({
+      where: {
+        churchId: currentUser.churchId,
+        isActive: true,
+        user: { email: result.data.email.toLowerCase() },
+      },
     });
 
-    if (existingUser) {
+    if (existingMembership) {
       return NextResponse.json(
-        { error: "A user with this email already exists" },
+        { error: "A user with this email is already a member" },
         { status: 400 }
       );
     }
 
-    // Check if there's already a pending invite
-    const existingInvite = await db.userInvite.findFirst({
+    // Check if there's already a pending invite for this church
+    const existingInvite = await prisma.userInvite.findFirst({
       where: {
-        email: result.data.email,
+        churchId: currentUser.churchId,
+        email: result.data.email.toLowerCase(),
         acceptedAt: null,
         expiresAt: { gt: new Date() },
       },
@@ -103,11 +132,10 @@ export async function POST(request: Request) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    // churchId is automatically injected by tenant-prisma extension
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const invite = await (db.userInvite.create as any)({
+    const invite = await prisma.userInvite.create({
       data: {
-        email: result.data.email,
+        churchId: currentUser.churchId,
+        email: result.data.email.toLowerCase(),
         role: result.data.role,
         token,
         expiresAt,
@@ -122,11 +150,11 @@ export async function POST(request: Request) {
     const inviteUrl = `${protocol}://${host}/accept-invite?token=${token}`;
 
     // Get church name
-    const church = await db.user.findUnique({
-      where: { id: currentUser.id },
-      select: { church: { select: { name: true } } },
+    const church = await prisma.church.findUnique({
+      where: { id: currentUser.churchId },
+      select: { name: true },
     });
-    const churchName = church?.church.name || "your church";
+    const churchName = church?.name || "your church";
 
     // Send invite email
     await sendInviteEmail(
@@ -139,6 +167,7 @@ export async function POST(request: Request) {
     logger.info("User invite created and email sent", {
       email: result.data.email,
       role: result.data.role,
+      churchId: currentUser.churchId,
     });
 
     return NextResponse.json(

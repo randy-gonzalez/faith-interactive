@@ -85,7 +85,7 @@ const nextConfig: NextConfig = {
         headers: publicCacheHeaders,
       },
       {
-        source: "/p/:slug",
+        source: "/:slug",
         headers: publicCacheHeaders,
       },
 

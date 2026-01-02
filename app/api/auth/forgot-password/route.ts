@@ -59,20 +59,23 @@ export async function POST(request: NextRequest) {
 
     const { email } = parseResult.data;
 
-    // Find user by email within the church
+    // Find user by globally unique email
     const user = await prisma.user.findUnique({
-      where: {
-        churchId_email: {
-          churchId: church.id,
-          email: email.toLowerCase(),
+      where: { email: email.toLowerCase() },
+      select: {
+        id: true,
+        email: true,
+        isActive: true,
+        memberships: {
+          where: { churchId: church.id, isActive: true },
+          take: 1,
         },
       },
-      select: { id: true, email: true, isActive: true },
     });
 
-    // If user exists and is active, create reset token
-    if (user && user.isActive) {
-      const token = await createPasswordResetToken(user.id, church.id);
+    // User must exist, be active, and have membership in this church
+    if (user && user.isActive && user.memberships.length > 0) {
+      const token = await createPasswordResetToken(user.id);
 
       // In development, log the reset token
       // In production, this would trigger an email

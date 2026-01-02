@@ -1,10 +1,15 @@
 "use client";
 
 /**
- * Login Page
+ * Unified Login Page
  *
- * Minimal, functional login form.
- * Uses client-side form handling for immediate feedback.
+ * Single login page for all users (always on main domain):
+ * - Platform users → redirected to /platform
+ * - Single-church users → redirected to their church admin
+ * - Multi-church users → redirected to /select-church
+ *
+ * Subdomain login pages redirect here via middleware.
+ * The returnTo param is preserved to redirect back after login.
  */
 
 import { useState, Suspense } from "react";
@@ -14,7 +19,7 @@ import Link from "next/link";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnTo = searchParams.get("returnTo") || "/";
+  const returnTo = searchParams.get("returnTo");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +32,12 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
+      // Build endpoint URL with returnTo if present
+      const endpoint = returnTo
+        ? `/api/auth/unified-login?returnTo=${encodeURIComponent(returnTo)}`
+        : "/api/auth/unified-login";
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -41,8 +51,23 @@ function LoginForm() {
         return;
       }
 
-      // Redirect to return URL or home
-      router.push(returnTo);
+      // Use the redirect URL from the response
+      if (data.redirectUrl) {
+        // Handle cross-subdomain redirects (full URLs)
+        if (
+          data.redirectUrl.startsWith("http://") ||
+          data.redirectUrl.startsWith("https://")
+        ) {
+          window.location.href = data.redirectUrl;
+        } else {
+          router.push(data.redirectUrl);
+          router.refresh();
+        }
+        return;
+      }
+
+      // Fallback: go to select-church if no redirect URL
+      router.push("/select-church");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");

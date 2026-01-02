@@ -120,11 +120,36 @@ export function formatZodError(error: z.ZodError): string {
 // ==============================================================================
 
 /**
+ * Block background schema
+ */
+export const blockBackgroundSchema = z.object({
+  type: z.enum(["color", "gradient", "image", "video"]),
+  color: z.string().optional(),
+  gradient: z.string().optional(),
+  imageUrl: z.string().optional(),
+  videoUrl: z.string().optional(),
+  overlay: z.string().optional(),
+});
+
+/**
+ * Block schema for page content
+ */
+export const blockSchema = z.object({
+  id: z.string().min(1),
+  type: z.string().min(1),
+  order: z.number().int().min(0),
+  data: z.record(z.unknown()),
+  background: blockBackgroundSchema.optional(),
+});
+
+export type BlockInput = z.infer<typeof blockSchema>;
+
+/**
  * Page content validation
  */
 export const pageSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
-  body: z.string().min(1, "Content is required"),
+  blocks: z.array(blockSchema).optional().default([]),
   urlPath: z
     .string()
     .max(200, "URL path too long")
@@ -132,21 +157,80 @@ export const pageSchema = z.object({
     .optional()
     .nullable(),
   featuredImageUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  // Parent page for nesting
+  parentId: z.string().optional().nullable(),
+  sortOrder: z.number().int().min(0).optional().default(0),
+  // SEO fields
+  metaTitle: z.string().max(200, "Meta title too long").optional().nullable(),
+  metaDescription: z.string().max(500, "Meta description too long").optional().nullable(),
+  metaKeywords: z.string().max(500, "Meta keywords too long").optional().nullable(),
+  ogImage: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  noIndex: z.boolean().optional().default(false),
+  // Homepage designation
+  isHomePage: z.boolean().optional().default(false),
+  // Status - for updating publish state
+  status: z.enum(["DRAFT", "PUBLISHED"]).optional(),
 });
 
 export type PageInput = z.infer<typeof pageSchema>;
 
 /**
- * Sermon content validation
+ * Marketing page content validation
+ */
+export const marketingPageSchema = z.object({
+  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .max(100, "Slug too long")
+    .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
+    .transform((s) => s.toLowerCase()),
+  blocks: z.array(blockSchema).optional().default([]),
+  status: z.enum(["DRAFT", "PUBLISHED"]).optional().default("DRAFT"),
+  // Parent page for nesting
+  parentId: z.string().optional().nullable(),
+  sortOrder: z.number().int().min(0).optional().default(0),
+  // SEO fields
+  metaTitle: z.string().max(200, "Meta title too long").optional().nullable(),
+  metaDescription: z.string().max(500, "Meta description too long").optional().nullable(),
+  metaKeywords: z.string().max(500, "Meta keywords too long").optional().nullable(),
+  ogImage: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  noIndex: z.boolean().optional().default(false),
+});
+
+export type MarketingPageInput = z.infer<typeof marketingPageSchema>;
+
+/**
+ * Sermon content validation (basic - for backward compatibility)
  */
 export const sermonSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
   date: z.string().min(1, "Date is required"),
-  speaker: z.string().min(1, "Speaker is required").max(100, "Speaker name too long"),
+  // Speaker - supports both ID and custom name
+  speakerId: z.string().optional().nullable(),
+  speakerName: z.string().max(100, "Speaker name too long").optional().nullable(),
+  // Series
+  seriesId: z.string().optional().nullable(),
+  seriesOrder: z.number().int().min(1).optional().nullable(),
+  // Scripture
+  scripture: z.string().max(200, "Scripture reference too long").optional().nullable(),
+  scriptureReferences: z.array(z.object({
+    id: z.string().optional(),
+    bookId: z.string().min(1),
+    startChapter: z.number().int().min(1),
+    startVerse: z.number().int().min(1).optional().nullable(),
+    endChapter: z.number().int().min(1).optional().nullable(),
+    endVerse: z.number().int().min(1).optional().nullable(),
+  })).optional().default([]),
+  // Content
   description: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  // Media
   videoUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
   audioUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
-  scripture: z.string().max(200, "Scripture reference too long").optional().nullable(),
+  artworkUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  // Topics
+  topicIds: z.array(z.string()).optional().default([]),
 });
 
 export type SermonInput = z.infer<typeof sermonSchema>;
@@ -350,3 +434,177 @@ export const siteSettingsExtendedSchema = siteSettingsSchema.extend({
 });
 
 export type SiteSettingsExtendedInput = z.infer<typeof siteSettingsExtendedSchema>;
+
+// ==============================================================================
+// SERMON SYSTEM SCHEMAS
+// ==============================================================================
+
+/**
+ * Sermon series validation
+ */
+export const sermonSeriesSchema = z.object({
+  name: z.string().min(1, "Name is required").max(200, "Name too long"),
+  description: z.string().max(5000, "Description too long").optional().nullable(),
+  artworkUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  startDate: z.string().optional().nullable(),
+  endDate: z.string().optional().nullable(),
+  sortOrder: z.number().int().min(0).optional().default(0),
+});
+
+export type SermonSeriesInput = z.infer<typeof sermonSeriesSchema>;
+
+/**
+ * Speaker profile validation
+ */
+export const speakerSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100, "Name too long"),
+  title: z.string().max(100, "Title too long").optional().nullable(),
+  bio: z.string().max(5000, "Bio too long").optional().nullable(),
+  photoUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  email: z.string().email("Invalid email").optional().nullable().or(z.literal("")),
+  sortOrder: z.number().int().min(0).optional().default(0),
+  isGuest: z.boolean().optional().default(false),
+});
+
+export type SpeakerInput = z.infer<typeof speakerSchema>;
+
+/**
+ * Sermon topic validation
+ */
+export const sermonTopicSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100, "Name too long"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .max(100, "Slug too long")
+    .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens"),
+  description: z.string().max(500, "Description too long").optional().nullable(),
+});
+
+export type SermonTopicInput = z.infer<typeof sermonTopicSchema>;
+
+/**
+ * Scripture reference validation (used in sermon form)
+ */
+export const scriptureReferenceSchema = z.object({
+  bookId: z.string().min(1, "Book is required"),
+  startChapter: z.number().int().min(1, "Chapter is required"),
+  startVerse: z.number().int().min(1).optional().nullable(),
+  endChapter: z.number().int().min(1).optional().nullable(),
+  endVerse: z.number().int().min(1).optional().nullable(),
+});
+
+export type ScriptureReferenceInput = z.infer<typeof scriptureReferenceSchema>;
+
+/**
+ * Extended sermon schema with new fields
+ */
+export const sermonExtendedSchema = z.object({
+  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  date: z.string().min(1, "Date is required"),
+  // Speaker - supports both legacy string and new ID
+  speakerId: z.string().optional().nullable(),
+  speakerName: z.string().max(100, "Speaker name too long").optional().nullable(),
+  // Series
+  seriesId: z.string().optional().nullable(),
+  seriesOrder: z.number().int().min(1).optional().nullable(),
+  // Scripture
+  scripture: z.string().max(200, "Scripture reference too long").optional().nullable(),
+  scriptureReferences: z.array(scriptureReferenceSchema).optional().default([]),
+  // Content
+  description: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  // Media
+  videoUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  audioUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  artworkUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  // Topics
+  topicIds: z.array(z.string()).optional().default([]),
+});
+
+export type SermonExtendedInput = z.infer<typeof sermonExtendedSchema>;
+
+// ==============================================================================
+// EVENTS ENHANCEMENT SCHEMAS
+// ==============================================================================
+
+/**
+ * Venue validation
+ */
+export const venueSchema = z.object({
+  name: z.string().min(1, "Name is required").max(200, "Name too long"),
+  address: z.string().max(500, "Address too long").optional().nullable(),
+  city: z.string().max(100, "City too long").optional().nullable(),
+  state: z.string().max(100, "State too long").optional().nullable(),
+  zipCode: z.string().max(20, "Zip code too long").optional().nullable(),
+  capacity: z.number().int().min(1, "Capacity must be at least 1").optional().nullable(),
+  notes: z.string().max(5000, "Notes too long").optional().nullable(),
+  sortOrder: z.number().int().min(0).optional().default(0),
+});
+
+export type VenueInput = z.infer<typeof venueSchema>;
+
+/**
+ * Event registration validation (public form)
+ */
+export const eventRegistrationSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Invalid email").max(255, "Email too long"),
+  firstName: z.string().min(1, "First name is required").max(100, "First name too long"),
+  lastName: z.string().min(1, "Last name is required").max(100, "Last name too long"),
+  phone: z.string().max(20, "Phone number too long").optional().nullable(),
+  additionalAttendees: z.number().int().min(0).max(20, "Maximum 20 additional attendees").optional().default(0),
+  reminderOptIn: z.boolean().optional().default(true),
+  occurrenceDate: z.string().datetime().optional().nullable(),
+  // Honeypot field - should be empty if submitted by a human
+  website: z.string().max(0, "Invalid submission").optional(),
+});
+
+export type EventRegistrationInput = z.infer<typeof eventRegistrationSchema>;
+
+/**
+ * Extended event schema with venues, registration, and recurrence
+ */
+export const eventExtendedSchema = z.object({
+  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  startDate: z.string().min(1, "Start date/time is required"),
+  endDate: z.string().optional().nullable(),
+  // Venue - can use venueId or location text (or both)
+  venueId: z.string().optional().nullable(),
+  location: z.string().max(200, "Location too long").optional().nullable(),
+  description: z.string().optional().nullable(),
+  // Legacy external registration (still supported)
+  registrationUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  // Featured image - URL or media library reference
+  featuredImageUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  featuredMediaId: z.string().optional().nullable(),
+  // Built-in registration settings
+  registrationEnabled: z.boolean().optional().default(false),
+  capacity: z.number().int().min(1, "Capacity must be at least 1").optional().nullable(),
+  waitlistEnabled: z.boolean().optional().default(false),
+  registrationDeadline: z.string().datetime().optional().nullable(),
+  // Recurrence
+  isRecurring: z.boolean().optional().default(false),
+  recurrenceFrequency: z.enum(["DAILY", "WEEKLY", "BIWEEKLY", "MONTHLY", "YEARLY"]).optional().nullable(),
+  recurrenceInterval: z.number().int().min(1).optional().nullable(),
+  recurrenceDaysOfWeek: z.number().int().min(0).max(127).optional().nullable(),
+  recurrenceDayOfMonth: z.number().int().min(-1).max(31).optional().nullable(),
+  recurrenceEndDate: z.string().datetime().optional().nullable(),
+  recurrenceCount: z.number().int().min(1).optional().nullable(),
+  timezone: z.string().max(50).optional().default("America/New_York"),
+});
+
+export type EventExtendedInput = z.infer<typeof eventExtendedSchema>;
+
+/**
+ * Admin registration update schema
+ */
+export const registrationUpdateSchema = z.object({
+  firstName: z.string().min(1, "First name is required").max(100),
+  lastName: z.string().min(1, "Last name is required").max(100),
+  email: z.string().email("Valid email is required").max(255),
+  phone: z.string().max(50).optional().nullable(),
+  additionalAttendees: z.number().int().min(0).max(20).optional(),
+  reminderOptIn: z.boolean().optional(),
+});
+
+export type RegistrationUpdateInput = z.infer<typeof registrationUpdateSchema>;

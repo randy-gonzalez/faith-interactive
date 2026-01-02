@@ -10,6 +10,10 @@
  * - MAX_FAILED_ATTEMPTS: Number of failures before lockout (default: 5)
  * - LOCKOUT_DURATION_MINUTES: How long to lock out (default: 15)
  * - ATTEMPT_WINDOW_MINUTES: Window for counting attempts (default: 15)
+ *
+ * NEW MODEL:
+ * - Email is globally unique, so lockout is per-email (not per church + email)
+ * - LoginAttempt no longer has churchId
  */
 
 import { prisma } from "@/lib/db/prisma";
@@ -43,12 +47,12 @@ export const accountLockout = {
   /**
    * Check if a login attempt should be allowed
    *
-   * @param churchId - The church/tenant ID
+   * @param _churchId - Deprecated, kept for backward compatibility
    * @param email - The email being used for login
    * @param ipAddress - The IP address of the request
    */
   async checkAllowed(
-    churchId: string,
+    _churchId: string,
     email: string,
     ipAddress: string
   ): Promise<LockoutCheckResult> {
@@ -58,9 +62,9 @@ export const accountLockout = {
     const normalizedEmail = email.toLowerCase();
 
     // Count failed attempts for this email within the window
+    // Note: Now global since email is globally unique
     const emailAttempts = await prisma.loginAttempt.count({
       where: {
-        churchId,
         email: normalizedEmail,
         success: false,
         createdAt: { gte: windowStart },
@@ -71,7 +75,6 @@ export const accountLockout = {
       // Get the most recent failed attempt to calculate lockout expiry
       const lastAttempt = await prisma.loginAttempt.findFirst({
         where: {
-          churchId,
           email: normalizedEmail,
           success: false,
           createdAt: { gte: windowStart },
@@ -129,14 +132,14 @@ export const accountLockout = {
   /**
    * Record a login attempt
    *
-   * @param churchId - The church/tenant ID
+   * @param _churchId - Deprecated, kept for backward compatibility
    * @param email - The email used for login
    * @param ipAddress - The IP address of the request
    * @param success - Whether the login succeeded
    * @param failReason - Reason for failure (if applicable)
    */
   async recordAttempt(
-    churchId: string,
+    _churchId: string,
     email: string,
     ipAddress: string,
     success: boolean,
@@ -145,7 +148,6 @@ export const accountLockout = {
     try {
       await prisma.loginAttempt.create({
         data: {
-          churchId,
           email: email.toLowerCase(),
           ipAddress,
           success,
@@ -156,7 +158,6 @@ export const accountLockout = {
       // Log for monitoring
       if (!success) {
         logger.warn("Failed login attempt recorded", {
-          churchId,
           email: email.toLowerCase(),
           ipAddress,
           failReason,
@@ -173,8 +174,8 @@ export const accountLockout = {
    * This is optional - you may want to keep the history for auditing
    */
   async clearFailedAttempts(
-    churchId: string,
-    email: string
+    _churchId: string,
+    _email: string
   ): Promise<void> {
     // We don't actually delete attempts - we keep them for audit purposes
     // The lockout logic only counts recent attempts within the window

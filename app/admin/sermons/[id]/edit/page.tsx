@@ -26,6 +26,21 @@ export default async function EditSermonPage({ params }: EditSermonProps) {
 
   const sermon = await db.sermon.findUnique({
     where: { id },
+    include: {
+      speaker: true,
+      series: true,
+      topics: {
+        include: {
+          topic: true,
+        },
+      },
+      scriptureReferences: {
+        include: {
+          book: true,
+        },
+        orderBy: { sortOrder: "asc" },
+      },
+    },
   });
 
   if (!sermon) {
@@ -36,17 +51,17 @@ export default async function EditSermonPage({ params }: EditSermonProps) {
     <div className="max-w-3xl">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-semibold text-gray-900">
             {canEdit ? "Edit Sermon" : "View Sermon"}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-gray-500 mt-1">
             {sermon.title}
           </p>
         </div>
         <StatusBadge status={sermon.status} />
       </div>
 
-      <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
         <SermonForm initialData={sermon} canEdit={canEdit} />
       </div>
     </div>
