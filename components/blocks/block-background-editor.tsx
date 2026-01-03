@@ -10,6 +10,7 @@
 import { useState } from "react";
 import type { BlockBackground } from "@/types/blocks";
 import { MediaPicker } from "@/components/dashboard/media-picker";
+import { BrandingColorPicker } from "@/components/ui/branding-color-picker";
 
 interface BlockBackgroundEditorProps {
   background: BlockBackground;
@@ -102,28 +103,12 @@ export function BlockBackgroundEditor({
 
       {/* Color Options */}
       {background.type === "color" && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Background Color
-          </label>
-          <div className="flex items-center gap-3">
-            <input
-              type="color"
-              value={background.color || "#1e40af"}
-              onChange={(e) => updateBackground({ color: e.target.value })}
-              disabled={disabled}
-              className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer disabled:cursor-not-allowed"
-            />
-            <input
-              type="text"
-              value={background.color || "#1e40af"}
-              onChange={(e) => updateBackground({ color: e.target.value })}
-              disabled={disabled}
-              placeholder="#1e40af"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-gray-900 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-            />
-          </div>
-        </div>
+        <BrandingColorPicker
+          value={background.color || "#1e40af"}
+          onChange={(color) => updateBackground({ color })}
+          disabled={disabled}
+          label="Background Color"
+        />
       )}
 
       {/* Gradient Options */}
@@ -221,40 +206,24 @@ export function BlockBackgroundEditor({
 
       {/* Overlay (for image and video) */}
       {(background.type === "image" || background.type === "video") && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Overlay Color (optional)
-          </label>
-          <div className="flex items-center gap-3">
-            <input
-              type="color"
-              value={background.overlay?.replace(/[^#\w]/g, "").slice(0, 7) || "#000000"}
-              onChange={(e) => {
-                // Add 80 for 50% opacity
-                updateBackground({ overlay: e.target.value + "80" });
-              }}
+        <div className="space-y-2">
+          <BrandingColorPicker
+            value={background.overlay || "#00000080"}
+            onChange={(color) => updateBackground({ overlay: color || undefined })}
+            disabled={disabled}
+            label="Overlay Color (optional)"
+            includeOpacity
+          />
+          {background.overlay && (
+            <button
+              type="button"
+              onClick={() => updateBackground({ overlay: undefined })}
               disabled={disabled}
-              className="w-10 h-10 rounded border border-gray-300 cursor-pointer disabled:cursor-not-allowed"
-            />
-            <input
-              type="text"
-              value={background.overlay || ""}
-              onChange={(e) => updateBackground({ overlay: e.target.value || undefined })}
-              disabled={disabled}
-              placeholder="rgba(0,0,0,0.5) or #00000080"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-gray-900 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-            />
-            {background.overlay && (
-              <button
-                type="button"
-                onClick={() => updateBackground({ overlay: undefined })}
-                disabled={disabled}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                Clear
-              </button>
-            )}
-          </div>
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              Clear overlay
+            </button>
+          )}
         </div>
       )}
     </div>

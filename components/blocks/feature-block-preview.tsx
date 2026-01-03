@@ -6,44 +6,23 @@
  * Live preview rendering of feature block with side-by-side layout.
  */
 
-import type { Block, FeatureBlock, BlockBackground } from "@/types/blocks";
+import type { Block, FeatureBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
+import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 
 interface FeatureBlockPreviewProps {
   block: Block;
-}
-
-function getBackgroundStyles(background?: BlockBackground): React.CSSProperties {
-  if (!background) return {};
-
-  switch (background.type) {
-    case "color":
-      return { backgroundColor: background.color || "transparent" };
-    case "gradient":
-      return { background: background.gradient };
-    case "image":
-      if (background.imageUrl) {
-        const overlay = background.overlay || "rgba(0,0,0,0.5)";
-        return {
-          backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${background.imageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        };
-      }
-      return {};
-    default:
-      return {};
-  }
 }
 
 export function FeatureBlockPreview({ block }: FeatureBlockPreviewProps) {
   const featureBlock = block as FeatureBlock;
   const { data, background, advanced } = featureBlock;
 
-  const backgroundStyle = getBackgroundStyles(background);
+  const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
   const hasBackground = background && background.type !== "color";
-  const textColorClass = hasBackground ? "text-white" : "text-gray-900";
-  const subTextColorClass = hasBackground ? "text-white/80" : "text-gray-600";
+  const hasDarkBackground = background?.type === "color" && background.color;
+  const textColorClass = hasBackground || hasDarkBackground ? "text-white" : "text-gray-900";
+  const subTextColorClass = hasBackground || hasDarkBackground ? "text-white/80" : "text-gray-600";
   const advancedProps = getAdvancedProps(advanced);
 
   const imageContent = data.imageUrl ? (
@@ -79,7 +58,12 @@ export function FeatureBlockPreview({ block }: FeatureBlockPreviewProps) {
         <div className="mt-6">
           <a
             href={data.buttonUrl}
-            className="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-block px-6 py-3 font-semibold transition-opacity hover:opacity-90"
+            style={{
+              backgroundColor: hasBackground ? "#ffffff" : "var(--btn-primary-bg, #2563eb)",
+              color: hasBackground ? "#1f2937" : "var(--btn-primary-text, #ffffff)",
+              borderRadius: "var(--btn-radius, 6px)",
+            }}
           >
             {data.buttonText}
           </a>
@@ -88,11 +72,16 @@ export function FeatureBlockPreview({ block }: FeatureBlockPreviewProps) {
     </div>
   );
 
-  const combinedClassName = `py-12 px-6 ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview py-12 px-6 relative ${advancedProps.className || ""}`.trim();
 
   return (
     <div {...advancedProps} className={combinedClassName} style={backgroundStyle}>
-      <div className="max-w-6xl mx-auto">
+      {/* Image overlay (for image backgrounds) */}
+      {background?.type === "image" && background.imageUrl && overlay && (
+        <div className="absolute inset-0" style={overlay} />
+      )}
+
+      <div className="max-w-6xl mx-auto relative z-10">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           {data.imagePosition === "left" ? (
             <>

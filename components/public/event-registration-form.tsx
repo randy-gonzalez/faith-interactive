@@ -131,8 +131,8 @@ export function EventRegistrationForm({
   // Deadline passed
   if (!capacityLoading && capacity?.deadlinePassed) {
     return (
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 text-center">
-        <p className="text-gray-600 dark:text-gray-400">
+      <div className="bg-gray-100 rounded-lg p-6 text-center">
+        <p className="text-gray-600">
           Registration for this event has closed.
         </p>
       </div>
@@ -142,11 +142,11 @@ export function EventRegistrationForm({
   // Success state
   if (success) {
     return (
-      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
+      <div className="bg-green-50 rounded-lg p-6">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0">
             <svg
-              className="w-6 h-6 text-green-600 dark:text-green-400"
+              className="w-6 h-6 text-green-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -160,16 +160,16 @@ export function EventRegistrationForm({
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-medium text-green-800 dark:text-green-200">
+            <h3 className="text-lg font-medium text-green-800">
               {success.status === "WAITLISTED"
                 ? "Added to Waitlist"
                 : "Registration Confirmed!"}
             </h3>
-            <p className="mt-1 text-green-700 dark:text-green-300">
+            <p className="mt-1 text-green-700">
               {success.message}
             </p>
             {success.waitlistPosition && (
-              <p className="mt-2 text-sm text-green-600 dark:text-green-400">
+              <p className="mt-2 text-sm text-green-600">
                 Your waitlist position: #{success.waitlistPosition}
               </p>
             )}
@@ -180,8 +180,8 @@ export function EventRegistrationForm({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+    <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Register for this Event
       </h3>
 
@@ -190,26 +190,26 @@ export function EventRegistrationForm({
         <div className="mb-4">
           {capacity.isFull ? (
             capacity.waitlistEnabled ? (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 rounded-md p-3 text-sm">
+              <div className="bg-yellow-50 text-yellow-800 rounded-md p-3 text-sm">
                 <strong>Event is full.</strong> You can join the waitlist and
                 we&apos;ll notify you if a spot opens up.
                 {capacity.waitlisted > 0 && (
-                  <span className="block mt-1 text-yellow-600 dark:text-yellow-400">
+                  <span className="block mt-1 text-yellow-600">
                     {capacity.waitlisted} people on waitlist
                   </span>
                 )}
               </div>
             ) : (
-              <div className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-md p-3 text-sm">
+              <div className="bg-red-50 text-red-800 rounded-md p-3 text-sm">
                 <strong>Event is full.</strong> No waitlist available.
               </div>
             )
           ) : (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">
+              <span className="text-gray-600">
                 {capacity.available} spots remaining
               </span>
-              <span className="text-gray-500 dark:text-gray-500">
+              <span className="text-gray-500">
                 {capacity.registered} / {capacity.capacity} registered
               </span>
             </div>
@@ -221,7 +221,7 @@ export function EventRegistrationForm({
       {capacity?.isFull && !capacity?.waitlistEnabled ? null : (
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-md p-3 text-sm">
+            <div className="bg-red-50 text-red-800 rounded-md p-3 text-sm">
               {error}
             </div>
           )}
@@ -261,14 +261,14 @@ export function EventRegistrationForm({
           />
 
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-700">
               Additional Attendees
             </label>
             <select
               value={additionalAttendees}
               onChange={(e) => setAdditionalAttendees(parseInt(e.target.value))}
               disabled={loading}
-              className="w-full px-3 py-2 rounded-md border bg-white dark:bg-gray-950 text-gray-900 dark:text-white border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 rounded-md border bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500"
             >
               <option value={0}>Just me</option>
               <option value={1}>+1 guest</option>
@@ -290,7 +290,7 @@ export function EventRegistrationForm({
               disabled={loading}
               className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-sm text-gray-700">
               Send me a reminder before the event
             </span>
           </label>

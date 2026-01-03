@@ -9,6 +9,7 @@ import { getTenantPrisma } from "@/lib/db/tenant-prisma";
 import { redirect } from "next/navigation";
 import { MediaLibrary } from "@/components/dashboard/media-library";
 import { storage } from "@/lib/storage";
+import type { ImageVariants, MediaMetadata } from "@/types/media";
 
 export default async function MediaPage() {
   const context = await getAuthContext();
@@ -34,17 +35,28 @@ export default async function MediaPage() {
   });
 
   // Add URLs to media items
-  const mediaWithUrls = media.map((item) => ({
-    ...item,
-    url: storage.getUrl(item.storagePath),
-    variantUrls: item.variants
+  const mediaWithUrls = media.map((item) => {
+    const metadata = item.variants as MediaMetadata | null;
+    const variants = metadata?.variants as ImageVariants | undefined;
+
+    // Build variant URLs from the new structure
+    const variantUrls = variants
       ? Object.fromEntries(
-          Object.entries(item.variants as Record<string, { path: string }>).map(
-            ([name, variant]) => [name, storage.getUrl(variant.path)]
-          )
+          Object.entries(variants)
+            .filter(([, v]) => v?.path)
+            .map(([name, v]) => [name, storage.getUrl(v!.path)])
         )
-      : null,
-  }));
+      : null;
+
+    return {
+      ...item,
+      url: storage.getUrl(item.storagePath),
+      originalDimensions: metadata?.original || null,
+      isAnimated: metadata?.isAnimated || false,
+      variants: variants || null,
+      variantUrls,
+    };
+  });
 
   const totalCount = await db.media.count({ where: { deletedAt: null } });
 

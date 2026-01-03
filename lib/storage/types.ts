@@ -79,6 +79,7 @@ export const ALLOWED_IMAGE_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
+  "image/gif",
 ] as const;
 
 export const ALLOWED_PDF_TYPE = "application/pdf" as const;
@@ -99,12 +100,22 @@ export const FILE_SIZE_LIMITS = {
 } as const;
 
 /**
- * Image resize variants
+ * Image resize variants (responsive - maintain aspect ratio)
  */
 export const IMAGE_VARIANTS: ImageVariant[] = [
-  { name: "small", width: 400, quality: 80 },
-  { name: "medium", width: 800, quality: 85 },
+  { name: "full", width: 2048, quality: 90 },
   { name: "large", width: 1200, quality: 90 },
+  { name: "medium", width: 800, quality: 85 },
+  { name: "small", width: 400, quality: 80 },
+];
+
+/**
+ * Image square crop variants (center crop to 1:1)
+ */
+export const IMAGE_SQUARE_VARIANTS: ImageVariant[] = [
+  { name: "large-square", width: 1200, height: 1200, quality: 85 },
+  { name: "medium-square", width: 800, height: 800, quality: 85 },
+  { name: "small-square", width: 400, height: 400, quality: 80 },
 ];
 
 /**

@@ -31,17 +31,17 @@ export default async function StaffPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
       <header className="mb-12 text-center">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
           Our Team
         </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-gray-600">
           Meet the people who lead and serve at {siteData.church.name}
         </p>
       </header>
 
       {leaders.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <p className="text-gray-500 dark:text-gray-400">
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <p className="text-gray-500">
             Team information coming soon.
           </p>
         </div>
@@ -50,7 +50,7 @@ export default async function StaffPage() {
           {leaders.map((leader) => (
             <div
               key={leader.id}
-              className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden"
+              className="bg-white border border-gray-200 rounded-lg overflow-hidden"
             >
               {/* Photo */}
               {leader.photoUrl ? (
@@ -60,9 +60,9 @@ export default async function StaffPage() {
                   className="w-full h-64 object-cover object-top"
                 />
               ) : (
-                <div className="w-full h-64 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <div className="w-full h-64 bg-gray-100 flex items-center justify-center">
                   <svg
-                    className="w-24 h-24 text-gray-300 dark:text-gray-600"
+                    className="w-24 h-24 text-gray-300"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                   >
@@ -73,15 +73,15 @@ export default async function StaffPage() {
 
               {/* Info */}
               <div className="p-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-xl font-semibold text-gray-900">
                   {leader.name}
                 </h2>
-                <p className="text-blue-600 dark:text-blue-400 font-medium mb-4">
+                <p className="text-blue-600 font-medium mb-4">
                   {leader.title}
                 </p>
 
                 {leader.bio && (
-                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                  <p className="text-gray-600 text-sm mb-4">
                     {leader.bio}
                   </p>
                 )}
@@ -89,7 +89,7 @@ export default async function StaffPage() {
                 {leader.email && (
                   <a
                     href={`mailto:${leader.email}`}
-                    className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
                   >
                     <svg
                       className="w-4 h-4"

@@ -8,6 +8,24 @@
 import { z } from "zod";
 
 // ==============================================================================
+// CUSTOM VALIDATORS
+// ==============================================================================
+
+/**
+ * URL or path validator
+ * Accepts either a full URL (http/https) or a relative path starting with /
+ * This is needed because local storage returns paths like /uploads/...
+ */
+const urlOrPath = z.string().refine(
+  (val) => {
+    if (!val || val === "") return true; // Allow empty strings
+    // Accept full URLs or paths starting with /
+    return val.startsWith("/") || val.startsWith("http://") || val.startsWith("https://");
+  },
+  { message: "Must be a valid URL or path" }
+).optional().nullable().or(z.literal(""));
+
+// ==============================================================================
 // AUTH SCHEMAS
 // ==============================================================================
 
@@ -156,7 +174,7 @@ export const pageSchema = z.object({
     .regex(/^[a-z0-9-]*$/, "URL path can only contain lowercase letters, numbers, and hyphens")
     .optional()
     .nullable(),
-  featuredImageUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  featuredImageUrl: urlOrPath,
   // Parent page for nesting
   parentId: z.string().optional().nullable(),
   sortOrder: z.number().int().min(0).optional().default(0),
@@ -164,7 +182,7 @@ export const pageSchema = z.object({
   metaTitle: z.string().max(200, "Meta title too long").optional().nullable(),
   metaDescription: z.string().max(500, "Meta description too long").optional().nullable(),
   metaKeywords: z.string().max(500, "Meta keywords too long").optional().nullable(),
-  ogImage: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  ogImage: urlOrPath,
   noIndex: z.boolean().optional().default(false),
   // Homepage designation
   isHomePage: z.boolean().optional().default(false),
@@ -194,7 +212,7 @@ export const marketingPageSchema = z.object({
   metaTitle: z.string().max(200, "Meta title too long").optional().nullable(),
   metaDescription: z.string().max(500, "Meta description too long").optional().nullable(),
   metaKeywords: z.string().max(500, "Meta keywords too long").optional().nullable(),
-  ogImage: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  ogImage: urlOrPath,
   noIndex: z.boolean().optional().default(false),
 });
 
@@ -226,9 +244,9 @@ export const sermonSchema = z.object({
   description: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   // Media
-  videoUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
-  audioUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
-  artworkUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  videoUrl: urlOrPath,
+  audioUrl: urlOrPath,
+  artworkUrl: urlOrPath,
   // Topics
   topicIds: z.array(z.string()).optional().default([]),
 });
@@ -244,8 +262,8 @@ export const eventSchema = z.object({
   endDate: z.string().optional().nullable(),
   location: z.string().max(200, "Location too long").optional().nullable(),
   description: z.string().optional().nullable(),
-  registrationUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
-  featuredImageUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  registrationUrl: urlOrPath,
+  featuredImageUrl: urlOrPath,
 });
 
 export type EventInput = z.infer<typeof eventSchema>;
@@ -268,7 +286,7 @@ export const leadershipProfileSchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name too long"),
   title: z.string().min(1, "Title/role is required").max(100, "Title too long"),
   bio: z.string().optional().nullable(),
-  photoUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  photoUrl: urlOrPath,
   email: z.string().email("Invalid email").optional().nullable().or(z.literal("")),
 });
 
@@ -321,15 +339,15 @@ export type NavItem = z.infer<typeof navItemSchema>;
  */
 export const siteSettingsSchema = z.object({
   // Header
-  logoUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  logoUrl: urlOrPath,
   headerNavigation: z.array(navItemSchema).optional().default([]),
 
   // Footer
   footerText: z.string().max(500, "Footer text too long").optional().nullable(),
   footerNavigation: z.array(navItemSchema).optional().default([]),
-  facebookUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
-  instagramUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
-  youtubeUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  facebookUrl: urlOrPath,
+  instagramUrl: urlOrPath,
+  youtubeUrl: urlOrPath,
 
   // Service info
   serviceTimes: z.string().max(1000, "Service times too long").optional().nullable(),
@@ -340,10 +358,10 @@ export const siteSettingsSchema = z.object({
   // SEO
   metaTitle: z.string().max(60, "Meta title too long").optional().nullable(),
   metaDescription: z.string().max(160, "Meta description too long").optional().nullable(),
-  faviconUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  faviconUrl: urlOrPath,
 
   // Map
-  mapEmbedUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  mapEmbedUrl: urlOrPath,
 
   // Home page
   homePageId: z.string().optional().nullable(),
@@ -445,7 +463,7 @@ export type SiteSettingsExtendedInput = z.infer<typeof siteSettingsExtendedSchem
 export const sermonSeriesSchema = z.object({
   name: z.string().min(1, "Name is required").max(200, "Name too long"),
   description: z.string().max(5000, "Description too long").optional().nullable(),
-  artworkUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  artworkUrl: urlOrPath,
   startDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
   sortOrder: z.number().int().min(0).optional().default(0),
@@ -460,7 +478,7 @@ export const speakerSchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name too long"),
   title: z.string().max(100, "Title too long").optional().nullable(),
   bio: z.string().max(5000, "Bio too long").optional().nullable(),
-  photoUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  photoUrl: urlOrPath,
   email: z.string().email("Invalid email").optional().nullable().or(z.literal("")),
   sortOrder: z.number().int().min(0).optional().default(0),
   isGuest: z.boolean().optional().default(false),
@@ -515,9 +533,9 @@ export const sermonExtendedSchema = z.object({
   description: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   // Media
-  videoUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
-  audioUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
-  artworkUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  videoUrl: urlOrPath,
+  audioUrl: urlOrPath,
+  artworkUrl: urlOrPath,
   // Topics
   topicIds: z.array(z.string()).optional().default([]),
 });
@@ -573,9 +591,9 @@ export const eventExtendedSchema = z.object({
   location: z.string().max(200, "Location too long").optional().nullable(),
   description: z.string().optional().nullable(),
   // Legacy external registration (still supported)
-  registrationUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  registrationUrl: urlOrPath,
   // Featured image - URL or media library reference
-  featuredImageUrl: z.string().url("Invalid URL").optional().nullable().or(z.literal("")),
+  featuredImageUrl: urlOrPath,
   featuredMediaId: z.string().optional().nullable(),
   // Built-in registration settings
   registrationEnabled: z.boolean().optional().default(false),
@@ -608,3 +626,118 @@ export const registrationUpdateSchema = z.object({
 });
 
 export type RegistrationUpdateInput = z.infer<typeof registrationUpdateSchema>;
+
+// ==============================================================================
+// TEMPLATE SETTINGS SCHEMAS
+// ==============================================================================
+
+/**
+ * Extended navigation item with external URLs and children support
+ */
+export const navLinkExtendedSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1).max(50),
+  href: z.string().min(1).max(500),
+  isExternal: z.boolean().default(false),
+  order: z.number().int().min(0),
+  pageId: z.string().optional().nullable(),
+  children: z.array(z.object({
+    id: z.string().min(1),
+    label: z.string().min(1).max(50),
+    href: z.string().min(1).max(500),
+    isExternal: z.boolean().default(false),
+    order: z.number().int().min(0),
+  })).optional().default([]),
+});
+
+export type NavLinkExtendedInput = z.infer<typeof navLinkExtendedSchema>;
+
+/**
+ * Header CTA button configuration
+ */
+export const headerCtaButtonSchema = z.object({
+  show: z.boolean().default(true),
+  label: z.string().min(1).max(50).default("Contact Us"),
+  href: z.string().min(1).max(500).default("/contact"),
+  isExternal: z.boolean().default(false),
+  style: z.enum(["primary", "secondary", "outline"]).default("primary"),
+});
+
+/**
+ * Header configuration schema
+ */
+export const headerConfigSchema = z.object({
+  logoPosition: z.enum(["left", "center"]).default("left"),
+  navAlignment: z.enum(["left", "center", "right"]).default("right"),
+  showNavigation: z.boolean().default(true),
+  sticky: z.boolean().default(true),
+  background: z.enum(["solid", "transparent", "blur"]).default("solid"),
+  backgroundColor: z.string().optional().nullable(),
+  ctaButton: headerCtaButtonSchema.default({}),
+  mobileBreakpoint: z.number().int().min(320).max(1200).default(768),
+  mobileMenuStyle: z.enum(["slide", "dropdown", "fullscreen"]).default("slide"),
+  mobileLogoUrl: urlOrPath,
+  showCtaOnMobile: z.boolean().default(true),
+  mobileMenuBgColor: z.string().optional().nullable(),
+});
+
+export type HeaderConfigInput = z.infer<typeof headerConfigSchema>;
+
+/**
+ * Footer configuration schema
+ */
+export const footerConfigSchema = z.object({
+  showChurchInfo: z.boolean().default(true),
+  showServiceTimes: z.boolean().default(true),
+  showContactInfo: z.boolean().default(true),
+  showQuickLinks: z.boolean().default(true),
+  showSocialIcons: z.boolean().default(true),
+  backgroundColor: z.string().optional().nullable(),
+  backgroundImage: urlOrPath,
+  socialIconStyle: z.enum(["filled", "outline", "monochrome"]).default("filled"),
+  customCopyrightText: z.string().max(500).optional().nullable(),
+  columnOrder: z.array(z.enum(["info", "contact", "links", "social"])).default(["info", "contact", "links", "social"]),
+});
+
+export type FooterConfigInput = z.infer<typeof footerConfigSchema>;
+
+/**
+ * Template settings validation (for dedicated template settings route)
+ */
+export const templateSettingsSchema = z.object({
+  headerTemplate: z.enum(["classic", "centered", "minimal", "split", "transparent", "boxed", "full-width", "double-row"]).default("classic"),
+  headerConfig: headerConfigSchema.optional().nullable(),
+  footerTemplate: z.enum(["4-column", "3-column", "2-column", "stacked", "minimal"]).default("4-column"),
+  footerConfig: footerConfigSchema.optional().nullable(),
+  // Extended navigation arrays
+  headerNavigation: z.array(navLinkExtendedSchema).optional().default([]),
+  footerNavigation: z.array(navLinkExtendedSchema).optional().default([]),
+});
+
+export type TemplateSettingsInput = z.infer<typeof templateSettingsSchema>;
+
+// ==============================================================================
+// GLOBAL BLOCKS SCHEMA
+// ==============================================================================
+
+/**
+ * Global block validation
+ * Used for creating and updating reusable blocks
+ */
+export const globalBlockSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100, "Name too long"),
+  description: z.string().max(500, "Description too long").optional().nullable(),
+  blockContent: z.object({
+    type: z.string().min(1, "Block type is required"),
+    data: z.record(z.unknown()),
+    background: blockBackgroundSchema.optional(),
+    advanced: z.object({
+      cssClasses: z.string().optional(),
+      elementId: z.string().optional(),
+      ariaLabel: z.string().optional(),
+      dataAttributes: z.string().optional(),
+    }).optional(),
+  }),
+});
+
+export type GlobalBlockInput = z.infer<typeof globalBlockSchema>;

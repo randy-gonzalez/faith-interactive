@@ -15,6 +15,8 @@ import { useRouter } from "next/navigation";
 import { Tabs, TabPanel } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { MediaPicker } from "@/components/dashboard/media-picker";
+import { BrandingColorPicker } from "@/components/ui/branding-color-picker";
+import { useBranding } from "@/contexts/branding-context";
 import type { ChurchBranding } from "@prisma/client";
 
 interface ColorPreset {
@@ -37,6 +39,7 @@ const TABS = [
   { id: "colors", label: "Colors" },
   { id: "gradients", label: "Gradients" },
   { id: "typography", label: "Typography" },
+  { id: "buttons", label: "Buttons" },
 ];
 
 // Popular Google Fonts for selection
@@ -70,6 +73,7 @@ const DEFAULT_GRADIENTS: GradientPreset[] = [
 
 export function BrandingForm({ branding, canEdit }: BrandingFormProps) {
   const router = useRouter();
+  const brandingContext = useBranding();
   const [activeTab, setActiveTab] = useState("logos");
 
   // Logos
@@ -107,6 +111,16 @@ export function BrandingForm({ branding, canEdit }: BrandingFormProps) {
   const [borderRadius, setBorderRadius] = useState(branding.borderRadius || 8);
   const [linkColor, setLinkColor] = useState(branding.linkColor || "");
   const [linkHoverColor, setLinkHoverColor] = useState(branding.linkHoverColor || "");
+
+  // Button colors
+  const [buttonPrimaryBg, setButtonPrimaryBg] = useState(branding.buttonPrimaryBg || "");
+  const [buttonPrimaryText, setButtonPrimaryText] = useState(branding.buttonPrimaryText || "");
+  const [buttonSecondaryBg, setButtonSecondaryBg] = useState(branding.buttonSecondaryBg || "");
+  const [buttonSecondaryText, setButtonSecondaryText] = useState(branding.buttonSecondaryText || "");
+  const [buttonOutlineBorder, setButtonOutlineBorder] = useState(branding.buttonOutlineBorder || "");
+  const [buttonOutlineText, setButtonOutlineText] = useState(branding.buttonOutlineText || "");
+  const [buttonAccentBg, setButtonAccentBg] = useState(branding.buttonAccentBg || "");
+  const [buttonAccentText, setButtonAccentText] = useState(branding.buttonAccentText || "");
 
   // UI state
   const [saving, setSaving] = useState(false);
@@ -175,6 +189,15 @@ export function BrandingForm({ branding, canEdit }: BrandingFormProps) {
           borderRadius,
           linkColor: linkColor || null,
           linkHoverColor: linkHoverColor || null,
+          // Button colors
+          buttonPrimaryBg: buttonPrimaryBg || null,
+          buttonPrimaryText: buttonPrimaryText || null,
+          buttonSecondaryBg: buttonSecondaryBg || null,
+          buttonSecondaryText: buttonSecondaryText || null,
+          buttonOutlineBorder: buttonOutlineBorder || null,
+          buttonOutlineText: buttonOutlineText || null,
+          buttonAccentBg: buttonAccentBg || null,
+          buttonAccentText: buttonAccentText || null,
         }),
       });
 
@@ -188,6 +211,8 @@ export function BrandingForm({ branding, canEdit }: BrandingFormProps) {
 
       setShowSaveSuccess(true);
       setTimeout(() => setShowSaveSuccess(false), 2000);
+      // Refresh the branding context so color pickers get updated presets
+      brandingContext?.refetch();
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -304,158 +329,70 @@ export function BrandingForm({ branding, canEdit }: BrandingFormProps) {
               {/* Main Colors */}
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-4">Brand Colors</h3>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  {/* Primary */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Primary</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={colorPrimary}
-                        onChange={(e) => setColorPrimary(e.target.value)}
-                        disabled={!canEdit}
-                        className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={colorPrimary}
-                        onChange={(e) => setColorPrimary(e.target.value)}
-                        disabled={!canEdit}
-                        className="flex-1 px-2 py-1 text-xs font-mono border border-gray-300 rounded text-gray-900"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Secondary */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Secondary</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={colorSecondary}
-                        onChange={(e) => setColorSecondary(e.target.value)}
-                        disabled={!canEdit}
-                        className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={colorSecondary}
-                        onChange={(e) => setColorSecondary(e.target.value)}
-                        disabled={!canEdit}
-                        className="flex-1 px-2 py-1 text-xs font-mono border border-gray-300 rounded text-gray-900"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Accent */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Accent</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={colorAccent}
-                        onChange={(e) => setColorAccent(e.target.value)}
-                        disabled={!canEdit}
-                        className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={colorAccent}
-                        onChange={(e) => setColorAccent(e.target.value)}
-                        disabled={!canEdit}
-                        className="flex-1 px-2 py-1 text-xs font-mono border border-gray-300 rounded text-gray-900"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Background */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Background</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={colorBackground}
-                        onChange={(e) => setColorBackground(e.target.value)}
-                        disabled={!canEdit}
-                        className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={colorBackground}
-                        onChange={(e) => setColorBackground(e.target.value)}
-                        disabled={!canEdit}
-                        className="flex-1 px-2 py-1 text-xs font-mono border border-gray-300 rounded text-gray-900"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Text */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Text</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={colorText}
-                        onChange={(e) => setColorText(e.target.value)}
-                        disabled={!canEdit}
-                        className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={colorText}
-                        onChange={(e) => setColorText(e.target.value)}
-                        disabled={!canEdit}
-                        className="flex-1 px-2 py-1 text-xs font-mono border border-gray-300 rounded text-gray-900"
-                      />
-                    </div>
-                  </div>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                  <BrandingColorPicker
+                    value={colorPrimary}
+                    onChange={setColorPrimary}
+                    disabled={!canEdit}
+                    label="Primary"
+                    size="sm"
+                    showPresets={false}
+                  />
+                  <BrandingColorPicker
+                    value={colorSecondary}
+                    onChange={setColorSecondary}
+                    disabled={!canEdit}
+                    label="Secondary"
+                    size="sm"
+                    showPresets={false}
+                  />
+                  <BrandingColorPicker
+                    value={colorAccent}
+                    onChange={setColorAccent}
+                    disabled={!canEdit}
+                    label="Accent"
+                    size="sm"
+                    showPresets={false}
+                  />
+                  <BrandingColorPicker
+                    value={colorBackground}
+                    onChange={setColorBackground}
+                    disabled={!canEdit}
+                    label="Background"
+                    size="sm"
+                    showPresets={false}
+                  />
+                  <BrandingColorPicker
+                    value={colorText}
+                    onChange={setColorText}
+                    disabled={!canEdit}
+                    label="Text"
+                    size="sm"
+                    showPresets={false}
+                  />
                 </div>
               </div>
 
               {/* Link Colors */}
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-4">Link Colors</h3>
-                <div className="grid grid-cols-2 gap-4 max-w-md">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Link Color</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={linkColor || colorPrimary}
-                        onChange={(e) => setLinkColor(e.target.value)}
-                        disabled={!canEdit}
-                        className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={linkColor}
-                        onChange={(e) => setLinkColor(e.target.value)}
-                        disabled={!canEdit}
-                        placeholder="Uses primary"
-                        className="flex-1 px-2 py-1 text-xs font-mono border border-gray-300 rounded text-gray-900"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Link Hover</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={linkHoverColor || colorAccent}
-                        onChange={(e) => setLinkHoverColor(e.target.value)}
-                        disabled={!canEdit}
-                        className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={linkHoverColor}
-                        onChange={(e) => setLinkHoverColor(e.target.value)}
-                        disabled={!canEdit}
-                        placeholder="Uses accent"
-                        className="flex-1 px-2 py-1 text-xs font-mono border border-gray-300 rounded text-gray-900"
-                      />
-                    </div>
-                  </div>
+                <div className="grid grid-cols-2 gap-6 max-w-lg">
+                  <BrandingColorPicker
+                    value={linkColor || colorPrimary}
+                    onChange={setLinkColor}
+                    disabled={!canEdit}
+                    label="Link Color"
+                    size="sm"
+                    showPresets={false}
+                  />
+                  <BrandingColorPicker
+                    value={linkHoverColor || colorAccent}
+                    onChange={setLinkHoverColor}
+                    disabled={!canEdit}
+                    label="Link Hover"
+                    size="sm"
+                    showPresets={false}
+                  />
                 </div>
               </div>
 
@@ -707,81 +644,273 @@ export function BrandingForm({ branding, canEdit }: BrandingFormProps) {
                 </div>
               </div>
 
-              {/* Button & Border Styles */}
+            </div>
+          </TabPanel>
+
+          {/* Buttons Tab */}
+          <TabPanel id="buttons" activeTab={activeTab}>
+            <div className="p-6 space-y-8">
+              {/* Button Style */}
               <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-4">Button & Border Styles</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Button Style
-                    </label>
-                    <select
-                      value={buttonStyle}
-                      onChange={(e) => setButtonStyle(e.target.value)}
+                <h3 className="text-sm font-medium text-gray-900 mb-4">Button Shape</h3>
+                <div className="grid grid-cols-3 gap-4 max-w-lg">
+                  {[
+                    { value: "rounded", label: "Rounded", preview: "8px" },
+                    { value: "pill", label: "Pill", preview: "9999px" },
+                    { value: "square", label: "Square", preview: "0px" },
+                  ].map((style) => (
+                    <button
+                      key={style.value}
+                      type="button"
+                      onClick={() => setButtonStyle(style.value)}
                       disabled={!canEdit}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                      className={`p-4 border-2 rounded-lg transition-colors ${
+                        buttonStyle === style.value
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
                     >
-                      <option value="rounded">Rounded</option>
-                      <option value="pill">Pill</option>
-                      <option value="square">Square</option>
-                    </select>
-                    <div className="mt-3">
-                      <button
-                        type="button"
-                        className="px-4 py-2 text-white text-sm font-medium"
+                      <div
+                        className="w-full h-8 mb-2"
                         style={{
                           backgroundColor: colorPrimary,
-                          borderRadius:
-                            buttonStyle === "pill" ? "9999px" :
-                            buttonStyle === "square" ? "0px" :
-                            `${buttonRadius}px`,
+                          borderRadius: style.preview,
                         }}
-                      >
-                        Sample Button
-                      </button>
-                    </div>
-                  </div>
+                      />
+                      <span className="text-sm font-medium text-gray-700">{style.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Button Radius
-                    </label>
-                    <div className="flex items-center gap-2">
+              {/* Button Radius (only for rounded) */}
+              {buttonStyle === "rounded" && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900 mb-4">Corner Radius</h3>
+                  <div className="max-w-md">
+                    <div className="flex items-center gap-4">
                       <input
                         type="range"
                         min="0"
                         max="20"
                         value={buttonRadius}
                         onChange={(e) => setButtonRadius(parseInt(e.target.value))}
-                        disabled={!canEdit || buttonStyle === "pill" || buttonStyle === "square"}
-                        className="flex-1"
-                      />
-                      <span className="text-sm text-gray-600 w-12">{buttonRadius}px</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Global Border Radius
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="range"
-                        min="0"
-                        max="24"
-                        value={borderRadius}
-                        onChange={(e) => setBorderRadius(parseInt(e.target.value))}
                         disabled={!canEdit}
                         className="flex-1"
                       />
-                      <span className="text-sm text-gray-600 w-12">{borderRadius}px</span>
+                      <span className="text-sm font-mono text-gray-600 w-16">{buttonRadius}px</span>
                     </div>
+                    <div className="mt-4">
+                      <button
+                        type="button"
+                        className="px-6 py-2.5 text-white text-sm font-medium"
+                        style={{
+                          backgroundColor: colorPrimary,
+                          borderRadius: `${buttonRadius}px`,
+                        }}
+                      >
+                        Preview Button
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Button Colors */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 mb-4">Button Colors</h3>
+                <p className="text-xs text-gray-500 mb-4">
+                  Customize colors for each button type. Leave empty to use brand colors.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Primary Button Colors */}
+                  <div className="p-4 border border-gray-200 rounded-lg space-y-4">
+                    <h4 className="text-sm font-medium text-gray-700">Primary Button</h4>
+                    <BrandingColorPicker
+                      value={buttonPrimaryBg || colorPrimary}
+                      onChange={setButtonPrimaryBg}
+                      disabled={!canEdit}
+                      label="Background"
+                      size="sm"
+                      showPresets={false}
+                    />
+                    <BrandingColorPicker
+                      value={buttonPrimaryText || "#ffffff"}
+                      onChange={setButtonPrimaryText}
+                      disabled={!canEdit}
+                      label="Text"
+                      size="sm"
+                      showPresets={false}
+                    />
+                  </div>
+
+                  {/* Secondary Button Colors */}
+                  <div className="p-4 border border-gray-200 rounded-lg space-y-4">
+                    <h4 className="text-sm font-medium text-gray-700">Secondary Button</h4>
+                    <BrandingColorPicker
+                      value={buttonSecondaryBg || colorSecondary}
+                      onChange={setButtonSecondaryBg}
+                      disabled={!canEdit}
+                      label="Background"
+                      size="sm"
+                      showPresets={false}
+                    />
+                    <BrandingColorPicker
+                      value={buttonSecondaryText || "#ffffff"}
+                      onChange={setButtonSecondaryText}
+                      disabled={!canEdit}
+                      label="Text"
+                      size="sm"
+                      showPresets={false}
+                    />
+                  </div>
+
+                  {/* Outline Button Colors */}
+                  <div className="p-4 border border-gray-200 rounded-lg space-y-4">
+                    <h4 className="text-sm font-medium text-gray-700">Outline Button</h4>
+                    <BrandingColorPicker
+                      value={buttonOutlineBorder || colorPrimary}
+                      onChange={setButtonOutlineBorder}
+                      disabled={!canEdit}
+                      label="Border"
+                      size="sm"
+                      showPresets={false}
+                    />
+                    <BrandingColorPicker
+                      value={buttonOutlineText || colorPrimary}
+                      onChange={setButtonOutlineText}
+                      disabled={!canEdit}
+                      label="Text"
+                      size="sm"
+                      showPresets={false}
+                    />
+                  </div>
+
+                  {/* Accent Button Colors */}
+                  <div className="p-4 border border-gray-200 rounded-lg space-y-4">
+                    <h4 className="text-sm font-medium text-gray-700">Accent Button</h4>
+                    <BrandingColorPicker
+                      value={buttonAccentBg || colorAccent}
+                      onChange={setButtonAccentBg}
+                      disabled={!canEdit}
+                      label="Background"
+                      size="sm"
+                      showPresets={false}
+                    />
+                    <BrandingColorPicker
+                      value={buttonAccentText || "#ffffff"}
+                      onChange={setButtonAccentText}
+                      disabled={!canEdit}
+                      label="Text"
+                      size="sm"
+                      showPresets={false}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Button Preview */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 mb-4">Button Preview</h3>
+                <div className="flex flex-wrap gap-4 p-6 bg-gray-50 rounded-lg">
+                  {/* Primary */}
+                  <button
+                    type="button"
+                    className="px-6 py-2.5 text-sm font-medium transition-opacity hover:opacity-90"
+                    style={{
+                      backgroundColor: buttonPrimaryBg || colorPrimary,
+                      color: buttonPrimaryText || "#ffffff",
+                      borderRadius:
+                        buttonStyle === "pill" ? "9999px" :
+                        buttonStyle === "square" ? "0px" :
+                        `${buttonRadius}px`,
+                    }}
+                  >
+                    Primary Button
+                  </button>
+
+                  {/* Secondary */}
+                  <button
+                    type="button"
+                    className="px-6 py-2.5 text-sm font-medium transition-opacity hover:opacity-90"
+                    style={{
+                      backgroundColor: buttonSecondaryBg || colorSecondary,
+                      color: buttonSecondaryText || "#ffffff",
+                      borderRadius:
+                        buttonStyle === "pill" ? "9999px" :
+                        buttonStyle === "square" ? "0px" :
+                        `${buttonRadius}px`,
+                    }}
+                  >
+                    Secondary Button
+                  </button>
+
+                  {/* Outline */}
+                  <button
+                    type="button"
+                    className="px-6 py-2.5 text-sm font-medium transition-colors hover:bg-gray-100"
+                    style={{
+                      color: buttonOutlineText || colorPrimary,
+                      border: `2px solid ${buttonOutlineBorder || colorPrimary}`,
+                      borderRadius:
+                        buttonStyle === "pill" ? "9999px" :
+                        buttonStyle === "square" ? "0px" :
+                        `${buttonRadius}px`,
+                    }}
+                  >
+                    Outline Button
+                  </button>
+
+                  {/* Accent */}
+                  <button
+                    type="button"
+                    className="px-6 py-2.5 text-sm font-medium transition-opacity hover:opacity-90"
+                    style={{
+                      backgroundColor: buttonAccentBg || colorAccent,
+                      color: buttonAccentText || "#ffffff",
+                      borderRadius:
+                        buttonStyle === "pill" ? "9999px" :
+                        buttonStyle === "square" ? "0px" :
+                        `${buttonRadius}px`,
+                    }}
+                  >
+                    Accent Button
+                  </button>
+                </div>
+              </div>
+
+              {/* Global Border Radius */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 mb-4">Global Border Radius</h3>
+                <p className="text-xs text-gray-500 mb-4">
+                  Applied to cards, images, and other UI elements
+                </p>
+                <div className="max-w-md">
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="range"
+                      min="0"
+                      max="24"
+                      value={borderRadius}
+                      onChange={(e) => setBorderRadius(parseInt(e.target.value))}
+                      disabled={!canEdit}
+                      className="flex-1"
+                    />
+                    <span className="text-sm font-mono text-gray-600 w-16">{borderRadius}px</span>
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 gap-4">
                     <div
-                      className="mt-3 p-4 bg-gray-100 border border-gray-300"
+                      className="p-4 bg-white border border-gray-200 shadow-sm"
                       style={{ borderRadius: `${borderRadius}px` }}
                     >
-                      <p className="text-sm text-gray-600">Card preview</p>
+                      <div className="h-16 bg-gray-100 mb-3" style={{ borderRadius: `${Math.max(0, borderRadius - 4)}px` }} />
+                      <p className="text-sm font-medium text-gray-900">Card Title</p>
+                      <p className="text-xs text-gray-500">Card preview</p>
                     </div>
+                    <div
+                      className="h-32 bg-gradient-to-br from-blue-500 to-purple-600"
+                      style={{ borderRadius: `${borderRadius}px` }}
+                    />
                   </div>
                 </div>
               </div>

@@ -6,41 +6,19 @@
  * Live preview rendering of card grid block.
  */
 
-import type { Block, CardGridBlock, BlockBackground } from "@/types/blocks";
+import type { Block, CardGridBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
+import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 
 interface CardGridBlockPreviewProps {
   block: Block;
-}
-
-function getBackgroundStyles(background?: BlockBackground): React.CSSProperties {
-  if (!background) return {};
-
-  switch (background.type) {
-    case "color":
-      return { backgroundColor: background.color || "transparent" };
-    case "gradient":
-      return { background: background.gradient };
-    case "image":
-      if (background.imageUrl) {
-        const overlay = background.overlay || "rgba(0,0,0,0.5)";
-        return {
-          backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${background.imageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        };
-      }
-      return {};
-    default:
-      return {};
-  }
 }
 
 export function CardGridBlockPreview({ block }: CardGridBlockPreviewProps) {
   const cardGridBlock = block as CardGridBlock;
   const { data, background, advanced } = cardGridBlock;
 
-  const backgroundStyle = getBackgroundStyles(background);
+  const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
   const advancedProps = getAdvancedProps(advanced);
 
   const columnClasses = {
@@ -49,11 +27,16 @@ export function CardGridBlockPreview({ block }: CardGridBlockPreviewProps) {
     4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
   };
 
-  const combinedClassName = `py-12 px-6 ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview py-12 px-6 relative ${advancedProps.className || ""}`.trim();
 
   return (
     <div {...advancedProps} className={combinedClassName} style={backgroundStyle}>
-      <div className="max-w-6xl mx-auto">
+      {/* Image overlay (for image backgrounds) */}
+      {background?.type === "image" && background.imageUrl && overlay && (
+        <div className="absolute inset-0" style={overlay} />
+      )}
+
+      <div className="max-w-6xl mx-auto relative z-10">
         {data.cards.length === 0 ? (
           <p className="text-center text-gray-400 italic">
             Add cards to display...

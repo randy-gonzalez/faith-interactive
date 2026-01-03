@@ -40,6 +40,8 @@ const TENANT_SCOPED_MODELS = [
   "Media",
   "PrayerRequest",
   "VolunteerSignup",
+  "Form",
+  "FormSubmission",
   // Phase 4: Domains & Launch Tools
   "CustomDomain",
   "RedirectRule",
@@ -53,6 +55,8 @@ const TENANT_SCOPED_MODELS = [
   "Venue",
   "EventRegistration",
   "NotificationSubscription",
+  // Global Blocks
+  "GlobalBlock",
 ] as const;
 type TenantScopedModel = (typeof TENANT_SCOPED_MODELS)[number];
 

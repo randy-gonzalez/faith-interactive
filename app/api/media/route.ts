@@ -18,6 +18,7 @@ import {
   getFileSizeLimit,
 } from "@/lib/storage/types";
 import type { ApiResponse } from "@/types";
+import type { ImageVariants, MediaMetadata } from "@/types/media";
 
 /**
  * GET /api/media
@@ -77,17 +78,28 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Transform media to include URLs
-    const mediaWithUrls = media.map((item) => ({
-      ...item,
-      url: storage.getUrl(item.storagePath),
-      variantUrls: item.variants
+    const mediaWithUrls = media.map((item) => {
+      const metadata = item.variants as MediaMetadata | null;
+      const variants = metadata?.variants as ImageVariants | undefined;
+
+      // Build variant URLs
+      const variantUrls = variants
         ? Object.fromEntries(
-            Object.entries(item.variants as Record<string, { path: string }>).map(
-              ([name, variant]) => [name, storage.getUrl(variant.path)]
-            )
+            Object.entries(variants)
+              .filter(([, v]) => v?.path)
+              .map(([name, v]) => [name, storage.getUrl(v!.path)])
           )
-        : null,
-    }));
+        : null;
+
+      return {
+        ...item,
+        url: storage.getUrl(item.storagePath),
+        originalDimensions: metadata?.original || null,
+        isAnimated: metadata?.isAnimated || false,
+        variants: variants || null,
+        variantUrls,
+      };
+    });
 
     return NextResponse.json<ApiResponse>({
       success: true,
@@ -174,14 +186,20 @@ export async function POST(request: NextRequest) {
 
     let storagePath: string;
     let url: string;
-    let variants: Record<string, { path: string; url: string }> | null = null;
+    let metadata: MediaMetadata | null = null;
 
     if (isImage) {
       // Process image: create variants and upload all
       const result = await processAndUploadImage(buffer, file.name, mimeType, folder);
       storagePath = result.original.path;
       url = result.original.url;
-      variants = result.variants;
+
+      // Build metadata structure for database
+      metadata = {
+        original: result.originalDimensions,
+        variants: result.variants,
+        isAnimated: result.isAnimated,
+      };
     } else {
       // Upload PDF directly
       const timestamp = Date.now();
@@ -206,11 +224,7 @@ export async function POST(request: NextRequest) {
         mimeType,
         size: file.size,
         storagePath,
-        variants: variants
-          ? Object.fromEntries(
-              Object.entries(variants).map(([name, v]) => [name, { path: v.path }])
-            )
-          : null,
+        variants: metadata, // Store full metadata including original dimensions
         alt: alt || null,
       },
     });
@@ -221,12 +235,16 @@ export async function POST(request: NextRequest) {
       filename: file.name,
       mimeType,
       size: file.size,
+      isAnimated: metadata?.isAnimated,
+      variantCount: metadata?.variants ? Object.keys(metadata.variants).length : 0,
     });
 
-    // Return with URLs
-    const variantUrls = variants
+    // Build variant URLs for response
+    const variantUrls = metadata?.variants
       ? Object.fromEntries(
-          Object.entries(variants).map(([name, v]) => [name, v.url])
+          Object.entries(metadata.variants)
+            .filter(([, v]) => v?.path)
+            .map(([name, v]) => [name, storage.getUrl(v!.path)])
         )
       : null;
 
@@ -242,6 +260,9 @@ export async function POST(request: NextRequest) {
             storagePath: media.storagePath,
             alt: media.alt,
             url,
+            originalDimensions: metadata?.original || null,
+            isAnimated: metadata?.isAnimated || false,
+            variants: metadata?.variants || null,
             variantUrls,
             createdAt: media.createdAt,
           },

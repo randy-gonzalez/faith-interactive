@@ -137,7 +137,7 @@ export default async function SermonDetailPage({ params }: PageProps) {
       <nav className="mb-6">
         <Link
           href="/sermons"
-          className="text-blue-600 dark:text-blue-400 hover:underline"
+          className="text-blue-600 hover:underline"
         >
           ← Back to Sermons
         </Link>
@@ -145,10 +145,10 @@ export default async function SermonDetailPage({ params }: PageProps) {
 
       {/* Header */}
       <header className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
           {sermon.title}
         </h1>
-        <div className="flex flex-wrap gap-x-4 gap-y-2 text-gray-600 dark:text-gray-400">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-gray-600">
           <span className="font-medium">{sermon.speakerName || "Unknown Speaker"}</span>
           <span>
             {new Date(sermon.date).toLocaleDateString("en-US", {
@@ -158,7 +158,7 @@ export default async function SermonDetailPage({ params }: PageProps) {
             })}
           </span>
           {sermon.scripture && (
-            <span className="text-blue-600 dark:text-blue-400 font-medium">
+            <span className="text-blue-600 font-medium">
               {sermon.scripture}
             </span>
           )}
@@ -171,7 +171,7 @@ export default async function SermonDetailPage({ params }: PageProps) {
       {/* Audio Player */}
       {sermon.audioUrl && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">
             Listen
           </h2>
           <audio controls className="w-full" preload="metadata">
@@ -185,8 +185,8 @@ export default async function SermonDetailPage({ params }: PageProps) {
 
       {/* Description */}
       {sermon.description && (
-        <div className="prose dark:prose-invert max-w-none">
-          <p className="text-lg text-gray-700 dark:text-gray-300">
+        <div className="prose max-w-none">
+          <p className="text-lg text-gray-700">
             {sermon.description}
           </p>
         </div>

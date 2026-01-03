@@ -7,34 +7,12 @@
  * On actual pages, this will fetch real sermons from the database.
  */
 
-import type { Block, SermonFeatureBlock, BlockBackground } from "@/types/blocks";
+import type { Block, SermonFeatureBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
+import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 
 interface SermonFeatureBlockPreviewProps {
   block: Block;
-}
-
-function getBackgroundStyles(background?: BlockBackground): React.CSSProperties {
-  if (!background) return {};
-
-  switch (background.type) {
-    case "color":
-      return { backgroundColor: background.color || "transparent" };
-    case "gradient":
-      return { background: background.gradient };
-    case "image":
-      if (background.imageUrl) {
-        const overlay = background.overlay || "rgba(0,0,0,0.5)";
-        return {
-          backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${background.imageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        };
-      }
-      return {};
-    default:
-      return {};
-  }
 }
 
 // Placeholder sermon data for preview
@@ -66,19 +44,24 @@ export function SermonFeatureBlockPreview({ block }: SermonFeatureBlockPreviewPr
   const sermonFeatureBlock = block as SermonFeatureBlock;
   const { data, background, advanced } = sermonFeatureBlock;
 
-  const backgroundStyle = getBackgroundStyles(background);
+  const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
   const hasBackground = background && background.type !== "color";
   const textColorClass = hasBackground ? "text-white" : "text-gray-900";
   const subTextColorClass = hasBackground ? "text-white/70" : "text-gray-600";
   const cardBg = hasBackground ? "bg-white/10 backdrop-blur-sm" : "bg-white shadow-md";
   const advancedProps = getAdvancedProps(advanced);
-  const combinedClassName = `py-12 px-6 ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview py-12 px-6 relative ${advancedProps.className || ""}`.trim();
 
   const displayedSermons = PLACEHOLDER_SERMONS.slice(0, data.count);
 
   return (
     <div {...advancedProps} className={combinedClassName} style={backgroundStyle}>
-      <div className="max-w-6xl mx-auto">
+      {/* Image overlay (for image backgrounds) */}
+      {background?.type === "image" && background.imageUrl && overlay && (
+        <div className="absolute inset-0" style={overlay} />
+      )}
+
+      <div className="max-w-6xl mx-auto relative z-10">
         <div className="flex items-center justify-between mb-8">
           <h2 className={`text-2xl md:text-3xl font-bold ${textColorClass}`}>
             {data.heading}
@@ -86,7 +69,12 @@ export function SermonFeatureBlockPreview({ block }: SermonFeatureBlockPreviewPr
           {data.buttonText && data.buttonUrl && (
             <a
               href={data.buttonUrl}
-              className="hidden sm:inline-block px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="hidden sm:inline-block px-4 py-2 font-medium transition-opacity hover:opacity-90"
+              style={{
+                backgroundColor: hasBackground ? "#ffffff" : "var(--btn-primary-bg, #2563eb)",
+                color: hasBackground ? "#1f2937" : "var(--btn-primary-text, #ffffff)",
+                borderRadius: "var(--btn-radius, 6px)",
+              }}
             >
               {data.buttonText}
             </a>
@@ -121,7 +109,12 @@ export function SermonFeatureBlockPreview({ block }: SermonFeatureBlockPreviewPr
           <div className="mt-8 text-center sm:hidden">
             <a
               href={data.buttonUrl}
-              className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-block px-6 py-3 font-medium transition-opacity hover:opacity-90"
+              style={{
+                backgroundColor: hasBackground ? "#ffffff" : "var(--btn-primary-bg, #2563eb)",
+                color: hasBackground ? "#1f2937" : "var(--btn-primary-text, #ffffff)",
+                borderRadius: "var(--btn-radius, 6px)",
+              }}
             >
               {data.buttonText}
             </a>

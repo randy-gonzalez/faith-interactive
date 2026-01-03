@@ -44,6 +44,11 @@ import {
   createAccordionBlock,
   createDividerBlock,
   createButtonGroupBlock,
+  createPopupBlock,
+  createCustomHtmlBlock,
+  createGlobalBlockReference,
+  createFormBlock,
+  createWatchLiveBlock,
 } from "@/types/blocks";
 import { HeroBlockEditor } from "./hero-block-editor";
 import { HeroBlockPreview } from "./hero-block-preview";
@@ -71,6 +76,16 @@ import { DividerBlockEditor } from "./divider-block-editor";
 import { DividerBlockPreview } from "./divider-block-preview";
 import { ButtonGroupBlockEditor } from "./button-group-block-editor";
 import { ButtonGroupBlockPreview } from "./button-group-block-preview";
+import { PopupBlockEditor } from "./popup-block-editor";
+import { PopupBlockPreview } from "./popup-block-preview";
+import { CustomHtmlBlockEditor } from "./custom-html-block-editor";
+import { CustomHtmlBlockPreview } from "./custom-html-block-preview";
+import { GlobalBlockReferenceEditor } from "./global-block-reference-editor";
+import { GlobalBlockReferencePreview } from "./global-block-reference-preview";
+import { FormBlockEditor } from "./form-block-editor";
+import { FormBlockPreview } from "./form-block-preview";
+import { WatchLiveBlockEditor } from "./watch-live-block-editor";
+import { WatchLiveBlockPreview } from "./watch-live-block-preview";
 import {
   LayoutTemplate,
   Type,
@@ -85,8 +100,13 @@ import {
   ChevronsDown,
   Minus,
   MousePointerClick,
+  MessageSquare,
+  Code,
+  Library,
   Plus,
   X,
+  FileText,
+  Radio,
 } from "lucide-react";
 
 // Map block types to Lucide icons
@@ -104,6 +124,11 @@ const BLOCK_ICONS: Record<BlockType, React.ComponentType<{ className?: string }>
   accordion: ChevronsDown,
   divider: Minus,
   "button-group": MousePointerClick,
+  popup: MessageSquare,
+  "custom-html": Code,
+  "global-block": Library,
+  form: FileText,
+  "watch-live": Radio,
 };
 
 interface BlockEditorProps {
@@ -203,6 +228,26 @@ function SortableBlock({
       case "button-group": {
         const buttonData = block.data as { buttons?: unknown[] };
         return `${buttonData.buttons?.length || 0} buttons`;
+      }
+      case "popup": {
+        const popupData = block.data as { heading?: string };
+        return popupData.heading || "Popup block";
+      }
+      case "custom-html": {
+        const htmlData = block.data as { html?: string };
+        return htmlData.html ? "Custom HTML content" : "Empty HTML block";
+      }
+      case "global-block": {
+        const globalData = block.data as { cachedName?: string };
+        return globalData.cachedName || "Global block reference";
+      }
+      case "form": {
+        const formData = block.data as { cachedFormName?: string };
+        return formData.cachedFormName || "Form block";
+      }
+      case "watch-live": {
+        const watchLiveData = block.data as { heading?: string };
+        return watchLiveData.heading || "Watch Live block";
       }
       default:
         return "Block content";
@@ -316,6 +361,21 @@ function SortableBlock({
           {block.type === "button-group" && (
             <ButtonGroupBlockEditor block={block} onChange={onUpdate} disabled={disabled} />
           )}
+          {block.type === "popup" && (
+            <PopupBlockEditor block={block} onChange={onUpdate} disabled={disabled} />
+          )}
+          {block.type === "custom-html" && (
+            <CustomHtmlBlockEditor block={block} onChange={onUpdate} disabled={disabled} />
+          )}
+          {block.type === "global-block" && (
+            <GlobalBlockReferenceEditor block={block} onChange={onUpdate} disabled={disabled} />
+          )}
+          {block.type === "form" && (
+            <FormBlockEditor block={block} onChange={onUpdate} />
+          )}
+          {block.type === "watch-live" && (
+            <WatchLiveBlockEditor block={block} onChange={onUpdate} disabled={disabled} />
+          )}
         </div>
       )}
     </div>
@@ -395,6 +455,21 @@ export function BlockEditor({ blocks, onChange, disabled, onPreviewClick }: Bloc
       case "button-group":
         newBlock = createButtonGroupBlock(id, order);
         break;
+      case "popup":
+        newBlock = createPopupBlock(id, order);
+        break;
+      case "custom-html":
+        newBlock = createCustomHtmlBlock(id, order);
+        break;
+      case "global-block":
+        newBlock = createGlobalBlockReference(id, order, "");
+        break;
+      case "form":
+        newBlock = createFormBlock(id, order);
+        break;
+      case "watch-live":
+        newBlock = createWatchLiveBlock(id, order);
+        break;
       default:
         return;
     }
@@ -418,9 +493,9 @@ export function BlockEditor({ blocks, onChange, disabled, onPreviewClick }: Bloc
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[minmax(320px,480px)_1fr] gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(320px,480px)_1fr] gap-6 items-start">
       {/* Editor Panel */}
-      <div className="space-y-4 max-w-lg">
+      <div className="space-y-4 max-w-lg sticky top-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium text-gray-700">Blocks</h3>
           {!disabled && (
@@ -442,8 +517,8 @@ export function BlockEditor({ blocks, onChange, disabled, onPreviewClick }: Bloc
                     onClick={() => setShowAddMenu(false)}
                   />
                   {/* Dropdown */}
-                  <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-20">
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                  <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-20 max-h-[calc(100vh-200px)] overflow-y-auto">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 sticky top-0 bg-white">
                       <span className="text-sm font-semibold text-gray-900">Add Block</span>
                       <button
                         type="button"
@@ -555,6 +630,11 @@ export function BlockEditor({ blocks, onChange, disabled, onPreviewClick }: Bloc
                     {block.type === "accordion" && <AccordionBlockPreview block={block} />}
                     {block.type === "divider" && <DividerBlockPreview block={block} />}
                     {block.type === "button-group" && <ButtonGroupBlockPreview block={block} />}
+                    {block.type === "popup" && <PopupBlockPreview block={block} />}
+                    {block.type === "custom-html" && <CustomHtmlBlockPreview block={block} />}
+                    {block.type === "global-block" && <GlobalBlockReferencePreview block={block} />}
+                    {block.type === "form" && <FormBlockPreview block={block} isEditor />}
+                    {block.type === "watch-live" && <WatchLiveBlockPreview block={block} />}
                   </div>
                 ))}
             </div>

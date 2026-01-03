@@ -6,34 +6,12 @@
  * Live preview rendering of video block with YouTube/Vimeo embed.
  */
 
-import type { Block, VideoBlock, BlockBackground } from "@/types/blocks";
+import type { Block, VideoBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
+import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 
 interface VideoBlockPreviewProps {
   block: Block;
-}
-
-function getBackgroundStyles(background?: BlockBackground): React.CSSProperties {
-  if (!background) return {};
-
-  switch (background.type) {
-    case "color":
-      return { backgroundColor: background.color || "transparent" };
-    case "gradient":
-      return { background: background.gradient };
-    case "image":
-      if (background.imageUrl) {
-        const overlay = background.overlay || "rgba(0,0,0,0.5)";
-        return {
-          backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${background.imageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        };
-      }
-      return {};
-    default:
-      return {};
-  }
 }
 
 // Parse video URL to get embed URL
@@ -69,14 +47,19 @@ export function VideoBlockPreview({ block }: VideoBlockPreviewProps) {
     "1:1": "aspect-square",
   };
 
-  const backgroundStyle = getBackgroundStyles(background);
+  const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
   const embedUrl = getEmbedUrl(data.videoUrl, data.autoplay);
   const advancedProps = getAdvancedProps(advanced);
-  const combinedClassName = `py-8 px-6 ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview py-8 px-6 relative ${advancedProps.className || ""}`.trim();
 
   return (
     <div {...advancedProps} className={combinedClassName} style={backgroundStyle}>
-      <div className="max-w-4xl mx-auto">
+      {/* Image overlay (for image backgrounds) */}
+      {background?.type === "image" && background.imageUrl && overlay && (
+        <div className="absolute inset-0" style={overlay} />
+      )}
+
+      <div className="max-w-4xl mx-auto relative z-10">
         {embedUrl ? (
           <div className={`${aspectRatioClasses[data.aspectRatio]} rounded-lg overflow-hidden shadow-lg`}>
             <iframe

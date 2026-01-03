@@ -23,8 +23,10 @@
  * should be created through proper onboarding flows.
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { createDefaultFormsData } from "../lib/forms/default-forms";
+import { DEFAULT_HEADER_CONFIG, DEFAULT_FOOTER_CONFIG } from "../types/template";
 
 const prisma = new PrismaClient();
 
@@ -47,12 +49,12 @@ async function main() {
 
   // Admin user (also platform admin)
   const admin = await prisma.user.upsert({
-    where: { email: "admin@example.com" },
+    where: { email: "randy@shiftagency.com" },
     update: {},
     create: {
-      email: "admin@example.com",
+      email: "randy@shiftagency.com",
       passwordHash,
-      name: "Sarah Johnson",
+      name: "Randy Gonzalez",
       platformRole: "PLATFORM_ADMIN",
       isActive: true,
     },
@@ -142,7 +144,37 @@ async function main() {
   });
   console.log(`✓ Viewer membership created for ${church.name}`);
 
-  // Create sample pages
+  // ============================================
+  // DEFAULT FORMS FOR GRACE COMMUNITY
+  // ============================================
+  console.log("\n--- Creating default forms ---");
+
+  const defaultForms = createDefaultFormsData(church.id);
+  for (const formData of defaultForms) {
+    await prisma.form.upsert({
+      where: {
+        churchId_slug: {
+          churchId: church.id,
+          slug: formData.slug,
+        },
+      },
+      update: {},
+      create: {
+        churchId: formData.churchId,
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description,
+        type: formData.type,
+        fields: formData.fields as unknown as Prisma.InputJsonValue,
+        settings: formData.settings as unknown as Prisma.InputJsonValue,
+        notifyEmails: formData.notifyEmails,
+        isActive: formData.isActive,
+      },
+    });
+    console.log(`✓ Form created: ${formData.name}`);
+  }
+
+  // Create sample pages (need them before site settings for navigation)
   const aboutPage = await prisma.page.upsert({
     where: {
       churchId_urlPath: {
@@ -180,6 +212,46 @@ async function main() {
     },
   });
   console.log(`✓ Page created: ${visitPage.title}`);
+
+  // ============================================
+  // SITE SETTINGS WITH TEMPLATE DEFAULTS
+  // ============================================
+  console.log("\n--- Creating site settings with template defaults ---");
+
+  await prisma.siteSettings.upsert({
+    where: { churchId: church.id },
+    update: {},
+    create: {
+      churchId: church.id,
+      serviceTimes: "Sunday Worship: 9:00 AM & 11:00 AM\nWednesday Prayer: 7:00 PM",
+      address: "123 Faith Avenue, Springfield, IL 62701",
+      phone: "(555) 123-4567",
+      contactEmail: "info@gracecc.example.com",
+      facebookUrl: "https://facebook.com/gracecommunitychurch",
+      instagramUrl: "https://instagram.com/gracecc",
+      youtubeUrl: "https://youtube.com/@gracecommunitychurch",
+      footerText: `© ${new Date().getFullYear()} Grace Community Church. All rights reserved.`,
+      // Template settings with defaults
+      headerTemplate: "classic",
+      headerConfig: DEFAULT_HEADER_CONFIG as unknown as Prisma.InputJsonValue,
+      footerTemplate: "4-column",
+      footerConfig: DEFAULT_FOOTER_CONFIG as unknown as Prisma.InputJsonValue,
+      // Navigation using the new extended format
+      headerNavigation: [
+        { id: "nav-about", label: "About", href: "/about", isExternal: false, order: 0 },
+        { id: "nav-visit", label: "Visit", href: "/visit", isExternal: false, order: 1 },
+        { id: "nav-sermons", label: "Sermons", href: "/sermons", isExternal: false, order: 2 },
+        { id: "nav-events", label: "Events", href: "/events", isExternal: false, order: 3 },
+      ] as unknown as Prisma.InputJsonValue,
+      footerNavigation: [
+        { id: "footer-about", label: "About Us", href: "/about", isExternal: false, order: 0 },
+        { id: "footer-sermons", label: "Sermons", href: "/sermons", isExternal: false, order: 1 },
+        { id: "footer-events", label: "Events", href: "/events", isExternal: false, order: 2 },
+        { id: "footer-contact", label: "Contact", href: "/contact", isExternal: false, order: 3 },
+      ] as unknown as Prisma.InputJsonValue,
+    },
+  });
+  console.log(`✓ Site settings created with template defaults`);
 
   // Create sample sermons
   const sermon1 = await prisma.sermon.create({
@@ -430,6 +502,67 @@ async function main() {
       isActive: true,
     },
   });
+
+  // Create default forms for Hope Community
+  const hopeForms = createDefaultFormsData(church2.id);
+  for (const formData of hopeForms) {
+    await prisma.form.upsert({
+      where: {
+        churchId_slug: {
+          churchId: church2.id,
+          slug: formData.slug,
+        },
+      },
+      update: {},
+      create: {
+        churchId: formData.churchId,
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description,
+        type: formData.type,
+        fields: formData.fields as unknown as Prisma.InputJsonValue,
+        settings: formData.settings as unknown as Prisma.InputJsonValue,
+        notifyEmails: formData.notifyEmails,
+        isActive: formData.isActive,
+      },
+    });
+  }
+  console.log(`✓ Default forms created for ${church2.name}`);
+
+  // Site settings for Hope Community with different template
+  await prisma.siteSettings.upsert({
+    where: { churchId: church2.id },
+    update: {},
+    create: {
+      churchId: church2.id,
+      serviceTimes: "Sunday Service: 10:30 AM\nBible Study: Tuesday 7:00 PM",
+      address: "456 Hope Street, Springfield, IL 62702",
+      phone: "(555) 987-6543",
+      contactEmail: "hello@hopecommunity.example.com",
+      facebookUrl: "https://facebook.com/hopecommunity",
+      footerText: `© ${new Date().getFullYear()} Hope Community Church. All rights reserved.`,
+      // Use centered header template for variety
+      headerTemplate: "centered",
+      headerConfig: {
+        ...DEFAULT_HEADER_CONFIG,
+        logoPosition: "center",
+        navAlignment: "center",
+        mobileMenuStyle: "fullscreen",
+      } as unknown as Prisma.InputJsonValue,
+      footerTemplate: "3-column",
+      footerConfig: DEFAULT_FOOTER_CONFIG as unknown as Prisma.InputJsonValue,
+      headerNavigation: [
+        { id: "nav-about", label: "About", href: "/about", isExternal: false, order: 0 },
+        { id: "nav-sermons", label: "Messages", href: "/sermons", isExternal: false, order: 1 },
+        { id: "nav-events", label: "Events", href: "/events", isExternal: false, order: 2 },
+      ] as unknown as Prisma.InputJsonValue,
+      footerNavigation: [
+        { id: "footer-about", label: "About", href: "/about", isExternal: false, order: 0 },
+        { id: "footer-contact", label: "Contact", href: "/contact", isExternal: false, order: 1 },
+      ] as unknown as Prisma.InputJsonValue,
+    },
+  });
+  console.log(`✓ Site settings created for ${church2.name}`);
 
   // ============================================
   // MULTI-CHURCH USER (IT Contractor example)
@@ -1020,7 +1153,7 @@ async function main() {
   console.log("\n📋 Test credentials (all use password: password123):");
   console.log("   ─────────────────────────────────────────────");
   console.log("   Grace Community Church (demo.localhost:3000):");
-  console.log("     Admin:  admin@example.com  (PLATFORM_ADMIN + church ADMIN)");
+  console.log("     Admin:  randy@shiftagency.com  (PLATFORM_ADMIN + church ADMIN)");
   console.log("     Editor: editor@example.com");
   console.log("     Viewer: viewer@example.com");
   console.log("");

@@ -5,14 +5,52 @@
  * Blocks are stored as JSON in the database.
  */
 
+/**
+ * Brand color reference names.
+ * Colors can be stored as:
+ * - Hex values: "#1e40af" (custom colors)
+ * - Brand references: "brand:primary", "brand:secondary", etc.
+ */
+export type BrandColorName = "primary" | "secondary" | "accent" | "background" | "text";
+
+/**
+ * Color value type - either a hex string or a brand reference.
+ * Brand references are prefixed with "brand:" to distinguish from hex values.
+ * Examples: "#1e40af", "brand:primary", "brand:accent"
+ */
+export type ColorValue = string;
+
+/**
+ * Check if a color value is a brand reference.
+ */
+export function isBrandColorReference(color: string | undefined): boolean {
+  return !!color && color.startsWith("brand:");
+}
+
+/**
+ * Get the brand color name from a reference.
+ * Returns null if not a brand reference.
+ */
+export function getBrandColorName(color: string | undefined): BrandColorName | null {
+  if (!color || !color.startsWith("brand:")) return null;
+  return color.slice(6) as BrandColorName;
+}
+
+/**
+ * Create a brand color reference string.
+ */
+export function createBrandColorReference(name: BrandColorName): string {
+  return `brand:${name}`;
+}
+
 // Shared background configuration for all blocks
 export interface BlockBackground {
   type: "color" | "gradient" | "image" | "video";
-  color?: string;
+  color?: ColorValue; // Hex string or "brand:primary", "brand:secondary", etc.
   gradient?: string; // CSS gradient string
   imageUrl?: string;
   videoUrl?: string;
-  overlay?: string; // Optional overlay color/opacity
+  overlay?: ColorValue; // Optional overlay color/opacity
 }
 
 // Advanced settings for all blocks
@@ -74,6 +112,7 @@ export interface ImageBlock extends BaseBlock {
 export interface VideoBlock extends BaseBlock {
   type: "video";
   data: {
+    videoSource?: "external" | "upload"; // Defaults to "external" for backwards compatibility
     videoUrl: string;
     aspectRatio: "16:9" | "4:3" | "1:1";
     autoplay: boolean;
@@ -199,6 +238,102 @@ export interface ButtonGroupBlock extends BaseBlock {
   };
 }
 
+// Global Block Reference - points to a GlobalBlock record (live sync)
+export interface GlobalBlockReference extends BaseBlock {
+  type: "global-block";
+  data: {
+    globalBlockId: string; // Reference to GlobalBlock.id
+    cachedName?: string; // Cached name for display in editor
+  };
+}
+
+// Popup block - modal content with trigger conditions
+export interface PopupBlock extends BaseBlock {
+  type: "popup";
+  data: {
+    // Popup content
+    heading?: string;
+    content: string; // HTML content
+    imageUrl?: string;
+    // Buttons
+    buttons: Array<{
+      id: string;
+      label: string;
+      url?: string;
+      action: "close" | "link";
+      variant: "primary" | "secondary";
+    }>;
+    // Trigger configuration
+    trigger: {
+      type: "scroll" | "exit-intent" | "time-delay" | "button-click";
+      scrollPercentage?: number; // For scroll: 0-100
+      delayMs?: number; // For time-delay: milliseconds
+      buttonText?: string; // For button-click: button label
+    };
+    // Display rules
+    display: {
+      oncePerSession?: boolean;
+      onceEver?: boolean;
+      frequencyDays?: number;
+    };
+    // Styling
+    size: "small" | "medium" | "large" | "full";
+    position: "center" | "bottom" | "slide-in-right";
+    showCloseButton: boolean;
+    closeOnOverlayClick: boolean;
+  };
+}
+
+// Custom HTML block - raw HTML content with sanitization
+export interface CustomHtmlBlock extends BaseBlock {
+  type: "custom-html";
+  data: {
+    html: string; // Raw HTML content (sanitized on render)
+    maxWidth: "narrow" | "medium" | "full";
+    alignment: "left" | "center" | "right";
+    paddingTop: "none" | "small" | "medium" | "large";
+    paddingBottom: "none" | "small" | "medium" | "large";
+  };
+}
+
+// Form block - embed a configurable form
+export interface FormBlock extends BaseBlock {
+  type: "form";
+  data: {
+    formId: string; // Reference to Form.id
+    cachedFormName?: string; // Cached name for display in editor
+    heading?: string; // Optional heading above the form
+    description?: string; // Optional description above the form
+    maxWidth: "narrow" | "medium" | "full";
+    alignment: "left" | "center" | "right";
+  };
+}
+
+// Livestream schedule item
+export interface LivestreamSchedule {
+  id: string;
+  dayOfWeek: number; // 0=Sunday, 1=Monday, ..., 6=Saturday
+  startTime: string; // "09:00" (24-hour format)
+  endTime: string; // "10:30" (24-hour format)
+  label?: string; // Optional label like "Morning Service"
+}
+
+// Watch Live block - livestream with countdown timer
+export interface WatchLiveBlock extends BaseBlock {
+  type: "watch-live";
+  data: {
+    heading: string;
+    subheading?: string;
+    livestreamUrl: string;
+    buttonText: string;
+    scheduleTimes: LivestreamSchedule[];
+    showCountdown: boolean;
+    countdownPrefix?: string; // "Next stream in:" or custom text
+    liveText?: string; // "LIVE NOW" or custom text
+    textAlign: "left" | "center" | "right";
+  };
+}
+
 // Union type for all block types
 export type Block =
   | HeroBlock
@@ -213,7 +348,12 @@ export type Block =
   | EventsFeatureBlock
   | AccordionBlock
   | DividerBlock
-  | ButtonGroupBlock;
+  | ButtonGroupBlock
+  | GlobalBlockReference
+  | PopupBlock
+  | CustomHtmlBlock
+  | FormBlock
+  | WatchLiveBlock;
 
 // Page blocks array type
 export type PageBlocks = Block[];
@@ -258,12 +398,27 @@ export function isDividerBlock(block: Block): block is DividerBlock {
 export function isButtonGroupBlock(block: Block): block is ButtonGroupBlock {
   return block.type === "button-group";
 }
+export function isGlobalBlockReference(block: Block): block is GlobalBlockReference {
+  return block.type === "global-block";
+}
+export function isPopupBlock(block: Block): block is PopupBlock {
+  return block.type === "popup";
+}
+export function isCustomHtmlBlock(block: Block): block is CustomHtmlBlock {
+  return block.type === "custom-html";
+}
+export function isFormBlock(block: Block): block is FormBlock {
+  return block.type === "form";
+}
+export function isWatchLiveBlock(block: Block): block is WatchLiveBlock {
+  return block.type === "watch-live";
+}
 
-// Default background
+// Default background - uses brand primary color
 export function createDefaultBackground(): BlockBackground {
   return {
     type: "color",
-    color: "#1e40af",
+    color: "brand:primary",
   };
 }
 
@@ -317,6 +472,7 @@ export function createVideoBlock(id: string, order: number): VideoBlock {
     type: "video",
     order,
     data: {
+      videoSource: "external",
       videoUrl: "",
       aspectRatio: "16:9",
       autoplay: false,
@@ -447,6 +603,104 @@ export function createButtonGroupBlock(id: string, order: number): ButtonGroupBl
   };
 }
 
+export function createGlobalBlockReference(
+  id: string,
+  order: number,
+  globalBlockId: string,
+  cachedName?: string
+): GlobalBlockReference {
+  return {
+    id,
+    type: "global-block",
+    order,
+    data: {
+      globalBlockId,
+      cachedName,
+    },
+  };
+}
+
+export function createPopupBlock(id: string, order: number): PopupBlock {
+  return {
+    id,
+    type: "popup",
+    order,
+    data: {
+      heading: "",
+      content: "",
+      imageUrl: "",
+      buttons: [],
+      trigger: {
+        type: "time-delay",
+        delayMs: 5000,
+      },
+      display: {
+        oncePerSession: true,
+      },
+      size: "medium",
+      position: "center",
+      showCloseButton: true,
+      closeOnOverlayClick: true,
+    },
+  };
+}
+
+export function createCustomHtmlBlock(id: string, order: number): CustomHtmlBlock {
+  return {
+    id,
+    type: "custom-html",
+    order,
+    data: {
+      html: "",
+      maxWidth: "medium",
+      alignment: "center",
+      paddingTop: "medium",
+      paddingBottom: "medium",
+    },
+  };
+}
+
+export function createFormBlock(
+  id: string,
+  order: number,
+  formId: string = "",
+  cachedFormName?: string
+): FormBlock {
+  return {
+    id,
+    type: "form",
+    order,
+    data: {
+      formId,
+      cachedFormName,
+      heading: "",
+      description: "",
+      maxWidth: "medium",
+      alignment: "center",
+    },
+  };
+}
+
+export function createWatchLiveBlock(id: string, order: number): WatchLiveBlock {
+  return {
+    id,
+    type: "watch-live",
+    order,
+    background: createDefaultBackground(),
+    data: {
+      heading: "Watch Live",
+      subheading: "Join us for worship online",
+      livestreamUrl: "",
+      buttonText: "Watch Now",
+      scheduleTimes: [],
+      showCountdown: true,
+      countdownPrefix: "Next broadcast in",
+      liveText: "LIVE NOW",
+      textAlign: "center",
+    },
+  };
+}
+
 // Block type metadata for UI
 export const BLOCK_TYPES = {
   hero: {
@@ -513,6 +767,31 @@ export const BLOCK_TYPES = {
     name: "Button Group",
     description: "Multiple call-to-action buttons",
     icon: "mouse-pointer",
+  },
+  "global-block": {
+    name: "Global Block",
+    description: "Reusable block from your library",
+    icon: "library",
+  },
+  popup: {
+    name: "Popup",
+    description: "Modal popup with trigger conditions",
+    icon: "message-square",
+  },
+  "custom-html": {
+    name: "Custom HTML",
+    description: "Raw HTML content (sanitized for security)",
+    icon: "code",
+  },
+  form: {
+    name: "Form",
+    description: "Embed a contact, prayer request, or custom form",
+    icon: "file-text",
+  },
+  "watch-live": {
+    name: "Watch Live",
+    description: "Livestream link with countdown timer",
+    icon: "radio",
   },
 } as const;
 

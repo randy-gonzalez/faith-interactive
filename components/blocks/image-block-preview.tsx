@@ -6,34 +6,12 @@
  * Live preview rendering of image block.
  */
 
-import type { Block, ImageBlock, BlockBackground } from "@/types/blocks";
+import type { Block, ImageBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
+import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 
 interface ImageBlockPreviewProps {
   block: Block;
-}
-
-function getBackgroundStyles(background?: BlockBackground): React.CSSProperties {
-  if (!background) return {};
-
-  switch (background.type) {
-    case "color":
-      return { backgroundColor: background.color || "transparent" };
-    case "gradient":
-      return { background: background.gradient };
-    case "image":
-      if (background.imageUrl) {
-        const overlay = background.overlay || "rgba(0,0,0,0.5)";
-        return {
-          backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${background.imageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        };
-      }
-      return {};
-    default:
-      return {};
-  }
 }
 
 export function ImageBlockPreview({ block }: ImageBlockPreviewProps) {
@@ -53,9 +31,9 @@ export function ImageBlockPreview({ block }: ImageBlockPreviewProps) {
     full: "max-w-none w-full",
   };
 
-  const backgroundStyle = getBackgroundStyles(background);
+  const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
   const advancedProps = getAdvancedProps(advanced);
-  const combinedClassName = `py-8 px-6 flex flex-col ${alignmentClasses[data.alignment]} ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview py-8 px-6 flex flex-col relative ${alignmentClasses[data.alignment]} ${advancedProps.className || ""}`.trim();
 
   return (
     <div
@@ -63,8 +41,13 @@ export function ImageBlockPreview({ block }: ImageBlockPreviewProps) {
       className={combinedClassName}
       style={backgroundStyle}
     >
+      {/* Image overlay (for image backgrounds) */}
+      {background?.type === "image" && background.imageUrl && overlay && (
+        <div className="absolute inset-0" style={overlay} />
+      )}
+
       {data.imageUrl ? (
-        <figure className={sizeClasses[data.size]}>
+        <figure className={`relative z-10 ${sizeClasses[data.size]}`}>
           <img
             src={data.imageUrl}
             alt={data.alt}
@@ -77,7 +60,7 @@ export function ImageBlockPreview({ block }: ImageBlockPreviewProps) {
           )}
         </figure>
       ) : (
-        <div className="w-full max-w-xl aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
+        <div className="relative z-10 w-full max-w-xl aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
           <span className="text-gray-400">Add an image URL...</span>
         </div>
       )}

@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireAuthContext, requireContentEditor, AuthError } from "@/lib/auth/guards";
 import { getTenantPrisma } from "@/lib/db/tenant-prisma";
 import { pageSchema, formatZodError } from "@/lib/validation/schemas";
@@ -196,6 +197,15 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     });
 
     logger.info("Page updated", { pageId: page.id, churchId: user.churchId });
+
+    // Revalidate public pages when homepage status changes or page is published
+    if (isHomePage !== undefined || status === "PUBLISHED") {
+      revalidatePath("/", "page");
+    }
+    // Revalidate the specific page path if it has one
+    if (page.urlPath) {
+      revalidatePath(`/${page.urlPath}`, "page");
+    }
 
     return NextResponse.json<ApiResponse>({
       success: true,

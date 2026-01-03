@@ -70,23 +70,23 @@ export default async function EventsPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
       <header className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
           Events
         </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-gray-600">
           What's happening at our church
         </p>
       </header>
 
       {/* Upcoming Events */}
       <section className="mb-12">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
           Upcoming Events
         </h2>
 
         {upcomingEvents.length === 0 ? (
-          <div className="text-center py-8 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <p className="text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 bg-gray-50 rounded-lg">
+            <p className="text-gray-500">
               No upcoming events scheduled.
             </p>
           </div>
@@ -96,12 +96,12 @@ export default async function EventsPage() {
               <Link
                 key={event.id}
                 href={`/events/${event.id}`}
-                className="block bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:shadow-md transition-shadow"
+                className="block bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex flex-col sm:flex-row gap-4">
                   {/* Date Badge */}
                   <div className="flex-shrink-0 text-center sm:text-left">
-                    <div className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg">
+                    <div className="inline-block bg-blue-100 text-blue-700 px-4 py-2 rounded-lg">
                       <div className="text-2xl font-bold">
                         {new Date(event.startDate).getDate()}
                       </div>
@@ -115,20 +115,20 @@ export default async function EventsPage() {
 
                   {/* Event Details */}
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
                       {event.title}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    <p className="text-sm text-gray-500 mb-2">
                       {formatDate(event.startDate, event.endDate)}
                     </p>
                     {event.location && (
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                      <p className="text-sm text-gray-600">
                         <span className="inline-block w-4 mr-1">📍</span>
                         {event.location}
                       </p>
                     )}
                     {event.description && (
-                      <p className="mt-2 text-gray-600 dark:text-gray-300 line-clamp-2">
+                      <p className="mt-2 text-gray-600 line-clamp-2">
                         {event.description}
                       </p>
                     )}
@@ -137,7 +137,7 @@ export default async function EventsPage() {
                   {/* Registration Badge */}
                   {event.registrationUrl && (
                     <div className="flex-shrink-0">
-                      <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full">
+                      <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-green-100 text-green-700 rounded-full">
                         Register →
                       </span>
                     </div>
@@ -152,7 +152,7 @@ export default async function EventsPage() {
       {/* Past Events */}
       {pastEvents.length > 0 && (
         <section>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Past Events
           </h2>
           <div className="space-y-3">
@@ -160,16 +160,16 @@ export default async function EventsPage() {
               <Link
                 key={event.id}
                 href={`/events/${event.id}`}
-                className="block bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors opacity-75"
+                className="block bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors opacity-75"
               >
                 <div className="flex items-center gap-4">
-                  <span className="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0 w-24">
+                  <span className="text-sm text-gray-500 flex-shrink-0 w-24">
                     {new Date(event.startDate).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                     })}
                   </span>
-                  <span className="text-gray-700 dark:text-gray-300">
+                  <span className="text-gray-700">
                     {event.title}
                   </span>
                 </div>

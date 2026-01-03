@@ -61,7 +61,7 @@ export function PrayerRequestForm() {
 
   if (success) {
     return (
-      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6 text-center">
+      <div className="bg-purple-50 border border-purple-200 rounded-lg p-6 text-center">
         <svg
           className="w-12 h-12 text-purple-500 mx-auto mb-4"
           fill="none"
@@ -75,15 +75,15 @@ export function PrayerRequestForm() {
             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
           />
         </svg>
-        <h3 className="text-lg font-semibold text-purple-800 dark:text-purple-200 mb-2">
+        <h3 className="text-lg font-semibold text-purple-800 mb-2">
           Prayer Request Received
         </h3>
-        <p className="text-purple-600 dark:text-purple-300">
+        <p className="text-purple-600">
           Thank you for sharing your prayer request with us. We will be praying for you.
         </p>
         <button
           onClick={() => setSuccess(false)}
-          className="mt-4 text-sm text-purple-600 dark:text-purple-400 hover:underline"
+          className="mt-4 text-sm text-purple-600 hover:underline"
         >
           Submit another request
         </button>
@@ -94,13 +94,13 @@ export function PrayerRequestForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
           {error}
         </div>
       )}
 
-      <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg mb-6">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+      <div className="bg-gray-50 p-4 rounded-lg mb-6">
+        <p className="text-sm text-gray-600">
           Your prayer request is kept confidential and shared only with our prayer team.
           You may submit anonymously if you prefer.
         </p>
@@ -109,7 +109,7 @@ export function PrayerRequestForm() {
       <div>
         <label
           htmlFor="name"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          className="block text-sm font-medium text-gray-700 mb-1"
         >
           Your Name <span className="text-gray-400">(optional)</span>
         </label>
@@ -126,7 +126,7 @@ export function PrayerRequestForm() {
       <div>
         <label
           htmlFor="email"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          className="block text-sm font-medium text-gray-700 mb-1"
         >
           Your Email <span className="text-gray-400">(optional)</span>
         </label>
@@ -138,7 +138,7 @@ export function PrayerRequestForm() {
           placeholder="john@example.com"
           disabled={loading}
         />
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-xs text-gray-500">
           Provide your email if you'd like us to follow up with you
         </p>
       </div>
@@ -146,7 +146,7 @@ export function PrayerRequestForm() {
       <div>
         <label
           htmlFor="request"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          className="block text-sm font-medium text-gray-700 mb-1"
         >
           Prayer Request *
         </label>
@@ -184,7 +184,7 @@ export function PrayerRequestForm() {
         {loading ? "Submitting..." : "Submit Prayer Request"}
       </Button>
 
-      <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+      <p className="text-xs text-gray-500 text-center">
         Your prayer request is private and handled with care.
       </p>
     </form>

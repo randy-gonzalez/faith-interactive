@@ -323,3 +323,101 @@ This volunteer signup was submitted through your ${churchName} website.
     toEmails.map((toEmail) => sendEmail({ to: toEmail, subject, text, html }))
   );
 }
+
+/**
+ * Send a form submission notification email to designated recipients.
+ * This is the unified notification for all configurable forms.
+ */
+export async function sendFormSubmissionNotificationEmail(
+  toEmails: string[],
+  churchName: string,
+  formName: string,
+  data: Record<string, unknown>,
+  fields: Array<{ name: string; label: string; type: string }>,
+  submissionId: string
+): Promise<void> {
+  const subject = `New ${formName} Submission - ${churchName}`;
+
+  // Build field values text
+  const fieldValuesText = fields
+    .map((field) => {
+      const value = data[field.name];
+      if (value === undefined || value === null || value === "") {
+        return `${field.label}: Not provided`;
+      }
+      if (Array.isArray(value)) {
+        return `${field.label}: ${value.join(", ")}`;
+      }
+      if (typeof value === "boolean") {
+        return `${field.label}: ${value ? "Yes" : "No"}`;
+      }
+      return `${field.label}: ${value}`;
+    })
+    .join("\n");
+
+  const text = `
+New ${formName} Submission
+
+${fieldValuesText}
+
+---
+Submission ID: ${submissionId}
+This submission was sent through your ${churchName} website.
+`.trim();
+
+  // Build field values HTML
+  const fieldValuesHtml = fields
+    .map((field) => {
+      const value = data[field.name];
+      let displayValue: string;
+
+      if (value === undefined || value === null || value === "") {
+        displayValue = "<em>Not provided</em>";
+      } else if (Array.isArray(value)) {
+        displayValue = value.join(", ");
+      } else if (typeof value === "boolean") {
+        displayValue = value ? "Yes" : "No";
+      } else if (field.type === "textarea") {
+        displayValue = `<div style="white-space: pre-wrap;">${String(value)}</div>`;
+      } else {
+        displayValue = String(value);
+      }
+
+      return `
+        <tr>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 500; color: #374151; width: 30%;">${field.label}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937;">${displayValue}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h1 style="color: #1a1a1a; font-size: 24px; margin-bottom: 20px;">New ${formName} Submission</h1>
+
+  <table style="width: 100%; border-collapse: collapse; background-color: #fff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+    ${fieldValuesHtml}
+  </table>
+
+  <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;">
+
+  <p style="color: #999; font-size: 12px;">
+    Submission ID: ${submissionId}<br>
+    This submission was sent through your ${churchName} website.
+  </p>
+</body>
+</html>
+`.trim();
+
+  // Send to all recipients
+  await Promise.all(
+    toEmails.map((toEmail) => sendEmail({ to: toEmail, subject, text, html }))
+  );
+}

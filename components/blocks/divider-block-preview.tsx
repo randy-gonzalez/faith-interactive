@@ -24,7 +24,7 @@ export function DividerBlockPreview({ block }: DividerBlockPreviewProps) {
   };
 
   const advancedProps = getAdvancedProps(advanced);
-  const combinedClassName = `px-6 ${heightClasses[data.height]} ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview px-6 ${heightClasses[data.height]} ${advancedProps.className || ""}`.trim();
 
   return (
     <div {...advancedProps} className={combinedClassName}>

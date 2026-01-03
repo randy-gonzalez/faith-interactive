@@ -6,34 +6,12 @@
  * Live preview rendering of text block.
  */
 
-import type { Block, TextBlock, BlockBackground } from "@/types/blocks";
+import type { Block, TextBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
+import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 
 interface TextBlockPreviewProps {
   block: Block;
-}
-
-function getBackgroundStyles(background?: BlockBackground): React.CSSProperties {
-  if (!background) return {};
-
-  switch (background.type) {
-    case "color":
-      return { backgroundColor: background.color || "transparent" };
-    case "gradient":
-      return { background: background.gradient };
-    case "image":
-      if (background.imageUrl) {
-        const overlay = background.overlay || "rgba(0,0,0,0.5)";
-        return {
-          backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${background.imageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        };
-      }
-      return {};
-    default:
-      return {};
-  }
 }
 
 export function TextBlockPreview({ block }: TextBlockPreviewProps) {
@@ -52,11 +30,11 @@ export function TextBlockPreview({ block }: TextBlockPreviewProps) {
     full: "max-w-none",
   };
 
-  const backgroundStyle = getBackgroundStyles(background);
+  const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
   const hasBackground = background && background.type !== "color";
   const textColorClass = hasBackground ? "text-white" : "text-gray-900";
   const advancedProps = getAdvancedProps(advanced);
-  const combinedClassName = `py-12 px-6 ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview py-12 px-6 relative ${advancedProps.className || ""}`.trim();
 
   return (
     <div
@@ -64,7 +42,12 @@ export function TextBlockPreview({ block }: TextBlockPreviewProps) {
       className={combinedClassName}
       style={backgroundStyle}
     >
-      <div className={`mx-auto ${maxWidthClasses[data.maxWidth]} ${alignmentClasses[data.alignment]}`}>
+      {/* Image overlay (for image backgrounds) */}
+      {background?.type === "image" && background.imageUrl && overlay && (
+        <div className="absolute inset-0" style={overlay} />
+      )}
+
+      <div className={`mx-auto relative z-10 ${maxWidthClasses[data.maxWidth]} ${alignmentClasses[data.alignment]}`}>
         {data.content ? (
           <div
             className={`prose ${data.maxWidth === "full" ? "prose-lg max-w-none" : ""} ${textColorClass}`}

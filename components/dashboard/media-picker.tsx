@@ -58,7 +58,7 @@ export function MediaPicker({
       const response = await fetch("/api/media?type=image");
       if (response.ok) {
         const data = await response.json();
-        setMedia(data.media || []);
+        setMedia(data.data?.media || []);
       }
     } catch (error) {
       console.error("Failed to fetch media:", error);
@@ -247,7 +247,7 @@ export function MediaPicker({
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/jpeg,image/png,image/webp"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
                     className="hidden"
                     onChange={(e) => {
                       if (e.target.files && e.target.files.length > 0) {
@@ -298,7 +298,7 @@ export function MediaPicker({
                         `}
                       >
                         <img
-                          src={item.variantUrls?.small || item.url}
+                          src={item.variantUrls?.["small-square"] || item.variantUrls?.small || item.url}
                           alt={item.alt || item.filename}
                           className="w-full h-full object-cover bg-gray-100"
                         />

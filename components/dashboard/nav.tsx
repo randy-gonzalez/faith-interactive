@@ -31,11 +31,6 @@ const NAV_SECTIONS: NavSection[] = [
   {
     items: [
       { label: "Dashboard", href: "/admin/dashboard" },
-    ],
-  },
-  {
-    title: "Content",
-    items: [
       { label: "Pages", href: "/admin/pages" },
       {
         label: "Sermons",
@@ -49,29 +44,26 @@ const NAV_SECTIONS: NavSection[] = [
       { label: "Events", href: "/admin/events" },
       { label: "Announcements", href: "/admin/announcements" },
       { label: "Leadership", href: "/admin/leadership" },
-    ],
-  },
-  {
-    title: "Forms",
-    items: [
-      { label: "Prayer Requests", href: "/admin/prayer-requests" },
-      { label: "Volunteer Signups", href: "/admin/volunteer-signups" },
-    ],
-  },
-  {
-    title: "Media",
-    items: [
+      { label: "Forms", href: "/admin/forms" },
       { label: "Media Library", href: "/admin/media" },
-    ],
-  },
-  {
-    items: [
+      {
+        label: "Theme",
+        href: "/admin/theme",
+        children: [
+          { label: "Header", href: "/admin/theme/header" },
+          { label: "Footer", href: "/admin/theme/footer" },
+          { label: "Global Blocks", href: "/admin/theme/global-blocks" },
+          { label: "Logos", href: "/admin/theme/logos" },
+          { label: "Colors", href: "/admin/theme/colors" },
+          { label: "Typography", href: "/admin/theme/typography" },
+          { label: "Buttons", href: "/admin/theme/buttons" },
+        ],
+      },
       {
         label: "Settings",
         href: "/admin/settings",
         children: [
           { label: "General", href: "/admin/settings" },
-          { label: "Branding", href: "/admin/settings/branding" },
           { label: "Custom Domains", href: "/admin/settings/domains", requiredRole: "ADMIN" },
           { label: "Team", href: "/admin/settings/team", requiredRole: "ADMIN" },
           { label: "Redirects", href: "/admin/settings/redirects", requiredRole: "ADMIN" },
@@ -129,9 +121,14 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
     visibleSections.forEach((section) => {
       section.items.forEach((item) => {
         if (item.children) {
-          const hasActiveChild = item.children.some((child) =>
-            pathname.startsWith(child.href)
-          );
+          const hasActiveChild = item.children.some((child) => {
+            if (pathname.startsWith(child.href)) return true;
+            // Special case: /admin/global-blocks/* should expand Theme
+            if (child.href === "/admin/theme/global-blocks" && pathname.startsWith("/admin/global-blocks")) {
+              return true;
+            }
+            return false;
+          });
           if (hasActiveChild) {
             newExpanded.add(item.href);
           }
@@ -181,9 +178,15 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
                     ? pathname === "/admin/dashboard" || pathname === "/admin"
                     : pathname === item.href || (pathname.startsWith(item.href + "/") && !item.children);
                 const isExpanded = expandedItems.has(item.href);
-                const hasActiveChild = item.children?.some((child) =>
-                  pathname.startsWith(child.href)
-                );
+                const hasActiveChild = item.children?.some((child) => {
+                  // Direct match
+                  if (pathname.startsWith(child.href)) return true;
+                  // Special case: /admin/global-blocks/* should highlight Theme > Global Blocks
+                  if (child.href === "/admin/theme/global-blocks" && pathname.startsWith("/admin/global-blocks")) {
+                    return true;
+                  }
+                  return false;
+                });
 
                 // Accordion item with children
                 if (item.children) {
@@ -216,8 +219,12 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
                           {item.children.map((child) => {
                             // For exact match routes like /admin/settings, only match exactly
                             // For routes with potential children, use startsWith
-                            const isChildActive = pathname === child.href ||
+                            let isChildActive = pathname === child.href ||
                               (pathname.startsWith(child.href + "/") && child.href !== "/admin/settings");
+                            // Special case: /admin/global-blocks/* should highlight Global Blocks
+                            if (child.href === "/admin/theme/global-blocks" && pathname.startsWith("/admin/global-blocks")) {
+                              isChildActive = true;
+                            }
                             return (
                               <li key={child.href}>
                                 <Link

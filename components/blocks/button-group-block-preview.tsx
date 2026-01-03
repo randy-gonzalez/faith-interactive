@@ -6,41 +6,19 @@
  * Live preview rendering of button group block.
  */
 
-import type { Block, ButtonGroupBlock, BlockBackground } from "@/types/blocks";
+import type { Block, ButtonGroupBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
+import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 
 interface ButtonGroupBlockPreviewProps {
   block: Block;
-}
-
-function getBackgroundStyles(background?: BlockBackground): React.CSSProperties {
-  if (!background) return {};
-
-  switch (background.type) {
-    case "color":
-      return { backgroundColor: background.color || "transparent" };
-    case "gradient":
-      return { background: background.gradient };
-    case "image":
-      if (background.imageUrl) {
-        const overlay = background.overlay || "rgba(0,0,0,0.5)";
-        return {
-          backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${background.imageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        };
-      }
-      return {};
-    default:
-      return {};
-  }
 }
 
 export function ButtonGroupBlockPreview({ block }: ButtonGroupBlockPreviewProps) {
   const buttonGroupBlock = block as ButtonGroupBlock;
   const { data, background, advanced } = buttonGroupBlock;
 
-  const backgroundStyle = getBackgroundStyles(background);
+  const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
   const hasBackground = background && background.type !== "color";
   const advancedProps = getAdvancedProps(advanced);
 
@@ -50,33 +28,55 @@ export function ButtonGroupBlockPreview({ block }: ButtonGroupBlockPreviewProps)
     right: "justify-end",
   };
 
-  const getButtonClasses = (variant: "primary" | "secondary" | "outline") => {
+  // Get button styles using CSS variables for branding
+  const getButtonStyles = (variant: "primary" | "secondary" | "outline"): React.CSSProperties => {
+    const baseStyles: React.CSSProperties = {
+      borderRadius: "var(--btn-radius, 8px)",
+    };
+
     if (hasBackground) {
+      // On backgrounds, use white/transparent variants
       switch (variant) {
         case "primary":
-          return "bg-white text-gray-900 hover:bg-gray-100";
+          return { ...baseStyles, backgroundColor: "#ffffff", color: "#1f2937" };
         case "secondary":
-          return "bg-white/20 text-white hover:bg-white/30";
+          return { ...baseStyles, backgroundColor: "rgba(255,255,255,0.2)", color: "#ffffff" };
         case "outline":
-          return "bg-transparent text-white border-2 border-white hover:bg-white/10";
+          return { ...baseStyles, backgroundColor: "transparent", color: "#ffffff", border: "2px solid #ffffff" };
       }
     } else {
+      // Use branding colors via CSS variables
       switch (variant) {
         case "primary":
-          return "bg-blue-600 text-white hover:bg-blue-700";
+          return { ...baseStyles, backgroundColor: "var(--btn-primary-bg)", color: "var(--btn-primary-text)" };
         case "secondary":
-          return "bg-gray-600 text-white hover:bg-gray-700";
+          return { ...baseStyles, backgroundColor: "var(--btn-secondary-bg)", color: "var(--btn-secondary-text)" };
         case "outline":
-          return "bg-transparent text-gray-900 border-2 border-gray-900 hover:bg-gray-100";
+          return {
+            ...baseStyles,
+            backgroundColor: "transparent",
+            color: "var(--btn-outline-text)",
+            border: "2px solid var(--btn-outline-border)",
+          };
       }
     }
   };
 
-  const combinedClassName = `py-8 px-6 ${advancedProps.className || ""}`.trim();
+  // Base classes without colors (using inline styles for colors)
+  const getButtonClasses = () => {
+    return "inline-block px-6 py-3 font-semibold transition-opacity hover:opacity-90";
+  };
+
+  const combinedClassName = `block-preview py-8 px-6 relative ${advancedProps.className || ""}`.trim();
 
   return (
     <div {...advancedProps} className={combinedClassName} style={backgroundStyle}>
-      <div className="max-w-4xl mx-auto">
+      {/* Image overlay (for image backgrounds) */}
+      {background?.type === "image" && background.imageUrl && overlay && (
+        <div className="absolute inset-0" style={overlay} />
+      )}
+
+      <div className="max-w-4xl mx-auto relative z-10">
         {data.buttons.length === 0 ? (
           <p className="text-center text-gray-400 italic">
             Add buttons to display...
@@ -87,7 +87,8 @@ export function ButtonGroupBlockPreview({ block }: ButtonGroupBlockPreviewProps)
               <a
                 key={btn.id}
                 href={btn.url}
-                className={`inline-block px-6 py-3 rounded-lg font-semibold transition-colors ${getButtonClasses(btn.variant)}`}
+                className={getButtonClasses()}
+                style={getButtonStyles(btn.variant)}
               >
                 {btn.text}
               </a>

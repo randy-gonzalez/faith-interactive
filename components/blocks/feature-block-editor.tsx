@@ -11,6 +11,7 @@ import type { Block, FeatureBlock, BlockBackground, BlockAdvanced } from "@/type
 import { createDefaultBackground } from "@/types/blocks";
 import { BlockBackgroundEditor } from "./block-background-editor";
 import { BlockAdvancedEditor } from "./block-advanced-editor";
+import { MediaPicker } from "@/components/dashboard/media-picker";
 
 interface FeatureBlockEditorProps {
   block: Block;
@@ -79,20 +80,13 @@ export function FeatureBlockEditor({
       {/* Content Tab */}
       {activeTab === "content" && (
         <div className="space-y-4">
-          {/* Image URL */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Image URL
-            </label>
-            <input
-              type="url"
-              value={data.imageUrl}
-              onChange={(e) => updateData({ imageUrl: e.target.value })}
-              disabled={disabled}
-              placeholder="https://example.com/image.jpg"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-            />
-          </div>
+          {/* Image */}
+          <MediaPicker
+            label="Image"
+            value={data.imageUrl}
+            onChange={(url) => updateData({ imageUrl: url || "" })}
+            disabled={disabled}
+          />
 
           {/* Image Position */}
           <div>

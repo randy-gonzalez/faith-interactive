@@ -29,13 +29,13 @@ const brandingSchema = z.object({
   colorPresets: z.array(z.object({
     name: z.string().min(1),
     value: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
-  })).optional().default([]),
+  })).optional(),
 
   // Gradients
   gradientPresets: z.array(z.object({
     name: z.string().min(1),
     value: z.string().min(1),
-  })).optional().default([]),
+  })).optional(),
 
   // Typography
   fontPrimary: z.string().max(100).optional().nullable().or(z.literal("")),
@@ -47,6 +47,16 @@ const brandingSchema = z.object({
   // Button styles
   buttonStyle: z.enum(["rounded", "pill", "square"]).optional().nullable(),
   buttonRadius: z.number().int().min(0).max(50).optional().nullable(),
+
+  // Button colors
+  buttonPrimaryBg: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable().or(z.literal("")),
+  buttonPrimaryText: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable().or(z.literal("")),
+  buttonSecondaryBg: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable().or(z.literal("")),
+  buttonSecondaryText: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable().or(z.literal("")),
+  buttonOutlineBorder: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable().or(z.literal("")),
+  buttonOutlineText: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable().or(z.literal("")),
+  buttonAccentBg: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable().or(z.literal("")),
+  buttonAccentText: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable().or(z.literal("")),
 
   // Additional styles
   borderRadius: z.number().int().min(0).max(50).optional().nullable(),
@@ -123,56 +133,62 @@ export async function PUT(request: NextRequest) {
 
     const data = parseResult.data;
 
+    // Build update object with only provided fields
+    // This allows partial updates without resetting other settings
+    const updateData: Record<string, unknown> = {};
+
+    // Helper to check if a key was explicitly provided in the request body
+    const wasProvided = (key: string) => key in body;
+
+    // Logos
+    if (wasProvided("logoHeaderUrl")) updateData.logoHeaderUrl = data.logoHeaderUrl || null;
+    if (wasProvided("logoLightUrl")) updateData.logoLightUrl = data.logoLightUrl || null;
+    if (wasProvided("logoDarkUrl")) updateData.logoDarkUrl = data.logoDarkUrl || null;
+    if (wasProvided("faviconUrl")) updateData.faviconUrl = data.faviconUrl || null;
+
+    // Colors
+    if (wasProvided("colorPrimary")) updateData.colorPrimary = data.colorPrimary || null;
+    if (wasProvided("colorSecondary")) updateData.colorSecondary = data.colorSecondary || null;
+    if (wasProvided("colorAccent")) updateData.colorAccent = data.colorAccent || null;
+    if (wasProvided("colorBackground")) updateData.colorBackground = data.colorBackground || null;
+    if (wasProvided("colorText")) updateData.colorText = data.colorText || null;
+    if (wasProvided("colorPresets")) updateData.colorPresets = data.colorPresets ?? [];
+    if (wasProvided("gradientPresets")) updateData.gradientPresets = data.gradientPresets ?? [];
+    if (wasProvided("linkColor")) updateData.linkColor = data.linkColor || null;
+    if (wasProvided("linkHoverColor")) updateData.linkHoverColor = data.linkHoverColor || null;
+
+    // Typography
+    if (wasProvided("fontPrimary")) updateData.fontPrimary = data.fontPrimary || null;
+    if (wasProvided("fontSecondary")) updateData.fontSecondary = data.fontSecondary || null;
+    if (wasProvided("fontSizeBase")) updateData.fontSizeBase = data.fontSizeBase ?? 16;
+    if (wasProvided("headingScale")) updateData.headingScale = data.headingScale ?? 1.25;
+    if (wasProvided("lineHeight")) updateData.lineHeight = data.lineHeight ?? 1.5;
+
+    // Button styles
+    if (wasProvided("buttonStyle")) updateData.buttonStyle = data.buttonStyle ?? "rounded";
+    if (wasProvided("buttonRadius")) updateData.buttonRadius = data.buttonRadius ?? 6;
+    if (wasProvided("borderRadius")) updateData.borderRadius = data.borderRadius ?? 8;
+
+    // Button colors
+    if (wasProvided("buttonPrimaryBg")) updateData.buttonPrimaryBg = data.buttonPrimaryBg || null;
+    if (wasProvided("buttonPrimaryText")) updateData.buttonPrimaryText = data.buttonPrimaryText || null;
+    if (wasProvided("buttonSecondaryBg")) updateData.buttonSecondaryBg = data.buttonSecondaryBg || null;
+    if (wasProvided("buttonSecondaryText")) updateData.buttonSecondaryText = data.buttonSecondaryText || null;
+    if (wasProvided("buttonOutlineBorder")) updateData.buttonOutlineBorder = data.buttonOutlineBorder || null;
+    if (wasProvided("buttonOutlineText")) updateData.buttonOutlineText = data.buttonOutlineText || null;
+    if (wasProvided("buttonAccentBg")) updateData.buttonAccentBg = data.buttonAccentBg || null;
+    if (wasProvided("buttonAccentText")) updateData.buttonAccentText = data.buttonAccentText || null;
+
     // Upsert branding settings
     const branding = await prisma.churchBranding.upsert({
       where: { churchId: user.churchId },
       create: {
         churchId: user.churchId,
-        logoHeaderUrl: data.logoHeaderUrl || null,
-        logoLightUrl: data.logoLightUrl || null,
-        logoDarkUrl: data.logoDarkUrl || null,
-        faviconUrl: data.faviconUrl || null,
-        colorPrimary: data.colorPrimary || null,
-        colorSecondary: data.colorSecondary || null,
-        colorAccent: data.colorAccent || null,
-        colorBackground: data.colorBackground || null,
-        colorText: data.colorText || null,
-        colorPresets: data.colorPresets,
-        gradientPresets: data.gradientPresets,
-        fontPrimary: data.fontPrimary || null,
-        fontSecondary: data.fontSecondary || null,
-        fontSizeBase: data.fontSizeBase ?? 16,
-        headingScale: data.headingScale ?? 1.25,
-        lineHeight: data.lineHeight ?? 1.5,
-        buttonStyle: data.buttonStyle ?? "rounded",
-        buttonRadius: data.buttonRadius ?? 6,
-        borderRadius: data.borderRadius ?? 8,
-        linkColor: data.linkColor || null,
-        linkHoverColor: data.linkHoverColor || null,
+        colorPresets: [],
+        gradientPresets: [],
+        ...updateData,
       },
-      update: {
-        logoHeaderUrl: data.logoHeaderUrl || null,
-        logoLightUrl: data.logoLightUrl || null,
-        logoDarkUrl: data.logoDarkUrl || null,
-        faviconUrl: data.faviconUrl || null,
-        colorPrimary: data.colorPrimary || null,
-        colorSecondary: data.colorSecondary || null,
-        colorAccent: data.colorAccent || null,
-        colorBackground: data.colorBackground || null,
-        colorText: data.colorText || null,
-        colorPresets: data.colorPresets,
-        gradientPresets: data.gradientPresets,
-        fontPrimary: data.fontPrimary || null,
-        fontSecondary: data.fontSecondary || null,
-        fontSizeBase: data.fontSizeBase ?? 16,
-        headingScale: data.headingScale ?? 1.25,
-        lineHeight: data.lineHeight ?? 1.5,
-        buttonStyle: data.buttonStyle ?? "rounded",
-        buttonRadius: data.buttonRadius ?? 6,
-        borderRadius: data.borderRadius ?? 8,
-        linkColor: data.linkColor || null,
-        linkHoverColor: data.linkHoverColor || null,
-      },
+      update: updateData,
     });
 
     logger.info("Branding updated", { churchId: user.churchId });

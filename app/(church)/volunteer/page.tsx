@@ -5,8 +5,9 @@
  */
 
 import { notFound } from "next/navigation";
-import { getSiteData } from "@/lib/public/get-site-data";
-import { VolunteerSignupForm } from "@/components/public/volunteer-signup-form";
+import { getSiteData, getFormByType } from "@/lib/public/get-site-data";
+import { DynamicForm } from "@/components/public/dynamic-form";
+import type { FormField, FormSettings } from "@/types/forms";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -23,25 +24,39 @@ export default async function VolunteerPage() {
 
   const { church } = siteData;
 
+  // Get the volunteer form
+  const form = await getFormByType(church.id, "VOLUNTEER");
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
       <header className="mb-8 text-center">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
           Volunteer
         </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-gray-600">
           Join us in serving our community at {church.name}
         </p>
       </header>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 sm:p-8">
-        <div className="mb-8 text-center">
-          <p className="text-gray-600 dark:text-gray-400">
-            We have many opportunities for you to use your gifts and talents.
-            Whether you have a little time or a lot, there's a place for you!
+      <div className="bg-white rounded-lg shadow-sm p-6 sm:p-8">
+        {form && form.isActive ? (
+          <>
+            {form.description && (
+              <div className="mb-8 text-center">
+                <p className="text-gray-600">{form.description}</p>
+              </div>
+            )}
+            <DynamicForm
+              formId={form.id}
+              fields={form.fields as unknown as FormField[]}
+              settings={form.settings as unknown as FormSettings}
+            />
+          </>
+        ) : (
+          <p className="text-gray-500 text-center">
+            Volunteer signup form is currently unavailable.
           </p>
-        </div>
-        <VolunteerSignupForm />
+        )}
       </div>
     </div>
   );

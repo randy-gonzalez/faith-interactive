@@ -5,8 +5,9 @@
  */
 
 import { notFound } from "next/navigation";
-import { getSiteData } from "@/lib/public/get-site-data";
-import { PrayerRequestForm } from "@/components/public/prayer-request-form";
+import { getSiteData, getFormByType } from "@/lib/public/get-site-data";
+import { DynamicForm } from "@/components/public/dynamic-form";
+import type { FormField, FormSettings } from "@/types/forms";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -21,19 +22,41 @@ export default async function PrayerRequestPage() {
     notFound();
   }
 
+  const { church } = siteData;
+
+  // Get the prayer request form
+  const form = await getFormByType(church.id, "PRAYER_REQUEST");
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
       <header className="mb-8 text-center">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
           Prayer Request
         </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-gray-600">
           We believe in the power of prayer and would be honored to pray for you
         </p>
       </header>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 sm:p-8">
-        <PrayerRequestForm />
+      <div className="bg-white rounded-lg shadow-sm p-6 sm:p-8">
+        {form && form.isActive ? (
+          <>
+            {form.description && (
+              <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <p className="text-sm text-gray-600">{form.description}</p>
+              </div>
+            )}
+            <DynamicForm
+              formId={form.id}
+              fields={form.fields as unknown as FormField[]}
+              settings={form.settings as unknown as FormSettings}
+            />
+          </>
+        ) : (
+          <p className="text-gray-500 text-center">
+            Prayer request form is currently unavailable.
+          </p>
+        )}
       </div>
     </div>
   );

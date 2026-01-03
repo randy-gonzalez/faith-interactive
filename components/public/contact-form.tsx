@@ -60,7 +60,7 @@ export function ContactForm() {
 
   if (success) {
     return (
-      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 text-center">
+      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
         <svg
           className="w-12 h-12 text-green-500 mx-auto mb-4"
           fill="none"
@@ -74,15 +74,15 @@ export function ContactForm() {
             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
+        <h3 className="text-lg font-semibold text-green-800 mb-2">
           Message Sent!
         </h3>
-        <p className="text-green-600 dark:text-green-300">
+        <p className="text-green-600">
           Thank you for reaching out. We'll be in touch soon.
         </p>
         <button
           onClick={() => setSuccess(false)}
-          className="mt-4 text-sm text-green-600 dark:text-green-400 hover:underline"
+          className="mt-4 text-sm text-green-600 hover:underline"
         >
           Send another message
         </button>
@@ -93,7 +93,7 @@ export function ContactForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
           {error}
         </div>
       )}
@@ -101,7 +101,7 @@ export function ContactForm() {
       <div>
         <label
           htmlFor="name"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          className="block text-sm font-medium text-gray-700 mb-1"
         >
           Your Name *
         </label>
@@ -119,7 +119,7 @@ export function ContactForm() {
       <div>
         <label
           htmlFor="email"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          className="block text-sm font-medium text-gray-700 mb-1"
         >
           Your Email *
         </label>
@@ -137,7 +137,7 @@ export function ContactForm() {
       <div>
         <label
           htmlFor="message"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          className="block text-sm font-medium text-gray-700 mb-1"
         >
           Message *
         </label>
@@ -175,7 +175,7 @@ export function ContactForm() {
         {loading ? "Sending..." : "Send Message"}
       </Button>
 
-      <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+      <p className="text-xs text-gray-500 text-center">
         Your information is kept private and will never be shared.
       </p>
     </form>

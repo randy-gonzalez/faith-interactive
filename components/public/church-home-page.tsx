@@ -10,12 +10,14 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSiteData } from "@/lib/public/get-site-data";
+import { getSiteData, getNavigationPages } from "@/lib/public/get-site-data";
 import { prisma } from "@/lib/db/prisma";
 import { BlockRenderer } from "@/components/blocks/block-renderer";
+import { resolveGlobalBlocks } from "@/lib/blocks/resolve-global-blocks";
+import type { Block } from "@/types/blocks";
 import { PublicHeader } from "./header";
 import { PublicFooter } from "./footer";
-import { getNavigationPages } from "@/lib/public/get-site-data";
+import { BrandingStyles } from "./branding-styles";
 
 export async function ChurchHomePage() {
   const siteData = await getSiteData();
@@ -24,32 +26,69 @@ export async function ChurchHomePage() {
     notFound();
   }
 
-  const { church, settings } = siteData;
+  const { church, settings, branding, template } = siteData;
 
-  // Resolve navigation pages
-  const headerNav = await getNavigationPages(
-    church.id,
-    settings.headerNavigation
-  );
-  const footerNav = await getNavigationPages(
-    church.id,
-    settings.footerNavigation
-  );
+  // Use template navigation if available, otherwise fall back to legacy navigation
+  let headerNav = template.headerNavigation;
+  let footerNav = template.footerNavigation;
 
-  // If a home page is configured, display that page's content
+  if (headerNav.length === 0 && settings.headerNavigation.length > 0) {
+    const legacyHeaderNav = await getNavigationPages(
+      church.id,
+      settings.headerNavigation
+    );
+    headerNav = legacyHeaderNav.map((nav, index) => ({
+      id: `legacy-header-${index}`,
+      label: nav.label,
+      href: nav.href,
+      isExternal: false,
+      order: nav.order,
+    }));
+  }
+
+  if (footerNav.length === 0 && settings.footerNavigation.length > 0) {
+    const legacyFooterNav = await getNavigationPages(
+      church.id,
+      settings.footerNavigation
+    );
+    footerNav = legacyFooterNav.map((nav, index) => ({
+      id: `legacy-footer-${index}`,
+      label: nav.label,
+      href: nav.href,
+      isExternal: false,
+      order: nav.order,
+    }));
+  }
+
+  // Check for homepage - prefer isHomePage flag, then fallback to homePageId
   let homePageContent = null;
-  if (settings.homePageId) {
-    const homePage = await prisma.page.findUnique({
+
+  // First, check for a page with isHomePage flag set (preferred method)
+  let homePage = await prisma.page.findFirst({
+    where: {
+      churchId: church.id,
+      isHomePage: true,
+      status: "PUBLISHED",
+    },
+  });
+
+  // Fallback: check legacy homePageId in SiteSettings
+  if (!homePage && settings.homePageId) {
+    homePage = await prisma.page.findUnique({
       where: {
         id: settings.homePageId,
         churchId: church.id,
         status: "PUBLISHED",
       },
     });
+  }
 
-    if (homePage) {
-      homePageContent = <BlockRenderer blocks={homePage.blocks} />;
-    }
+  if (homePage) {
+    const resolvedBlocks = await resolveGlobalBlocks(
+      homePage.blocks as unknown as Block[],
+      church.id
+    );
+    homePageContent = <BlockRenderer blocks={resolvedBlocks} />;
   }
 
   // Default welcome page content
@@ -118,16 +157,16 @@ export async function ChurchHomePage() {
 
         {/* Service Times */}
         {settings.serviceTimes && (
-          <section className="bg-gray-50 dark:bg-gray-900 py-12 px-4">
+          <section className="bg-gray-50 py-12 px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 Join Us for Worship
               </h2>
-              <div className="text-lg text-gray-600 dark:text-gray-300 whitespace-pre-line">
+              <div className="text-lg text-gray-600 whitespace-pre-line">
                 {settings.serviceTimes}
               </div>
               {settings.address && (
-                <p className="mt-4 text-gray-500 dark:text-gray-400">
+                <p className="mt-4 text-gray-500">
                   {settings.address}
                 </p>
               )}
@@ -139,19 +178,19 @@ export async function ChurchHomePage() {
         {announcements.length > 0 && (
           <section className="py-12 px-4">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
                 Announcements
               </h2>
               <div className="space-y-4">
                 {announcements.map((announcement) => (
                   <div
                     key={announcement.id}
-                    className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6"
+                    className="bg-yellow-50 border border-yellow-200 rounded-lg p-6"
                   >
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    <h3 className="font-semibold text-gray-900 mb-2">
                       {announcement.title}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-300">
+                    <p className="text-gray-600">
                       {announcement.body}
                     </p>
                   </div>
@@ -163,15 +202,15 @@ export async function ChurchHomePage() {
 
         {/* Upcoming Events */}
         {upcomingEvents.length > 0 && (
-          <section className="bg-gray-50 dark:bg-gray-900 py-12 px-4">
+          <section className="bg-gray-50 py-12 px-4">
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-2xl font-bold text-gray-900">
                   Upcoming Events
                 </h2>
                 <Link
                   href="/events"
-                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                  className="text-blue-600 hover:underline"
                 >
                   View All →
                 </Link>
@@ -181,20 +220,20 @@ export async function ChurchHomePage() {
                   <Link
                     key={event.id}
                     href={`/events/${event.id}`}
-                    className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:shadow-md transition-shadow"
+                    className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
                   >
-                    <div className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-2">
+                    <div className="text-sm text-blue-600 font-medium mb-2">
                       {new Date(event.startDate).toLocaleDateString("en-US", {
                         weekday: "short",
                         month: "short",
                         day: "numeric",
                       })}
                     </div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    <h3 className="font-semibold text-gray-900 mb-2">
                       {event.title}
                     </h3>
                     {event.location && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-sm text-gray-500">
                         {event.location}
                       </p>
                     )}
@@ -210,12 +249,12 @@ export async function ChurchHomePage() {
           <section className="py-12 px-4">
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-2xl font-bold text-gray-900">
                   Recent Sermons
                 </h2>
                 <Link
                   href="/sermons"
-                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                  className="text-blue-600 hover:underline"
                 >
                   View All →
                 </Link>
@@ -225,23 +264,23 @@ export async function ChurchHomePage() {
                   <Link
                     key={sermon.id}
                     href={`/sermons/${sermon.id}`}
-                    className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:shadow-md transition-shadow"
+                    className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
                   >
-                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    <div className="text-sm text-gray-500 mb-2">
                       {new Date(sermon.date).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
                       })}
                     </div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    <h3 className="font-semibold text-gray-900 mb-1">
                       {sermon.title}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-gray-500">
                       {sermon.speakerName || "Unknown Speaker"}
                     </p>
                     {sermon.scripture && (
-                      <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
+                      <p className="text-sm text-blue-600 mt-2">
                         {sermon.scripture}
                       </p>
                     )}
@@ -272,28 +311,40 @@ export async function ChurchHomePage() {
     );
   }
 
+  // Get logo from branding first, then fall back to site settings
+  const logoUrl = branding?.logoHeaderUrl || settings.logoUrl;
+
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-gray-950">
-      <PublicHeader
-        churchName={church.name}
-        logoUrl={settings.logoUrl}
-        navigation={headerNav}
-      />
+    <>
+      {/* Inject CSS variables and global styles for branding */}
+      <BrandingStyles branding={branding} />
 
-      <main className="flex-1">{homePageContent}</main>
+      <div className="min-h-screen flex flex-col">
+        <PublicHeader
+          churchName={church.name}
+          logoUrl={logoUrl}
+          navigation={headerNav}
+          template={template.headerTemplate}
+          config={template.headerConfig}
+        />
 
-      <PublicFooter
-        churchName={church.name}
-        footerText={settings.footerText}
-        navigation={footerNav}
-        serviceTimes={settings.serviceTimes}
-        address={settings.address}
-        phone={settings.phone}
-        contactEmail={settings.contactEmail}
-        facebookUrl={settings.facebookUrl}
-        instagramUrl={settings.instagramUrl}
-        youtubeUrl={settings.youtubeUrl}
-      />
-    </div>
+        <main className="flex-1">{homePageContent}</main>
+
+        <PublicFooter
+          churchName={church.name}
+          footerText={settings.footerText}
+          navigation={footerNav}
+          serviceTimes={settings.serviceTimes}
+          address={settings.address}
+          phone={settings.phone}
+          contactEmail={settings.contactEmail}
+          facebookUrl={settings.facebookUrl}
+          instagramUrl={settings.instagramUrl}
+          youtubeUrl={settings.youtubeUrl}
+          template={template.footerTemplate}
+          config={template.footerConfig}
+        />
+      </div>
+    </>
   );
 }

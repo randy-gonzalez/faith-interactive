@@ -1,99 +1,69 @@
-# Plan: Homepage as Block-Based Page
-
-## Overview
-Allow churches to designate any page as their homepage through a flag in Page Settings. The homepage will be built using the block editor like any other page.
+# Plan: Replace Header Layouts with More User-Friendly Options
 
 ## Current State
-- `SiteSettings` model already has a `homePageId` field (line 938 in schema.prisma)
-- The public homepage (`app/(church)/page.tsx`) already checks for `settings.homePageId` and renders that page's blocks if configured
-- The issue: there's no UI in the page editor to set a page as the homepage
+We have 8 header layouts, but 3 need to be replaced:
+- **Remove:** `logo-right`, `stacked`, `inline` (not user-friendly)
+- **Keep:** `classic`, `centered`, `minimal`, `split`, `double-row`
 
-## Implementation Plan
+## New Layout Ideas to Replace the 3 Removed
 
-### 1. Add `isHomePage` field to Page model (Schema Change)
-Add a boolean flag directly on the Page model for simpler querying and UI:
-```prisma
-// In Page model
-isHomePage    Boolean   @default(false)
-```
+### Option 1: "Transparent Hero" (`transparent`)
+- Header overlays the hero section with transparent background
+- Logo and navigation visible over hero image/gradient
+- Great for dramatic, modern church websites with hero images
+- Preview: Glass-like header over gradient background
 
-This is cleaner than using SiteSettings.homePageId because:
-- Directly visible when editing the page
-- No need to fetch SiteSettings to know if a page is the homepage
-- Automatic enforcement of "only one homepage" constraint
+### Option 2: "Left Sidebar" (`sidebar`)
+- Vertical sidebar navigation on the left
+- Logo at top, nav items stacked vertically
+- Content area to the right
+- Modern, app-like feel - good for content-heavy sites
 
-### 2. Update Page Editor UI
-Add a checkbox in the "Page Settings" tab of the page editor:
-- Location: In the Page Settings tab, above or near the SEO fields
-- Label: "Set as Homepage"
-- Description: "When enabled, this page will be displayed as the site's homepage"
-- Visual indicator: Show a home icon badge on the page if it's the homepage
+### Option 3: "Mega Menu" (`mega`)
+- Similar to classic but designed for mega dropdown menus
+- Wider spacing, supports large dropdown panels
+- Good for churches with many ministries/pages to showcase
 
-### 3. Update Page API Routes
-Modify `PUT /api/pages/[id]` to handle `isHomePage`:
-- When `isHomePage` is set to `true`, automatically set all other pages' `isHomePage` to `false`
-- This ensures only one page can be the homepage at a time
-- Also update `SiteSettings.homePageId` to keep them in sync (or remove that field in favor of the new approach)
+### Option 4: "Boxed" (`boxed`)
+- Header contained in a centered box with rounded corners
+- Floats above content with shadow
+- Modern, clean aesthetic
 
-### 4. Update Public Homepage Route
-Modify `app/(church)/page.tsx` to:
-- Query for the page where `isHomePage: true` instead of using `SiteSettings.homePageId`
-- Keep the fallback default page for churches that haven't designated a homepage
+### Option 5: "Full Width Bar" (`full-width`)
+- Logo and CTA on edges, navigation perfectly centered
+- Balanced, symmetrical look
+- Professional and clean
 
-### 5. Update Pages List
-In the admin pages list, show a "Home" badge/indicator for the homepage.
+### Option 6: "Top Bar + Header" (`top-bar`)
+- Similar to double-row but with contact info (phone, email, social) in top bar
+- Main header below with logo and navigation
+- Classic church website feel
+
+### Option 7: "Hamburger Always" (`hamburger`)
+- Always shows hamburger menu regardless of screen size
+- Clean, minimal look with focus on content
+- Logo prominent, navigation tucked away
+
+## Recommended Replacements
+
+Based on user-friendliness and creativity, I recommend:
+
+1. **`transparent`** - Dramatic, modern feel for hero-focused sites
+2. **`boxed`** - Clean, modern aesthetic that stands out
+3. **`full-width`** - Balanced, professional look
+
+These provide visual variety while being intuitive layouts that users understand.
 
 ## Files to Modify
 
-1. **prisma/schema.prisma**
-   - Add `isHomePage Boolean @default(false)` to Page model
-   - Add index on `[churchId, isHomePage]`
+1. `types/template.ts` - Update HeaderTemplate type and HEADER_TEMPLATES array
+2. `lib/validation/schemas.ts` - Update Zod schema
+3. `components/public/header.tsx` - Update render functions
+4. `components/dashboard/header-settings-form.tsx` - Update preview components
 
-2. **components/dashboard/page-editor.tsx**
-   - Add `isHomePage` state
-   - Add checkbox in Page Settings tab
-   - Include `isHomePage` in save payload
+## Implementation
 
-3. **app/api/pages/[id]/route.ts**
-   - Handle `isHomePage` in PUT handler
-   - Reset other pages' `isHomePage` when setting a new homepage
-
-4. **app/api/pages/route.ts**
-   - Handle `isHomePage` in POST handler (in case creating a new page and setting as homepage)
-
-5. **lib/validation/schemas.ts**
-   - Add `isHomePage` to page schema
-
-6. **app/(church)/page.tsx**
-   - Update query to use `isHomePage: true` instead of `settings.homePageId`
-
-7. **app/admin/pages/page.tsx** (pages list)
-   - Show "Home" badge for the homepage
-
-## Migration Consideration
-- Run migration to add the new field
-- If `SiteSettings.homePageId` has values, create a one-time migration script to set `isHomePage: true` on those pages
-- Consider removing `SiteSettings.homePageId` in a future cleanup phase, or keep both in sync
-
-## UI Mockup
-
-In Page Settings tab:
-```
-┌─────────────────────────────────────────────────┐
-│ Page Settings                                   │
-├─────────────────────────────────────────────────┤
-│                                                 │
-│ ┌─────────────────────────────────────────────┐ │
-│ │ [✓] Set as Homepage                         │ │
-│ │     This page will be displayed when        │ │
-│ │     visitors go to your site's root URL     │ │
-│ └─────────────────────────────────────────────┘ │
-│                                                 │
-│ URL Path                                        │
-│ ┌─────────────────────────────────────────────┐ │
-│ │ about-us                                    │ │
-│ └─────────────────────────────────────────────┘ │
-│                                                 │
-│ ... (rest of page settings)                     │
-└─────────────────────────────────────────────────┘
-```
+Replace:
+- `logo-right` → `transparent`
+- `stacked` → `boxed`
+- `inline` → `full-width`

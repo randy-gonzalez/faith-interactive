@@ -11,6 +11,7 @@ import type { Block, CardGridBlock, BlockBackground, BlockAdvanced } from "@/typ
 import { createDefaultBackground } from "@/types/blocks";
 import { BlockBackgroundEditor } from "./block-background-editor";
 import { BlockAdvancedEditor } from "./block-advanced-editor";
+import { MediaPicker } from "@/components/dashboard/media-picker";
 
 interface CardGridBlockEditorProps {
   block: Block;
@@ -207,17 +208,15 @@ export function CardGridBlockEditor({
                     </button>
 
                     {expandedCardId === card.id && (
-                      <div className="px-3 pb-3 space-y-2 border-t border-gray-200">
+                      <div className="px-3 pb-3 space-y-3 border-t border-gray-200">
                         <div className="pt-2">
-                          <input
-                            type="url"
+                          <MediaPicker
+                            label="Card Image"
                             value={card.imageUrl || ""}
-                            onChange={(e) =>
-                              updateCard(card.id, { imageUrl: e.target.value })
+                            onChange={(url) =>
+                              updateCard(card.id, { imageUrl: url || "" })
                             }
                             disabled={disabled}
-                            placeholder="Image URL"
-                            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                           />
                         </div>
                         <input

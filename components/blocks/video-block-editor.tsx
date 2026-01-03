@@ -11,6 +11,7 @@ import type { Block, VideoBlock, BlockBackground, BlockAdvanced } from "@/types/
 import { createDefaultBackground } from "@/types/blocks";
 import { BlockBackgroundEditor } from "./block-background-editor";
 import { BlockAdvancedEditor } from "./block-advanced-editor";
+import { MediaPicker } from "@/components/dashboard/media-picker";
 
 interface VideoBlockEditorProps {
   block: Block;
@@ -79,23 +80,59 @@ export function VideoBlockEditor({
       {/* Content Tab */}
       {activeTab === "content" && (
         <div className="space-y-4">
-          {/* Video URL */}
+          {/* Video Source Toggle */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Video URL
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Video Source
             </label>
-            <input
-              type="url"
-              value={data.videoUrl}
-              onChange={(e) => updateData({ videoUrl: e.target.value })}
-              disabled={disabled}
-              placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Supports YouTube and Vimeo links
-            </p>
+            <div className="flex gap-1">
+              {(["external", "upload"] as const).map((source) => (
+                <button
+                  key={source}
+                  type="button"
+                  onClick={() => updateData({ videoSource: source, videoUrl: "" })}
+                  disabled={disabled}
+                  className={`flex-1 px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                    (data.videoSource || "external") === source
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  } disabled:opacity-50`}
+                >
+                  {source === "external" ? "YouTube / Vimeo" : "Upload Video"}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {/* External Video URL */}
+          {(data.videoSource || "external") === "external" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Video URL
+              </label>
+              <input
+                type="url"
+                value={data.videoUrl}
+                onChange={(e) => updateData({ videoUrl: e.target.value })}
+                disabled={disabled}
+                placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Paste a YouTube or Vimeo video link
+              </p>
+            </div>
+          )}
+
+          {/* Upload Video */}
+          {data.videoSource === "upload" && (
+            <MediaPicker
+              label="Video File"
+              value={data.videoUrl}
+              onChange={(url) => updateData({ videoUrl: url || "" })}
+              disabled={disabled}
+            />
+          )}
 
           {/* Aspect Ratio */}
           <div>

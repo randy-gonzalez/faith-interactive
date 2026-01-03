@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import { getAuthContext } from "@/lib/auth/guards";
 import { DashboardNav } from "@/components/dashboard/nav";
 import { DashboardHeader } from "@/components/dashboard/header";
+import { BrandingProvider } from "@/contexts/branding-context";
 
 export default async function AdminLayout({
   children,
@@ -27,24 +28,26 @@ export default async function AdminLayout({
   const { user, church } = context;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar navigation */}
-      <DashboardNav userRole={user.role} churchName={church.name} />
+    <BrandingProvider>
+      <div className="flex min-h-screen bg-gray-50">
+        {/* Sidebar navigation */}
+        <DashboardNav userRole={user.role} churchName={church.name} />
 
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <DashboardHeader
-          userName={user.name}
-          userEmail={user.email}
-          userRole={user.role}
-          platformRole={user.platformRole}
-          currentChurch={church}
-        />
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <DashboardHeader
+            userName={user.name}
+            userEmail={user.email}
+            userRole={user.role}
+            platformRole={user.platformRole}
+            currentChurch={church}
+          />
 
-        {/* Page content */}
-        <main className="flex-1 p-6">{children}</main>
+          {/* Page content */}
+          <main className="flex-1 p-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </BrandingProvider>
   );
 }

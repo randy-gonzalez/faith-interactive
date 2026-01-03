@@ -4,11 +4,13 @@
  * Media Library Component
  *
  * Grid view of uploaded media with upload functionality.
+ * Shows available image sizes/variants for each image.
  */
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { ImageVariants, ImageVariantInfo } from "@/types/media";
 
 interface MediaItem {
   id: string;
@@ -17,6 +19,9 @@ interface MediaItem {
   size: number;
   alt: string | null;
   url: string;
+  originalDimensions?: { width: number; height: number } | null;
+  isAnimated?: boolean;
+  variants: ImageVariants | null;
   variantUrls: Record<string, string> | null;
   createdAt: Date;
   uploadedBy: {
@@ -33,6 +38,28 @@ interface MediaLibraryProps {
 
 type FilterType = "all" | "image" | "pdf";
 
+// Human-readable labels for variant names
+const VARIANT_LABELS: Record<string, string> = {
+  full: "Full (2048px)",
+  large: "Large (1200px)",
+  medium: "Medium (800px)",
+  small: "Small (400px)",
+  "large-square": "Square Large (1200x1200)",
+  "medium-square": "Square Medium (800x800)",
+  "small-square": "Square Small (400x400)",
+};
+
+// Order for displaying variants
+const VARIANT_ORDER = [
+  "full",
+  "large",
+  "medium",
+  "small",
+  "large-square",
+  "medium-square",
+  "small-square",
+];
+
 export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
   const [media, setMedia] = useState(initialMedia);
   const [filterType, setFilterType] = useState<FilterType>("all");
@@ -41,6 +68,7 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [editingAlt, setEditingAlt] = useState(false);
   const [altText, setAltText] = useState("");
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredMedia = media.filter((item) => {
@@ -130,6 +158,12 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
     }
   };
 
+  const copyToClipboard = async (url: string, key: string) => {
+    await navigator.clipboard.writeText(url);
+    setCopiedUrl(key);
+    setTimeout(() => setCopiedUrl(null), 2000);
+  };
+
   const formatSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -145,6 +179,23 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
   };
 
   const isImage = (mimeType: string) => mimeType.startsWith("image/");
+
+  // Get sorted variants for display
+  const getSortedVariants = (
+    variants: ImageVariants | null,
+    variantUrls: Record<string, string> | null
+  ): Array<{ name: string; label: string; info: ImageVariantInfo; url: string }> => {
+    if (!variants || !variantUrls) return [];
+
+    return VARIANT_ORDER.filter(
+      (name) => variants[name as keyof ImageVariants] && variantUrls[name]
+    ).map((name) => ({
+      name,
+      label: VARIANT_LABELS[name] || name,
+      info: variants[name as keyof ImageVariants]!,
+      url: variantUrls[name],
+    }));
+  };
 
   return (
     <div className="space-y-6">
@@ -173,7 +224,7 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
+            accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
             multiple
             className="hidden"
             onChange={(e) => {
@@ -213,7 +264,7 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
           >
             {isImage(item.mimeType) ? (
               <img
-                src={item.variantUrls?.small || item.url}
+                src={item.variantUrls?.["small-square"] || item.variantUrls?.small || item.url}
                 alt={item.alt || item.filename}
                 className="w-full h-full object-cover bg-gray-100"
               />
@@ -243,7 +294,7 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
 
       {/* Detail Panel (Sidebar) */}
       {selectedItem && (
-        <div className="fixed inset-y-0 right-0 w-80 bg-white border-l border-gray-200 shadow-xl p-6 overflow-y-auto z-50">
+        <div className="fixed inset-y-0 right-0 w-96 bg-white border-l border-gray-200 shadow-xl p-6 overflow-y-auto z-50">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">
               Details
@@ -289,6 +340,23 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
               <span className="text-gray-500">Type:</span>
               <p className="text-gray-900">{selectedItem.mimeType}</p>
             </div>
+            {/* Original Dimensions */}
+            {selectedItem.originalDimensions && (
+              <div>
+                <span className="text-gray-500">Dimensions:</span>
+                <p className="text-gray-900">
+                  {selectedItem.originalDimensions.width} x {selectedItem.originalDimensions.height}
+                </p>
+              </div>
+            )}
+            {/* Animated indicator */}
+            {selectedItem.isAnimated && (
+              <div>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                  Animated GIF
+                </span>
+              </div>
+            )}
             <div>
               <span className="text-gray-500">Uploaded:</span>
               <p className="text-gray-900">{formatDate(selectedItem.createdAt)}</p>
@@ -344,9 +412,9 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
             )}
           </div>
 
-          {/* URL */}
+          {/* Original URL */}
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <span className="text-gray-500 text-sm">URL:</span>
+            <span className="text-gray-500 text-sm">Original URL:</span>
             <div className="mt-1 flex gap-2">
               <input
                 type="text"
@@ -357,12 +425,50 @@ export function MediaLibrary({ initialMedia, totalCount }: MediaLibraryProps) {
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => navigator.clipboard.writeText(selectedItem.url)}
+                onClick={() => copyToClipboard(selectedItem.url, "original")}
               >
-                Copy
+                {copiedUrl === "original" ? "Copied!" : "Copy"}
               </Button>
             </div>
           </div>
+
+          {/* Available Sizes */}
+          {isImage(selectedItem.mimeType) && selectedItem.variants && selectedItem.variantUrls && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">Available Sizes</h4>
+              {selectedItem.isAnimated ? (
+                <p className="text-sm text-gray-500 italic">
+                  Original only (animated GIF - variants not generated)
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {getSortedVariants(selectedItem.variants, selectedItem.variantUrls).map(
+                    ({ name, label, info, url }) => (
+                      <div
+                        key={name}
+                        className="flex items-center justify-between p-2 bg-gray-50 rounded-md"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-gray-900">{label}</p>
+                          <p className="text-xs text-gray-500">
+                            {info.width} x {info.height} &bull; {formatSize(info.size)}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="ml-2 shrink-0"
+                          onClick={() => copyToClipboard(url, name)}
+                        >
+                          {copiedUrl === name ? "Copied!" : "Copy"}
+                        </Button>
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">

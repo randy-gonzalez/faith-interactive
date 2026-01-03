@@ -248,63 +248,15 @@ export function PageEditor({ initialData, canEdit, churchSlug }: PageEditorProps
 
   return (
     <div className="space-y-6 pb-24">
-      {/* Page title and status toggle - always visible */}
-      <div className="flex items-end gap-4">
-        <div className="flex-1">
-          <Input
-            label="Page Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            disabled={!canEdit}
-            placeholder="Page title"
-          />
-        </div>
-        <div className="flex items-center gap-3 pb-0.5">
-          {/* View Page Link - only show for published pages */}
-          {isEditing && publicPageUrl && status === "PUBLISHED" && (
-            <a
-              href={publicPageUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              View Page
-            </a>
-          )}
-
-          {/* Status Toggle */}
-          <div className="flex rounded-lg border border-gray-300 overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setStatus("DRAFT")}
-              disabled={!canEdit}
-              className={`px-4 py-2 text-sm font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
-                status === "DRAFT"
-                  ? "bg-gray-600 text-white"
-                  : "bg-white text-gray-500 hover:bg-gray-50"
-              }`}
-            >
-              Draft
-            </button>
-            <button
-              type="button"
-              onClick={() => setStatus("PUBLISHED")}
-              disabled={!canEdit}
-              className={`px-4 py-2 text-sm font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
-                status === "PUBLISHED"
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-500 hover:bg-gray-50"
-              }`}
-            >
-              Published
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Page title */}
+      <Input
+        label="Page Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
+        disabled={!canEdit}
+        placeholder="Page title"
+      />
 
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-md">
@@ -344,9 +296,15 @@ export function PageEditor({ initialData, canEdit, churchSlug }: PageEditorProps
                   </label>
                   <p className="text-sm text-gray-600 mt-0.5">
                     This page will be displayed when visitors go to your site&apos;s root URL.
-                    {isHomePage && (
+                    {isHomePage && status === "PUBLISHED" && (
                       <span className="block mt-1 text-blue-600 font-medium">
                         This page is currently the homepage.
+                      </span>
+                    )}
+                    {isHomePage && status === "DRAFT" && (
+                      <span className="block mt-1 text-amber-600 font-medium">
+                        Warning: This page is set as homepage but is currently a draft.
+                        Publish this page to make it visible on your site.
                       </span>
                     )}
                   </p>
@@ -485,17 +443,17 @@ export function PageEditor({ initialData, canEdit, churchSlug }: PageEditorProps
 
       {/* Fixed Actions Bar */}
       {canEdit && (
-        <div className="sticky bottom-0 left-0 right-0 z-40 bg-gray-100 border-t border-gray-300 shadow-lg -mx-6 -mb-24 mt-6">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between gap-3">
-              {/* Left side - Status Toggle and View Page */}
+        <div className="fixed bottom-0 left-64 right-0 z-40 bg-white border-t border-gray-200 shadow-lg">
+          <div className="px-6 py-3">
+            <div className="flex items-center justify-between">
+              {/* Left: Status Toggle */}
               <div className="flex items-center gap-3">
-                {/* Status Toggle */}
+                <span className="text-sm font-medium text-gray-500">Status:</span>
                 <div className="flex rounded-lg border border-gray-300 overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setStatus("DRAFT")}
-                    className={`px-4 py-2 text-sm font-medium transition-colors focus:outline-none ${
+                    className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none ${
                       status === "DRAFT"
                         ? "bg-gray-600 text-white"
                         : "bg-white text-gray-500 hover:bg-gray-50"
@@ -506,7 +464,7 @@ export function PageEditor({ initialData, canEdit, churchSlug }: PageEditorProps
                   <button
                     type="button"
                     onClick={() => setStatus("PUBLISHED")}
-                    className={`px-4 py-2 text-sm font-medium transition-colors focus:outline-none ${
+                    className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none ${
                       status === "PUBLISHED"
                         ? "bg-blue-600 text-white"
                         : "bg-white text-gray-500 hover:bg-gray-50"
@@ -515,14 +473,27 @@ export function PageEditor({ initialData, canEdit, churchSlug }: PageEditorProps
                     Published
                   </button>
                 </div>
+              </div>
 
-                {/* View Page Link */}
+              {/* Center: Preview Actions */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(true)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  Preview
+                </button>
                 {isEditing && publicPageUrl && status === "PUBLISHED" && (
                   <a
                     href={publicPageUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -532,24 +503,21 @@ export function PageEditor({ initialData, canEdit, churchSlug }: PageEditorProps
                 )}
               </div>
 
-              {/* Right side - Action Buttons */}
-              <div className="flex items-center gap-3">
+              {/* Right: Primary Actions */}
+              <div className="flex items-center gap-2">
                 {isEditing && (
                   <Button
-                    variant="danger"
+                    variant="ghost"
+                    size="sm"
                     onClick={handleDelete}
                     isLoading={deleting}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     Delete
                   </Button>
                 )}
-
-                <Button variant="ghost" onClick={() => router.push("/admin/pages")}>
-                  Cancel
-                </Button>
-
-                <Button variant="success" onClick={handleSave} isLoading={saving}>
-                  {isEditing ? "Save Changes" : "Create Page"}
+                <Button size="sm" onClick={handleSave} isLoading={saving}>
+                  {saving ? "Saving..." : isEditing ? "Save" : "Create Page"}
                 </Button>
               </div>
             </div>

@@ -8,11 +8,66 @@
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db/prisma";
 import { cache } from "react";
+import {
+  HeaderTemplate,
+  FooterTemplate,
+  HeaderConfig,
+  FooterConfig,
+  NavLinkExtended,
+  DEFAULT_HEADER_CONFIG,
+  DEFAULT_FOOTER_CONFIG,
+  parseHeaderConfig,
+  parseFooterConfig,
+} from "@/types/template";
 
 export interface NavItem {
   pageId: string;
   label: string;
   order: number;
+}
+
+export interface BrandingData {
+  // Colors
+  colorPrimary: string | null;
+  colorSecondary: string | null;
+  colorAccent: string | null;
+  colorBackground: string | null;
+  colorText: string | null;
+  // Typography
+  fontPrimary: string | null;
+  fontSecondary: string | null;
+  fontSizeBase: number | null;
+  headingScale: number | null;
+  lineHeight: number | null;
+  // Buttons
+  buttonStyle: string | null;
+  buttonRadius: number | null;
+  buttonPrimaryBg: string | null;
+  buttonPrimaryText: string | null;
+  buttonSecondaryBg: string | null;
+  buttonSecondaryText: string | null;
+  buttonOutlineBorder: string | null;
+  buttonOutlineText: string | null;
+  buttonAccentBg: string | null;
+  buttonAccentText: string | null;
+  // Other styles
+  borderRadius: number | null;
+  linkColor: string | null;
+  linkHoverColor: string | null;
+  // Logos
+  logoHeaderUrl: string | null;
+  logoLightUrl: string | null;
+  logoDarkUrl: string | null;
+  faviconUrl: string | null;
+}
+
+export interface TemplateSettings {
+  headerTemplate: HeaderTemplate;
+  headerConfig: HeaderConfig;
+  footerTemplate: FooterTemplate;
+  footerConfig: FooterConfig;
+  headerNavigation: NavLinkExtended[];
+  footerNavigation: NavLinkExtended[];
 }
 
 export interface SiteData {
@@ -39,6 +94,8 @@ export interface SiteData {
     mapEmbedUrl: string | null;
     homePageId: string | null;
   };
+  branding: BrandingData | null;
+  template: TemplateSettings;
 }
 
 /**
@@ -57,6 +114,7 @@ export const getSiteData = cache(async (): Promise<SiteData | null> => {
     where: { slug: churchSlug },
     include: {
       siteSettings: true,
+      branding: true,
     },
   });
 
@@ -76,11 +134,61 @@ export const getSiteData = cache(async (): Promise<SiteData | null> => {
     });
   }
 
-  // Parse navigation JSON
+  // Parse navigation JSON (legacy format)
   const parseNav = (value: unknown): NavItem[] => {
     if (!value || !Array.isArray(value)) return [];
     return value as NavItem[];
   };
+
+  // Parse extended navigation JSON (new format with external URLs and children)
+  const parseNavExtended = (value: unknown): NavLinkExtended[] => {
+    if (!value || !Array.isArray(value)) return [];
+    return value as NavLinkExtended[];
+  };
+
+  // Parse template settings
+  const headerTemplate = (settings.headerTemplate as HeaderTemplate) || "classic";
+  const footerTemplate = (settings.footerTemplate as FooterTemplate) || "4-column";
+  const headerConfig = parseHeaderConfig(settings.headerConfig);
+  const footerConfig = parseFooterConfig(settings.footerConfig);
+
+  // Extract branding data
+  const branding = church.branding
+    ? {
+        // Colors
+        colorPrimary: church.branding.colorPrimary,
+        colorSecondary: church.branding.colorSecondary,
+        colorAccent: church.branding.colorAccent,
+        colorBackground: church.branding.colorBackground,
+        colorText: church.branding.colorText,
+        // Typography
+        fontPrimary: church.branding.fontPrimary,
+        fontSecondary: church.branding.fontSecondary,
+        fontSizeBase: church.branding.fontSizeBase,
+        headingScale: church.branding.headingScale,
+        lineHeight: church.branding.lineHeight,
+        // Buttons
+        buttonStyle: church.branding.buttonStyle,
+        buttonRadius: church.branding.buttonRadius,
+        buttonPrimaryBg: church.branding.buttonPrimaryBg,
+        buttonPrimaryText: church.branding.buttonPrimaryText,
+        buttonSecondaryBg: church.branding.buttonSecondaryBg,
+        buttonSecondaryText: church.branding.buttonSecondaryText,
+        buttonOutlineBorder: church.branding.buttonOutlineBorder,
+        buttonOutlineText: church.branding.buttonOutlineText,
+        buttonAccentBg: church.branding.buttonAccentBg,
+        buttonAccentText: church.branding.buttonAccentText,
+        // Other styles
+        borderRadius: church.branding.borderRadius,
+        linkColor: church.branding.linkColor,
+        linkHoverColor: church.branding.linkHoverColor,
+        // Logos
+        logoHeaderUrl: church.branding.logoHeaderUrl,
+        logoLightUrl: church.branding.logoLightUrl,
+        logoDarkUrl: church.branding.logoDarkUrl,
+        faviconUrl: church.branding.faviconUrl,
+      }
+    : null;
 
   return {
     church: {
@@ -105,6 +213,15 @@ export const getSiteData = cache(async (): Promise<SiteData | null> => {
       faviconUrl: settings.faviconUrl,
       mapEmbedUrl: settings.mapEmbedUrl,
       homePageId: settings.homePageId,
+    },
+    branding,
+    template: {
+      headerTemplate,
+      headerConfig,
+      footerTemplate,
+      footerConfig,
+      headerNavigation: parseNavExtended(settings.headerNavigation),
+      footerNavigation: parseNavExtended(settings.footerNavigation),
     },
   };
 });
@@ -146,4 +263,75 @@ export async function getNavigationPages(
       };
     })
     .sort((a, b) => a.order - b.order);
+}
+
+/**
+ * Get a form by type for public pages.
+ * Used for standard forms like Contact, Prayer Request, Volunteer.
+ */
+export async function getFormByType(
+  churchId: string,
+  formType: "CONTACT" | "PRAYER_REQUEST" | "VOLUNTEER"
+): Promise<{
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  fields: unknown;
+  settings: unknown;
+  isActive: boolean;
+} | null> {
+  const form = await prisma.form.findFirst({
+    where: {
+      churchId,
+      type: formType,
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      fields: true,
+      settings: true,
+      isActive: true,
+    },
+  });
+
+  return form;
+}
+
+/**
+ * Get a form by slug for public pages.
+ * Used for custom forms accessed via /forms/[slug].
+ */
+export async function getFormBySlug(
+  churchId: string,
+  slug: string
+): Promise<{
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  fields: unknown;
+  settings: unknown;
+  isActive: boolean;
+} | null> {
+  const form = await prisma.form.findFirst({
+    where: {
+      churchId,
+      slug,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      fields: true,
+      settings: true,
+      isActive: true,
+    },
+  });
+
+  return form;
 }

@@ -7,34 +7,12 @@
  */
 
 import { useState } from "react";
-import type { Block, AccordionBlock, BlockBackground } from "@/types/blocks";
+import type { Block, AccordionBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
+import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 
 interface AccordionBlockPreviewProps {
   block: Block;
-}
-
-function getBackgroundStyles(background?: BlockBackground): React.CSSProperties {
-  if (!background) return {};
-
-  switch (background.type) {
-    case "color":
-      return { backgroundColor: background.color || "transparent" };
-    case "gradient":
-      return { background: background.gradient };
-    case "image":
-      if (background.imageUrl) {
-        const overlay = background.overlay || "rgba(0,0,0,0.5)";
-        return {
-          backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${background.imageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        };
-      }
-      return {};
-    default:
-      return {};
-  }
 }
 
 export function AccordionBlockPreview({ block }: AccordionBlockPreviewProps) {
@@ -52,13 +30,13 @@ export function AccordionBlockPreview({ block }: AccordionBlockPreviewProps) {
     return initialOpen;
   });
 
-  const backgroundStyle = getBackgroundStyles(background);
+  const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
   const hasBackground = background && background.type !== "color";
   const textColorClass = hasBackground ? "text-white" : "text-gray-900";
   const subTextColorClass = hasBackground ? "text-white/80" : "text-gray-600";
   const borderColor = hasBackground ? "border-white/20" : "border-gray-200";
   const advancedProps = getAdvancedProps(advanced);
-  const combinedClassName = `py-12 px-6 ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview py-12 px-6 relative ${advancedProps.className || ""}`.trim();
 
   function toggleItem(id: string) {
     setOpenItems((prev) => {
@@ -74,7 +52,12 @@ export function AccordionBlockPreview({ block }: AccordionBlockPreviewProps) {
 
   return (
     <div {...advancedProps} className={combinedClassName} style={backgroundStyle}>
-      <div className="max-w-3xl mx-auto">
+      {/* Image overlay (for image backgrounds) */}
+      {background?.type === "image" && background.imageUrl && overlay && (
+        <div className="absolute inset-0" style={overlay} />
+      )}
+
+      <div className="max-w-3xl mx-auto relative z-10">
         {data.heading && (
           <h2 className={`text-2xl md:text-3xl font-bold ${textColorClass} text-center mb-8`}>
             {data.heading}

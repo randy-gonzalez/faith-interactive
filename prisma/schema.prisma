@@ -21,8 +21,9 @@ datasource db {
 // Platform roles for Fi staff (Platform panel access)
 // These are SEPARATE from church roles - a user can have both
 enum PlatformRole {
-  PLATFORM_ADMIN   // Full access to all /platform features
-  PLATFORM_STAFF   // Read-only or limited access to /platform
+  PLATFORM_ADMIN   // Full access to all /platform features including CRM
+  PLATFORM_STAFF   // Read-only or limited access to /platform (no CRM)
+  SALES_REP        // CRM access - can see own leads + unassigned leads
 }
 
 // Church roles for access control within a tenant
@@ -45,6 +46,14 @@ enum ChurchStatus {
 enum ContentStatus {
   DRAFT
   PUBLISHED
+}
+
+// Form types for the configurable forms system
+enum FormType {
+  CONTACT         // Default contact form
+  PRAYER_REQUEST  // Default prayer request form
+  VOLUNTEER       // Default volunteer application form
+  CUSTOM          // User-created custom forms
 }
 
 // ==============================================================================
@@ -107,6 +116,7 @@ model Church {
 
   // Content types
   pages               Page[]
+  globalBlocks        GlobalBlock[]
   sermons             Sermon[]
   events              Event[]
   announcements       Announcement[]
@@ -126,6 +136,11 @@ model Church {
   media               Media[]
   prayerRequests      PrayerRequest[]
   volunteerSignups    VolunteerSignup[]
+
+  // Configurable Forms System
+  forms               Form[]
+  formSubmissions     FormSubmission[]
+  formFiles           FormFile[]
 
   // Phase 4: Domains & Launch Tools
   customDomains       CustomDomain[]
@@ -172,6 +187,11 @@ model User {
   passwordResetTokens PasswordResetToken[]
   uploadedMedia       Media[]
   platformAuditLogs   PlatformAuditLog[]
+
+  // CRM relations (for Fi staff with FI_ADMIN or SALES_REP roles)
+  ownedLeads          CrmLead[]  @relation("CrmLeadOwner")
+  ownedTasks          CrmTask[]  @relation("CrmTaskOwner")
+  dncRecords          CrmDnc[]   @relation("CrmDncAddedBy")
 
   // Index for efficient lookups
   @@index([email])
@@ -358,6 +378,39 @@ model Page {
   @@index([churchId, status, createdAt])
   @@index([churchId, parentId, sortOrder])
   @@index([churchId, isHomePage])
+}
+
+// ==============================================================================
+// GLOBAL BLOCKS
+// ==============================================================================
+// Reusable block content shared across multiple pages within a church.
+// When a global block is updated, all pages referencing it reflect the change.
+// ==============================================================================
+
+model GlobalBlock {
+  id          String   @id @default(cuid())
+  churchId    String
+  church      Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  // Display name for the block library
+  name        String
+  // Optional description for organization
+  description String?
+
+  // The actual block content - stored same as page blocks
+  // Contains: { type, data, background, advanced }
+  blockContent Json
+
+  // Soft delete support
+  isActive    Boolean  @default(true)
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([churchId])
+  @@index([churchId, isActive])
+  @@index([churchId, name])
 }
 
 // Sermons - recorded messages/teachings
@@ -951,6 +1004,16 @@ model SiteSettings {
   // Dashboard remains accessible
   maintenanceMode       Boolean @default(false)
 
+  // Template Settings
+  // Header template: "classic", "centered", "minimal", "split"
+  headerTemplate        String  @default("classic")
+  // Header configuration as JSON (see types/template.ts for structure)
+  headerConfig          Json?
+  // Footer template: "4-column", "3-column", "2-column", "stacked", "minimal"
+  footerTemplate        String  @default("4-column")
+  // Footer configuration as JSON (see types/template.ts for structure)
+  footerConfig          Json?
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1016,6 +1079,15 @@ model ChurchBranding {
   buttonStyle       String? @default("rounded")
   // Default button border radius in pixels
   buttonRadius      Int?    @default(6)
+  // Button colors (defaults to brand colors if not set)
+  buttonPrimaryBg      String?  // Primary button background
+  buttonPrimaryText    String?  // Primary button text color
+  buttonSecondaryBg    String?  // Secondary button background
+  buttonSecondaryText  String?  // Secondary button text color
+  buttonOutlineBorder  String?  // Outline button border color
+  buttonOutlineText    String?  // Outline button text color
+  buttonAccentBg       String?  // Accent button background
+  buttonAccentText     String?  // Accent button text color
 
   // ADDITIONAL STYLES
   // Global border radius preference in pixels
@@ -1604,4 +1676,286 @@ model PlatformAuditLog {
   @@index([entityType])
   @@index([targetChurchId])
   @@index([createdAt])
+}
+
+// ==============================================================================
+// CONFIGURABLE FORMS SYSTEM
+// ==============================================================================
+// Unified form system with configurable fields, submissions management,
+// and spam protection. Replaces individual form tables while maintaining
+// backward compatibility through the FormType enum.
+// ==============================================================================
+
+model Form {
+  id          String   @id @default(cuid())
+  // Tenant reference
+  churchId    String
+  church      Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  // Form identity
+  name        String              // Internal name for admins (e.g., "Contact Form")
+  slug        String              // URL-friendly identifier (e.g., "contact")
+  description String?             // Optional description shown above form
+
+  // Form type - determines default fields and behavior
+  type        FormType @default(CUSTOM)
+
+  // Field definitions as JSON array
+  // Each field: { id, type, name, label, placeholder?, helpText?, required, order, validation?, options?, fileConfig? }
+  fields      Json     @default("[]")
+
+  // Form settings as JSON
+  // { successMessage, submitButtonText, honeypotEnabled, honeypotFieldName, minSubmitTime }
+  settings    Json     @default("{}")
+
+  // Notification recipients (array of email addresses)
+  notifyEmails String[] @default([])
+
+  // Whether the form is active and accepting submissions
+  isActive    Boolean  @default(true)
+
+  // Relations
+  submissions FormSubmission[]
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Slug must be unique within a church
+  @@unique([churchId, slug])
+  @@index([churchId])
+  @@index([churchId, type])
+  @@index([churchId, isActive])
+}
+
+model FormSubmission {
+  id          String   @id @default(cuid())
+  // Tenant reference
+  churchId    String
+  church      Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  // Form reference
+  formId      String
+  form        Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  // Submitted data as JSON object
+  // Keys match field names, values are the submitted data
+  data        Json
+
+  // File references as JSON array (if form has file upload fields)
+  // Each: { fieldName, fileId, filename, storedPath, mimeType, size }
+  files       Json?
+
+  // Spam tracking metadata
+  ipAddress   String?
+  userAgent   String?
+
+  // Submission timestamp
+  submittedAt DateTime @default(now())
+
+  // Status tracking
+  isRead      Boolean  @default(false)
+  readAt      DateTime?
+  readBy      String?             // User ID who marked as read
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+
+  @@index([churchId])
+  @@index([formId])
+  @@index([formId, isRead])
+  @@index([formId, createdAt])
+  @@index([churchId, createdAt])
+}
+
+model FormFile {
+  id           String   @id @default(cuid())
+  // Tenant reference
+  churchId     String
+  church       Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  // Linked to submission after form is submitted
+  // Null while file is in temporary storage (before submission completes)
+  submissionId String?
+
+  // File metadata
+  filename     String              // Original filename
+  storedPath   String              // Path in storage (relative to uploads root)
+  mimeType     String              // MIME type (e.g., "image/jpeg", "application/pdf")
+  size         Int                 // File size in bytes
+
+  // Upload timestamp
+  uploadedAt   DateTime @default(now())
+
+  // Expiration for orphaned files (not linked to submission)
+  // Cleanup job removes files where submissionId is null and uploadedAt > 24 hours
+  expiresAt    DateTime?
+
+  @@index([churchId])
+  @@index([submissionId])
+  @@index([expiresAt])
+}
+
+// ==============================================================================
+// CRM SYSTEM (Fi Internal Sales)
+// ==============================================================================
+// Internal CRM for Fi staff to manage church/prospect leads.
+// NOT tenant-scoped - this is a global Fi staff tool.
+// Access controlled by PlatformRole: FI_ADMIN and SALES_REP only.
+// ==============================================================================
+
+// CRM task types
+enum CrmTaskType {
+  CALL
+  EMAIL
+  TEXT
+  MEETING
+  INSTAGRAM
+  FACEBOOK
+  TIKTOK
+  TWITTER
+  OTHER
+}
+
+// CRM task status
+enum CrmTaskStatus {
+  OPEN
+  DONE
+}
+
+// ==============================================================================
+// CRM STAGE
+// ==============================================================================
+// Sales pipeline stages for organizing leads.
+// ==============================================================================
+
+model CrmStage {
+  id        String   @id @default(cuid())
+  name      String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  leads     CrmLead[]
+
+  @@index([sortOrder])
+  @@index([isActive])
+  @@index([isActive, sortOrder])
+}
+
+// ==============================================================================
+// CRM LEAD
+// ==============================================================================
+// Church/prospect leads managed by Fi sales team.
+// ==============================================================================
+
+model CrmLead {
+  id                 String    @id @default(cuid())
+
+  // Church/prospect info
+  churchName         String
+  primaryContactName String?
+  email              String?
+  phone              String?
+  website            String?
+  location           String?   // City/State
+
+  // Pipeline
+  stageId            String
+  stage              CrmStage  @relation(fields: [stageId], references: [id])
+
+  // Ownership (optional for unassigned leads)
+  ownerUserId        String?
+  owner              User?     @relation("CrmLeadOwner", fields: [ownerUserId], references: [id])
+
+  // Lead source
+  source             String?   // referral, inbound, list, event, etc.
+
+  // Notes
+  notes              String?   @db.Text
+
+  // Derived: earliest open task due date (updated by triggers/actions)
+  nextFollowUpAt     DateTime?
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relations
+  tasks              CrmTask[]
+  dnc                CrmDnc?
+
+  @@index([stageId])
+  @@index([ownerUserId])
+  @@index([nextFollowUpAt])
+  @@index([ownerUserId, stageId])
+  @@index([ownerUserId, nextFollowUpAt])
+  @@index([createdAt])
+}
+
+// ==============================================================================
+// CRM TASK
+// ==============================================================================
+// Follow-up tasks for leads (calls, emails, meetings, etc.).
+// ==============================================================================
+
+model CrmTask {
+  id          String        @id @default(cuid())
+
+  // Lead reference
+  leadId      String
+  lead        CrmLead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  // Task owner (can be different from lead owner in future)
+  ownerUserId String
+  owner       User          @relation("CrmTaskOwner", fields: [ownerUserId], references: [id])
+
+  // Task details
+  type        CrmTaskType
+  dueAt       DateTime
+  status      CrmTaskStatus @default(OPEN)
+  notes       String?       @db.Text
+
+  // Completion tracking
+  completedAt DateTime?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([leadId])
+  @@index([ownerUserId])
+  @@index([status])
+  @@index([dueAt])
+  @@index([ownerUserId, status])
+  @@index([ownerUserId, status, dueAt])
+  @@index([leadId, status])
+}
+
+// ==============================================================================
+// CRM DNC (Do Not Contact)
+// ==============================================================================
+// Flags leads that should not be contacted.
+// One DNC record per lead for v1.
+// ==============================================================================
+
+model CrmDnc {
+  id            String   @id @default(cuid())
+
+  // One DNC per lead
+  leadId        String   @unique
+  lead          CrmLead  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  // Reason for DNC status
+  reason        String?
+
+  // Who marked it as DNC
+  addedByUserId String
+  addedBy       User     @relation("CrmDncAddedBy", fields: [addedByUserId], references: [id])
+
+  // When it was marked
+  addedAt       DateTime @default(now())
+
+  @@index([addedByUserId])
 }

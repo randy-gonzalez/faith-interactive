@@ -86,7 +86,7 @@ export default async function EventDetailPage({ params }: PageProps) {
       <nav className="mb-6">
         <Link
           href="/events"
-          className="text-blue-600 dark:text-blue-400 hover:underline"
+          className="text-blue-600 hover:underline"
         >
           ← Back to Events
         </Link>
@@ -104,27 +104,27 @@ export default async function EventDetailPage({ params }: PageProps) {
       {/* Header */}
       <header className="mb-8">
         {isPast && (
-          <span className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded text-sm mb-4">
+          <span className="inline-block bg-gray-200 text-gray-600 px-3 py-1 rounded text-sm mb-4">
             Past Event
           </span>
         )}
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
           {event.title}
         </h1>
       </header>
 
       {/* Event Details Card */}
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 mb-8">
+      <div className="bg-gray-50 rounded-lg p-6 mb-8">
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Date & Time */}
           <div>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+            <h3 className="text-sm font-medium text-gray-500 mb-1">
               When
             </h3>
-            <p className="text-gray-900 dark:text-white font-medium">
+            <p className="text-gray-900 font-medium">
               {start.date}
             </p>
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-gray-600">
               {start.time}
               {end && ` - ${end.time}`}
             </p>
@@ -133,10 +133,10 @@ export default async function EventDetailPage({ params }: PageProps) {
           {/* Location */}
           {event.location && (
             <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+              <h3 className="text-sm font-medium text-gray-500 mb-1">
                 Where
               </h3>
-              <p className="text-gray-900 dark:text-white font-medium">
+              <p className="text-gray-900 font-medium">
                 {event.location}
               </p>
             </div>
@@ -145,7 +145,7 @@ export default async function EventDetailPage({ params }: PageProps) {
 
         {/* Registration Button */}
         {event.registrationUrl && !isPast && (
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-6 pt-6 border-t border-gray-200">
             <a
               href={event.registrationUrl}
               target="_blank"
@@ -163,11 +163,11 @@ export default async function EventDetailPage({ params }: PageProps) {
 
       {/* Description */}
       {event.description && (
-        <div className="prose dark:prose-invert max-w-none">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="prose max-w-none">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
             About This Event
           </h2>
-          <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+          <p className="text-gray-700 whitespace-pre-line">
             {event.description}
           </p>
         </div>
@@ -175,14 +175,14 @@ export default async function EventDetailPage({ params }: PageProps) {
 
       {/* Add to Calendar (simple link) */}
       {!isPast && (
-        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="mt-8 pt-8 border-t border-gray-200">
+          <p className="text-sm text-gray-500">
             Don't forget!{" "}
             <a
               href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${formatGoogleDate(event.startDate)}/${formatGoogleDate(event.endDate || new Date(event.startDate.getTime() + 2 * 60 * 60 * 1000))}&location=${encodeURIComponent(event.location || "")}&details=${encodeURIComponent(event.description || "")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-blue-600 hover:underline"
             >
               Add to Google Calendar
             </a>

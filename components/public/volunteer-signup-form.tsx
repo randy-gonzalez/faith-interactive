@@ -88,7 +88,7 @@ export function VolunteerSignupForm() {
 
   if (success) {
     return (
-      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 text-center">
+      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
         <svg
           className="w-12 h-12 text-green-500 mx-auto mb-4"
           fill="none"
@@ -102,15 +102,15 @@ export function VolunteerSignupForm() {
             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
+        <h3 className="text-lg font-semibold text-green-800 mb-2">
           Thank You for Signing Up!
         </h3>
-        <p className="text-green-600 dark:text-green-300">
+        <p className="text-green-600">
           We appreciate your interest in serving. Someone from our team will be in touch soon.
         </p>
         <button
           onClick={() => setSuccess(false)}
-          className="mt-4 text-sm text-green-600 dark:text-green-400 hover:underline"
+          className="mt-4 text-sm text-green-600 hover:underline"
         >
           Submit another signup
         </button>
@@ -121,7 +121,7 @@ export function VolunteerSignupForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
           {error}
         </div>
       )}
@@ -129,7 +129,7 @@ export function VolunteerSignupForm() {
       <div>
         <label
           htmlFor="name"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          className="block text-sm font-medium text-gray-700 mb-1"
         >
           Your Name *
         </label>
@@ -147,7 +147,7 @@ export function VolunteerSignupForm() {
       <div>
         <label
           htmlFor="email"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          className="block text-sm font-medium text-gray-700 mb-1"
         >
           Your Email *
         </label>
@@ -165,7 +165,7 @@ export function VolunteerSignupForm() {
       <div>
         <label
           htmlFor="phone"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          className="block text-sm font-medium text-gray-700 mb-1"
         >
           Phone Number <span className="text-gray-400">(optional)</span>
         </label>
@@ -180,7 +180,7 @@ export function VolunteerSignupForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+        <label className="block text-sm font-medium text-gray-700 mb-3">
           Areas of Interest <span className="text-gray-400">(select all that apply)</span>
         </label>
         <div className="grid grid-cols-2 gap-2">
@@ -191,8 +191,8 @@ export function VolunteerSignupForm() {
                 flex items-center p-3 rounded-lg border cursor-pointer transition-colors
                 ${
                   interests.includes(interest)
-                    ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700"
-                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    ? "bg-blue-50 border-blue-300"
+                    : "bg-white border-gray-200 hover:bg-gray-50"
                 }
               `}
             >
@@ -209,7 +209,7 @@ export function VolunteerSignupForm() {
                   ${
                     interests.includes(interest)
                       ? "bg-blue-600 border-blue-600"
-                      : "border-gray-300 dark:border-gray-600"
+                      : "border-gray-300"
                   }
                 `}
               >
@@ -227,7 +227,7 @@ export function VolunteerSignupForm() {
                   </svg>
                 )}
               </span>
-              <span className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="text-sm text-gray-700">
                 {interest}
               </span>
             </label>
@@ -238,7 +238,7 @@ export function VolunteerSignupForm() {
       <div>
         <label
           htmlFor="message"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          className="block text-sm font-medium text-gray-700 mb-1"
         >
           Additional Information <span className="text-gray-400">(optional)</span>
         </label>
@@ -275,7 +275,7 @@ export function VolunteerSignupForm() {
         {loading ? "Submitting..." : "Sign Up to Volunteer"}
       </Button>
 
-      <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+      <p className="text-xs text-gray-500 text-center">
         We'll reach out to you about opportunities that match your interests.
       </p>
     </form>

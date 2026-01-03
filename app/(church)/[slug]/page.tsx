@@ -9,6 +9,8 @@ import { notFound } from "next/navigation";
 import { getSiteData } from "@/lib/public/get-site-data";
 import { prisma } from "@/lib/db/prisma";
 import { BlockRenderer } from "@/components/blocks/block-renderer";
+import { resolveGlobalBlocks } from "@/lib/blocks/resolve-global-blocks";
+import type { Block } from "@/types/blocks";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -77,6 +79,12 @@ export default async function PublicPage({ params }: PageProps) {
     notFound();
   }
 
+  // Resolve global block references
+  const resolvedBlocks = await resolveGlobalBlocks(
+    page.blocks as unknown as Block[],
+    siteData.church.id
+  );
+
   return (
     <>
       {page.featuredImageUrl && (
@@ -87,7 +95,7 @@ export default async function PublicPage({ params }: PageProps) {
         />
       )}
 
-      <BlockRenderer blocks={page.blocks} />
+      <BlockRenderer blocks={resolvedBlocks} />
     </>
   );
 }
