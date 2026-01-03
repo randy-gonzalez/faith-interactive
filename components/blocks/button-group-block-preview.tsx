@@ -9,6 +9,7 @@
 import type { Block, ButtonGroupBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
+import { getTextColors, resolveTextTheme } from "@/lib/blocks/get-text-colors";
 
 interface ButtonGroupBlockPreviewProps {
   block: Block;
@@ -19,7 +20,8 @@ export function ButtonGroupBlockPreview({ block }: ButtonGroupBlockPreviewProps)
   const { data, background, advanced } = buttonGroupBlock;
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
-  const hasBackground = background && background.type !== "color";
+  const textColors = getTextColors(background?.textTheme, background?.type);
+  const useLightTheme = resolveTextTheme(background?.textTheme, background?.type);
   const advancedProps = getAdvancedProps(advanced);
 
   const alignmentClasses = {
@@ -34,8 +36,8 @@ export function ButtonGroupBlockPreview({ block }: ButtonGroupBlockPreviewProps)
       borderRadius: "var(--btn-radius, 8px)",
     };
 
-    if (hasBackground) {
-      // On backgrounds, use white/transparent variants
+    if (useLightTheme) {
+      // On light-themed backgrounds (dark text), use white/transparent variants
       switch (variant) {
         case "primary":
           return { ...baseStyles, backgroundColor: "#ffffff", color: "#1f2937" };
@@ -78,7 +80,7 @@ export function ButtonGroupBlockPreview({ block }: ButtonGroupBlockPreviewProps)
 
       <div className="max-w-4xl mx-auto relative z-10">
         {data.buttons.length === 0 ? (
-          <p className="text-center text-gray-400 italic">
+          <p className="text-center italic" style={{ color: textColors.subtext }}>
             Add buttons to display...
           </p>
         ) : (

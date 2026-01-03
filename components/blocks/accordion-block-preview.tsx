@@ -10,6 +10,7 @@ import { useState } from "react";
 import type { Block, AccordionBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
+import { getTextColors, resolveTextTheme } from "@/lib/blocks/get-text-colors";
 
 interface AccordionBlockPreviewProps {
   block: Block;
@@ -31,10 +32,9 @@ export function AccordionBlockPreview({ block }: AccordionBlockPreviewProps) {
   });
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
-  const hasBackground = background && background.type !== "color";
-  const textColorClass = hasBackground ? "text-white" : "text-gray-900";
-  const subTextColorClass = hasBackground ? "text-white/80" : "text-gray-600";
-  const borderColor = hasBackground ? "border-white/20" : "border-gray-200";
+  const textColors = getTextColors(background?.textTheme, background?.type);
+  const useLightTheme = resolveTextTheme(background?.textTheme, background?.type);
+  const borderColor = useLightTheme ? "border-white/20" : "border-gray-200";
   const advancedProps = getAdvancedProps(advanced);
   const combinedClassName = `block-preview py-12 px-6 relative ${advancedProps.className || ""}`.trim();
 
@@ -59,13 +59,16 @@ export function AccordionBlockPreview({ block }: AccordionBlockPreviewProps) {
 
       <div className="max-w-3xl mx-auto relative z-10">
         {data.heading && (
-          <h2 className={`text-2xl md:text-3xl font-bold ${textColorClass} text-center mb-8`}>
+          <h2
+            className="text-2xl md:text-3xl font-bold text-center mb-8"
+            style={{ color: textColors.heading }}
+          >
             {data.heading}
           </h2>
         )}
 
         {data.items.length === 0 ? (
-          <p className={`text-center ${subTextColorClass} italic`}>
+          <p className="text-center italic" style={{ color: textColors.subtext }}>
             Add accordion items to display...
           </p>
         ) : (
@@ -75,7 +78,8 @@ export function AccordionBlockPreview({ block }: AccordionBlockPreviewProps) {
                 <button
                   type="button"
                   onClick={() => toggleItem(item.id)}
-                  className={`w-full flex items-center justify-between text-left ${textColorClass}`}
+                  className="w-full flex items-center justify-between text-left"
+                  style={{ color: textColors.heading }}
                 >
                   <span className="text-lg font-medium">{item.title}</span>
                   <svg
@@ -90,7 +94,7 @@ export function AccordionBlockPreview({ block }: AccordionBlockPreviewProps) {
                   </svg>
                 </button>
                 {openItems.has(item.id) && (
-                  <div className={`mt-3 ${subTextColorClass}`}>
+                  <div className="mt-3" style={{ color: textColors.text }}>
                     <div dangerouslySetInnerHTML={{ __html: item.content }} />
                   </div>
                 )}

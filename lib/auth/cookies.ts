@@ -3,8 +3,28 @@
  *
  * Secure cookie handling for session tokens.
  *
- * All admin functionality is on the main domain, so cookies are scoped
- * to the main domain only (no cross-subdomain needed).
+ * HOSTNAME-BASED COOKIE SCOPING:
+ * =============================
+ * With hostname-based routing, we have separate subdomains:
+ * - admin.faith-interactive.com   (church admin dashboard)
+ * - platform.faith-interactive.com (Fi internal platform)
+ * - *.faith-interactive.com       (tenant public sites)
+ *
+ * Cookie Strategy:
+ * - Cookies are scoped to the specific subdomain (no Domain attribute)
+ * - This means admin cookies are NOT shared with platform or tenant sites
+ * - This provides HARD ISOLATION between surfaces
+ *
+ * Why NOT share cookies across subdomains:
+ * 1. Security: Tenant sites could potentially read admin cookies if shared
+ * 2. Isolation: Each surface has different auth requirements
+ * 3. Simplicity: No complex cross-subdomain session management
+ *
+ * Login Flow:
+ * - Users log in at admin.faith-interactive.com/login
+ * - Session cookie is set for admin.faith-interactive.com only
+ * - Platform users can access platform.faith-interactive.com after logging in
+ *   (platform uses same cookie name but different subdomain = isolated)
  *
  * SECURITY CONSIDERATIONS:
  * - HttpOnly: Prevents JavaScript access (XSS mitigation)
@@ -35,17 +55,35 @@ function getMaxAge(): number {
 }
 
 /**
+ * Get the cookie domain for cross-subdomain sharing.
+ *
+ * In development with localhost, we need to share cookies across subdomains
+ * (admin.localhost, platform.localhost, etc.) for seamless login flow.
+ *
+ * In production, cookies are scoped to the specific subdomain for isolation.
+ */
+function getCookieDomain(): string | undefined {
+  if (!isProduction()) {
+    // In development, share cookies across *.localhost
+    // This allows login on admin.localhost to work on platform.localhost
+    return "localhost";
+  }
+  // In production, no domain = scoped to exact host only
+  return undefined;
+}
+
+/**
  * Get cookie options for the session cookie.
- * Cookie is scoped to the main domain only (no cross-subdomain).
  */
 function getCookieOptions(): Partial<ResponseCookie> {
+  const domain = getCookieDomain();
   return {
     httpOnly: true,
     secure: isProduction(),
     sameSite: "lax",
     path: "/",
     maxAge: getMaxAge(),
-    // No domain specified = cookie scoped to exact host only
+    ...(domain ? { domain } : {}),
   };
 }
 
@@ -93,6 +131,7 @@ export function createSessionCookieHeader(token: string): string {
     options.httpOnly ? "HttpOnly" : "",
     options.secure ? "Secure" : "",
     `SameSite=${options.sameSite}`,
+    options.domain ? `Domain=${options.domain}` : "",
   ].filter(Boolean);
 
   return parts.join("; ");

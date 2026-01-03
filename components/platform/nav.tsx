@@ -31,36 +31,40 @@ interface NavSection {
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    items: [{ label: "Overview", href: "/platform" }],
+    items: [{ label: "Overview", href: "/" }],
   },
   {
     title: "CRM",
     requireCrm: true,
     items: [
-      { label: "My Tasks", href: "/platform/crm", requireCrm: true },
-      { label: "Leads", href: "/platform/crm/leads", requireCrm: true },
-      { label: "Kanban", href: "/platform/crm/kanban", requireCrm: true },
-      { label: "Stages", href: "/platform/crm/settings/stages", requirePlatformAdmin: true },
+      { label: "My Tasks", href: "/crm", requireCrm: true },
+      { label: "Leads", href: "/crm/leads", requireCrm: true },
+      { label: "Kanban", href: "/crm/kanban", requireCrm: true },
+      { label: "Stages", href: "/crm/settings/stages", requirePlatformAdmin: true },
     ],
   },
   {
     title: "Churches",
     items: [
-      { label: "All Churches", href: "/platform/churches" },
-      { label: "Create Church", href: "/platform/churches/new", requireAdmin: true },
+      { label: "All Churches", href: "/churches" },
+      { label: "Create Church", href: "/churches/new", requireAdmin: true },
     ],
   },
   {
     title: "Marketing Site",
     items: [
-      { label: "Pages", href: "/platform/marketing/pages" },
-      { label: "Site Settings", href: "/platform/marketing/settings", requireAdmin: true },
+      { label: "Pages", href: "/marketing/pages" },
+      { label: "Blog Posts", href: "/marketing/blog" },
+      { label: "Case Studies", href: "/marketing/case-studies" },
+      { label: "Testimonials", href: "/marketing/testimonials" },
+      { label: "Consultations", href: "/marketing/consultations" },
+      { label: "Site Settings", href: "/marketing/settings", requireAdmin: true },
     ],
   },
   {
     title: "System",
     items: [
-      { label: "Audit Log", href: "/platform/audit-log" },
+      { label: "Audit Log", href: "/audit-log" },
     ],
   },
 ];
@@ -119,7 +123,7 @@ export function PlatformNav({ platformRole, userName }: PlatformNavProps) {
             <ul className="space-y-1">
               {section.items.map((item) => {
                 const isActive =
-                  item.href === "/platform" || item.href === "/platform/crm"
+                  item.href === "/" || item.href === "/crm"
                     ? pathname === item.href
                     : pathname.startsWith(item.href);
 

@@ -7,7 +7,8 @@
  * - Regular users can switch between churches they have memberships in
  * - Platform users can switch to ANY church
  *
- * All admin routes are on the main domain, so redirect is always to /admin/dashboard.
+ * With hostname-based routing, this API is called from the admin surface
+ * and redirects to /dashboard (same surface, session contains church context).
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -85,8 +86,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Redirect to main domain admin (all admin is on main domain)
-    const redirectUrl = "/admin/dashboard";
+    // Redirect to dashboard (same admin surface, session has new church context)
+    const redirectUrl = "/dashboard";
 
     logger.info("Church switched", { churchId, churchSlug: church.slug });
 

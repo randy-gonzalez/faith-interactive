@@ -81,7 +81,7 @@ export function SpeakerForm({ initialData, canEdit }: SpeakerFormProps) {
         return;
       }
 
-      router.push("/admin/speakers");
+      router.push("/speakers");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -135,7 +135,7 @@ export function SpeakerForm({ initialData, canEdit }: SpeakerFormProps) {
         return;
       }
 
-      router.push("/admin/speakers");
+      router.push("/speakers");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -261,7 +261,7 @@ export function SpeakerForm({ initialData, canEdit }: SpeakerFormProps) {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => router.push("/admin/speakers")}
+            onClick={() => router.push("/speakers")}
           >
             Cancel
           </Button>

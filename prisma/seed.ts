@@ -734,6 +734,429 @@ async function main() {
   console.log(`✓ Marketing page created: ${featuresPage.title}`);
 
   // ============================================
+  // BLOG CATEGORIES & TAGS
+  // ============================================
+  console.log("\n--- Creating blog categories and tags ---");
+
+  const categoryChurchGrowth = await prisma.blogCategory.upsert({
+    where: { slug: "church-growth" },
+    update: {},
+    create: {
+      name: "Church Growth",
+      slug: "church-growth",
+      description: "Strategies and insights for growing your church",
+      sortOrder: 1,
+    },
+  });
+  console.log(`✓ Blog category: ${categoryChurchGrowth.name}`);
+
+  const categoryWebDesign = await prisma.blogCategory.upsert({
+    where: { slug: "web-design" },
+    update: {},
+    create: {
+      name: "Web Design",
+      slug: "web-design",
+      description: "Tips for effective church website design",
+      sortOrder: 2,
+    },
+  });
+  console.log(`✓ Blog category: ${categoryWebDesign.name}`);
+
+  const categorySEO = await prisma.blogCategory.upsert({
+    where: { slug: "seo" },
+    update: {},
+    create: {
+      name: "SEO",
+      slug: "seo",
+      description: "Search engine optimization for churches",
+      sortOrder: 3,
+    },
+  });
+  console.log(`✓ Blog category: ${categorySEO.name}`);
+
+  const categoryMinistry = await prisma.blogCategory.upsert({
+    where: { slug: "ministry" },
+    update: {},
+    create: {
+      name: "Ministry",
+      slug: "ministry",
+      description: "Resources for effective ministry",
+      sortOrder: 4,
+    },
+  });
+  console.log(`✓ Blog category: ${categoryMinistry.name}`);
+
+  // Blog tags
+  const tagTips = await prisma.blogTag.upsert({
+    where: { slug: "tips" },
+    update: {},
+    create: { name: "Tips", slug: "tips" },
+  });
+  const tagBestPractices = await prisma.blogTag.upsert({
+    where: { slug: "best-practices" },
+    update: {},
+    create: { name: "Best Practices", slug: "best-practices" },
+  });
+  const tagGettingStarted = await prisma.blogTag.upsert({
+    where: { slug: "getting-started" },
+    update: {},
+    create: { name: "Getting Started", slug: "getting-started" },
+  });
+  const tagCaseStudy = await prisma.blogTag.upsert({
+    where: { slug: "case-study" },
+    update: {},
+    create: { name: "Case Study", slug: "case-study" },
+  });
+  const tagMobileFirst = await prisma.blogTag.upsert({
+    where: { slug: "mobile-first" },
+    update: {},
+    create: { name: "Mobile First", slug: "mobile-first" },
+  });
+  console.log(`✓ Blog tags created`);
+
+  // ============================================
+  // BLOG POSTS
+  // ============================================
+  console.log("\n--- Creating blog posts ---");
+
+  const blogPost1 = await prisma.blogPost.upsert({
+    where: { slug: "5-ways-improve-church-website" },
+    update: {},
+    create: {
+      title: "5 Ways to Improve Your Church Website Today",
+      slug: "5-ways-improve-church-website",
+      excerpt: "Simple, actionable tips to make your church website more effective at reaching your community.",
+      blocks: [
+        {
+          id: "block-1",
+          type: "text",
+          content: {
+            text: "<p>Your church website is often the first impression visitors have of your community. Here are five quick wins you can implement today to make it more effective.</p>",
+          },
+        },
+        {
+          id: "block-2",
+          type: "text",
+          content: {
+            text: "<h2>1. Make Your Service Times Prominent</h2><p>Visitors should be able to find when you meet within seconds of landing on your site. Put this information front and center on your homepage.</p>",
+          },
+        },
+        {
+          id: "block-3",
+          type: "text",
+          content: {
+            text: "<h2>2. Add a Clear Call to Action</h2><p>What do you want visitors to do? Plan a visit? Watch a sermon? Make it obvious with a prominent button.</p>",
+          },
+        },
+        {
+          id: "block-4",
+          type: "text",
+          content: {
+            text: "<h2>3. Optimize for Mobile</h2><p>Over 60% of website visits now come from mobile devices. Ensure your site looks great on phones and tablets.</p>",
+          },
+        },
+        {
+          id: "block-5",
+          type: "text",
+          content: {
+            text: "<h2>4. Update Your Photos</h2><p>Authentic, recent photos of your congregation help visitors see themselves as part of your community.</p>",
+          },
+        },
+        {
+          id: "block-6",
+          type: "text",
+          content: {
+            text: "<h2>5. Simplify Your Navigation</h2><p>Less is more. Focus on the pages that matter most to first-time visitors.</p>",
+          },
+        },
+      ],
+      categoryId: categoryWebDesign.id,
+      authorName: "Faith Interactive Team",
+      status: "PUBLISHED",
+      publishedAt: new Date("2024-12-15"),
+      metaTitle: "5 Ways to Improve Your Church Website Today | Faith Interactive",
+      metaDescription: "Simple, actionable tips to make your church website more effective at reaching your community and welcoming visitors.",
+    },
+  });
+  await prisma.blogPostTag.upsert({
+    where: { postId_tagId: { postId: blogPost1.id, tagId: tagTips.id } },
+    update: {},
+    create: { postId: blogPost1.id, tagId: tagTips.id },
+  });
+  await prisma.blogPostTag.upsert({
+    where: { postId_tagId: { postId: blogPost1.id, tagId: tagBestPractices.id } },
+    update: {},
+    create: { postId: blogPost1.id, tagId: tagBestPractices.id },
+  });
+  console.log(`✓ Blog post: ${blogPost1.title}`);
+
+  const blogPost2 = await prisma.blogPost.upsert({
+    where: { slug: "seo-basics-for-churches" },
+    update: {},
+    create: {
+      title: "SEO Basics Every Church Should Know",
+      slug: "seo-basics-for-churches",
+      excerpt: "Help your community find you online with these fundamental search engine optimization strategies.",
+      blocks: [
+        {
+          id: "block-1",
+          type: "text",
+          content: {
+            text: "<p>When someone in your community searches for 'churches near me,' will they find you? Search engine optimization (SEO) helps ensure they do.</p>",
+          },
+        },
+        {
+          id: "block-2",
+          type: "text",
+          content: {
+            text: "<h2>Claim Your Google Business Profile</h2><p>This is the single most important thing you can do for local SEO. Your Google Business Profile appears in Maps and local search results.</p>",
+          },
+        },
+        {
+          id: "block-3",
+          type: "text",
+          content: {
+            text: "<h2>Use Location Keywords</h2><p>Include your city and neighborhood names naturally throughout your website content.</p>",
+          },
+        },
+        {
+          id: "block-4",
+          type: "text",
+          content: {
+            text: "<h2>Create Valuable Content</h2><p>Blog posts, sermon transcripts, and resource pages all help search engines understand what your church is about.</p>",
+          },
+        },
+      ],
+      categoryId: categorySEO.id,
+      authorName: "Faith Interactive Team",
+      status: "PUBLISHED",
+      publishedAt: new Date("2024-12-01"),
+      metaTitle: "SEO Basics Every Church Should Know | Faith Interactive",
+      metaDescription: "Help your community find your church online with these fundamental search engine optimization strategies.",
+    },
+  });
+  await prisma.blogPostTag.upsert({
+    where: { postId_tagId: { postId: blogPost2.id, tagId: tagGettingStarted.id } },
+    update: {},
+    create: { postId: blogPost2.id, tagId: tagGettingStarted.id },
+  });
+  await prisma.blogPostTag.upsert({
+    where: { postId_tagId: { postId: blogPost2.id, tagId: tagBestPractices.id } },
+    update: {},
+    create: { postId: blogPost2.id, tagId: tagBestPractices.id },
+  });
+  console.log(`✓ Blog post: ${blogPost2.title}`);
+
+  const blogPost3 = await prisma.blogPost.upsert({
+    where: { slug: "why-church-plants-need-websites" },
+    update: {},
+    create: {
+      title: "Why Church Plants Need a Website From Day One",
+      slug: "why-church-plants-need-websites",
+      excerpt: "Starting a new church? Here is why establishing your online presence early matters.",
+      blocks: [
+        {
+          id: "block-1",
+          type: "text",
+          content: {
+            text: "<p>When you're launching a church plant, there are a million things competing for your attention. A website might seem like something that can wait. Here's why it shouldn't.</p>",
+          },
+        },
+        {
+          id: "block-2",
+          type: "text",
+          content: {
+            text: "<h2>First Impressions Happen Online</h2><p>Before anyone visits your church in person, they'll visit your website. A professional online presence builds credibility from the start.</p>",
+          },
+        },
+        {
+          id: "block-3",
+          type: "text",
+          content: {
+            text: "<h2>Collect Interest Early</h2><p>Even before your first service, a website with a simple email signup helps you build a launch team and generate buzz.</p>",
+          },
+        },
+      ],
+      categoryId: categoryChurchGrowth.id,
+      authorName: "Faith Interactive Team",
+      status: "PUBLISHED",
+      publishedAt: new Date("2024-11-20"),
+      metaTitle: "Why Church Plants Need a Website From Day One | Faith Interactive",
+      metaDescription: "Starting a new church? Here is why establishing your online presence early matters for your church plant.",
+    },
+  });
+  await prisma.blogPostTag.upsert({
+    where: { postId_tagId: { postId: blogPost3.id, tagId: tagGettingStarted.id } },
+    update: {},
+    create: { postId: blogPost3.id, tagId: tagGettingStarted.id },
+  });
+  console.log(`✓ Blog post: ${blogPost3.title}`);
+
+  // ============================================
+  // CASE STUDIES
+  // ============================================
+  console.log("\n--- Creating case studies ---");
+
+  const caseStudy1 = await prisma.caseStudy.upsert({
+    where: { slug: "grace-community-church" },
+    update: {},
+    create: {
+      churchName: "Grace Community Church",
+      slug: "grace-community-church",
+      description: "How Grace Community Church increased online engagement by 200% with a modern website redesign.",
+      images: [],
+      testimonialQuote: "Faith Interactive transformed our online presence. We've seen a significant increase in first-time visitors who found us through our new website.",
+      testimonialName: "Pastor David Williams",
+      testimonialTitle: "Senior Pastor",
+      metrics: {
+        traffic: "+200%",
+        engagement: "+150%",
+        conversions: "+85%",
+      },
+      liveSiteUrl: "https://gracecommunity.example.com",
+      featured: true,
+      sortOrder: 1,
+      status: "PUBLISHED",
+      publishedAt: new Date("2024-10-15"),
+    },
+  });
+  console.log(`✓ Case study: ${caseStudy1.churchName}`);
+
+  const caseStudy2 = await prisma.caseStudy.upsert({
+    where: { slug: "hope-fellowship" },
+    update: {},
+    create: {
+      churchName: "Hope Fellowship",
+      slug: "hope-fellowship",
+      description: "A church plant that launched with a professional website from day one, helping them build momentum before their first service.",
+      images: [],
+      testimonialQuote: "Having a professional website from the start gave us credibility and helped us build our launch team. The free church plant program was a blessing.",
+      testimonialName: "Pastor James Rodriguez",
+      testimonialTitle: "Lead Pastor",
+      metrics: {
+        launchTeam: "75 members",
+        emailSignups: "200+",
+        firstService: "150 attendees",
+      },
+      featured: true,
+      sortOrder: 2,
+      status: "PUBLISHED",
+      publishedAt: new Date("2024-09-01"),
+    },
+  });
+  console.log(`✓ Case study: ${caseStudy2.churchName}`);
+
+  const caseStudy3 = await prisma.caseStudy.upsert({
+    where: { slug: "first-baptist-springfield" },
+    update: {},
+    create: {
+      churchName: "First Baptist Springfield",
+      slug: "first-baptist-springfield",
+      description: "An established church modernized their 10-year-old website, resulting in better mobile experience and increased sermon engagement.",
+      images: [],
+      testimonialQuote: "Our old website was embarrassing. Now members are proud to share links to our sermons and events.",
+      testimonialName: "Linda Thompson",
+      testimonialTitle: "Church Administrator",
+      metrics: {
+        sermonViews: "+300%",
+        mobileTraffic: "+180%",
+        eventRegistrations: "+120%",
+      },
+      liveSiteUrl: "https://fbcspringfield.example.com",
+      featured: false,
+      sortOrder: 3,
+      status: "PUBLISHED",
+      publishedAt: new Date("2024-08-15"),
+    },
+  });
+  console.log(`✓ Case study: ${caseStudy3.churchName}`);
+
+  // ============================================
+  // TESTIMONIALS
+  // ============================================
+  console.log("\n--- Creating testimonials ---");
+
+  await prisma.testimonial.upsert({
+    where: { id: "testimonial-1" },
+    update: {},
+    create: {
+      id: "testimonial-1",
+      name: "Pastor David Williams",
+      title: "Senior Pastor",
+      company: "Grace Community Church",
+      quote: "Faith Interactive transformed our online presence. We've seen a significant increase in first-time visitors who found us through our new website. The team truly understands the unique needs of churches.",
+      featured: true,
+      sortOrder: 1,
+      isActive: true,
+    },
+  });
+  console.log(`✓ Testimonial: Pastor David Williams`);
+
+  await prisma.testimonial.upsert({
+    where: { id: "testimonial-2" },
+    update: {},
+    create: {
+      id: "testimonial-2",
+      name: "Sarah Mitchell",
+      title: "Communications Director",
+      company: "Riverside Church",
+      quote: "The ongoing support has been incredible. Whenever we need a change, the team responds quickly. It's like having a web department without the overhead.",
+      featured: true,
+      sortOrder: 2,
+      isActive: true,
+    },
+  });
+  console.log(`✓ Testimonial: Sarah Mitchell`);
+
+  await prisma.testimonial.upsert({
+    where: { id: "testimonial-3" },
+    update: {},
+    create: {
+      id: "testimonial-3",
+      name: "Pastor James Rodriguez",
+      title: "Lead Pastor",
+      company: "Hope Fellowship (Church Plant)",
+      quote: "The free church plant program was a blessing. We launched with a professional website that gave us credibility from day one. Now that we've grown, we're happy to pay for the premium features.",
+      featured: true,
+      sortOrder: 3,
+      isActive: true,
+    },
+  });
+  console.log(`✓ Testimonial: Pastor James Rodriguez`);
+
+  await prisma.testimonial.upsert({
+    where: { id: "testimonial-4" },
+    update: {},
+    create: {
+      id: "testimonial-4",
+      name: "Linda Thompson",
+      title: "Church Administrator",
+      company: "First Baptist Springfield",
+      quote: "Our old website was embarrassing. Now members are proud to share links to our sermons and events. The mobile experience is fantastic.",
+      featured: false,
+      sortOrder: 4,
+      isActive: true,
+    },
+  });
+  console.log(`✓ Testimonial: Linda Thompson`);
+
+  await prisma.testimonial.upsert({
+    where: { id: "testimonial-5" },
+    update: {},
+    create: {
+      id: "testimonial-5",
+      name: "Michael Chen",
+      title: "Worship Pastor",
+      company: "New Life Community",
+      quote: "The sermon library feature alone is worth it. Our congregation loves being able to catch up on messages they missed, and sharing sermons has never been easier.",
+      featured: false,
+      sortOrder: 5,
+      isActive: true,
+    },
+  });
+  console.log(`✓ Testimonial: Michael Chen`);
+
+  // ============================================
   // SCRIPTURE BOOKS (Global Reference Data)
   // ============================================
   console.log("\n--- Seeding Scripture Books ---");
@@ -1152,32 +1575,36 @@ async function main() {
 
   console.log("\n📋 Test credentials (all use password: password123):");
   console.log("   ─────────────────────────────────────────────");
-  console.log("   Grace Community Church (demo.localhost:3000):");
+  console.log("   Grace Community Church:");
   console.log("     Admin:  randy@shiftagency.com  (PLATFORM_ADMIN + church ADMIN)");
   console.log("     Editor: editor@example.com");
   console.log("     Viewer: viewer@example.com");
   console.log("");
-  console.log("   Hope Community Church (hope-community.localhost:3000):");
+  console.log("   Hope Community Church:");
   console.log("     Admin:  admin@hopecommunity.example.com");
   console.log("     Editor: editor@hopecommunity.example.com");
   console.log("");
   console.log("   Multi-church user (has access to BOTH churches):");
   console.log("     contractor@agency.com - ADMIN in Grace, EDITOR in Hope");
 
-  console.log("\n🌐 Access the app:");
-  console.log("   Unified Login (works for all users):");
-  console.log("     http://localhost:3000/login");
+  console.log("\n🌐 Hostname-Based Access (no /etc/hosts needed!):");
   console.log("");
-  console.log("   Church sites:");
-  console.log("     http://demo.localhost:3000");
-  console.log("     http://hope-community.localhost:3000");
+  console.log("   Marketing Site:");
+  console.log("     http://localhost:3000");
+  console.log("");
+  console.log("   Church Admin Dashboard (login here):");
+  console.log("     http://admin.localhost:3000");
   console.log("");
   console.log("   Platform Admin (requires PLATFORM_ADMIN role):");
-  console.log("     http://localhost:3000/platform");
+  console.log("     http://platform.localhost:3000");
+  console.log("");
+  console.log("   Church Public Sites:");
+  console.log("     http://demo.localhost:3000");
+  console.log("     http://hope-community.localhost:3000");
 
-  console.log("\n💡 Don't forget to add to /etc/hosts:");
-  console.log("   127.0.0.1 demo.localhost");
-  console.log("   127.0.0.1 hope-community.localhost");
+  console.log("\n💡 Alternative: Use faith-interactive.local (requires /etc/hosts):");
+  console.log("   127.0.0.1 faith-interactive.local admin.faith-interactive.local");
+  console.log("   127.0.0.1 platform.faith-interactive.local demo.faith-interactive.local");
 
   console.log("\n✅ Seeding complete!");
 }

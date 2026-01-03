@@ -82,7 +82,7 @@ export function AnnouncementForm({
         return;
       }
 
-      router.push("/admin/announcements");
+      router.push("/announcements");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -136,7 +136,7 @@ export function AnnouncementForm({
         return;
       }
 
-      router.push("/admin/announcements");
+      router.push("/announcements");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -224,7 +224,7 @@ export function AnnouncementForm({
           <Button
             type="button"
             variant="ghost"
-            onClick={() => router.push("/admin/announcements")}
+            onClick={() => router.push("/announcements")}
           >
             Cancel
           </Button>

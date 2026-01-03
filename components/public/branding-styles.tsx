@@ -120,6 +120,11 @@ export function BrandingStyles({ branding }: BrandingStylesProps) {
       /* Link Colors */
       --link-color: ${branding?.linkColor || colorPrimary};
       --link-hover-color: ${branding?.linkHoverColor || colorAccent};
+
+      /* Light Theme Colors (for text on dark backgrounds) */
+      --color-light-heading: ${branding?.lightHeadingColor || "#ffffff"};
+      --color-light-text: ${branding?.lightTextColor || "rgba(255, 255, 255, 0.9)"};
+      --color-light-subtext: ${branding?.lightSubtextColor || "rgba(255, 255, 255, 0.7)"};
     }
 
     /* Global Typography Styles */

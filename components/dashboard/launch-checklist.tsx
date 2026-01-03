@@ -183,19 +183,19 @@ export function LaunchChecklist({ items, initialProgress }: LaunchChecklistProps
         </h3>
         <div className="flex flex-wrap gap-3">
           <a
-            href="/admin/settings/domains"
+            href="/settings/domains"
             className="text-sm text-blue-600 hover:text-blue-700"
           >
             Manage Domains &rarr;
           </a>
           <a
-            href="/admin/settings"
+            href="/settings"
             className="text-sm text-blue-600 hover:text-blue-700"
           >
             Site Settings &rarr;
           </a>
           <a
-            href="/admin/pages"
+            href="/pages"
             className="text-sm text-blue-600 hover:text-blue-700"
           >
             Manage Pages &rarr;

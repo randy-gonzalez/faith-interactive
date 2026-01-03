@@ -1,0 +1,163 @@
+/**
+ * Marketing Surface Styles
+ *
+ * Styles specific to the marketing website (faith-interactive.com).
+ * Completely isolated from tenant, admin, and platform surfaces.
+ */
+
+@import "tailwindcss";
+
+/* Marketing site color scheme */
+:root {
+  /* Faith Interactive brand colors */
+  --fi-gradient-start: #77f2a1;
+  --fi-gradient-end: #00ffce;
+  --fi-dark: #000646;
+  --fi-primary: #00d4aa;
+  --fi-primary-hover: #00b896;
+  --fi-secondary: #77f2a1;
+  --fi-accent: #00ffce;
+
+  /* Neutrals */
+  --fi-foreground: #000646;
+  --fi-background: #ffffff;
+  --fi-muted: #64748b;
+  --fi-border: #e2e8f0;
+
+  /* Status colors */
+  --fi-error: #dc2626;
+  --fi-success: #16a34a;
+  --fi-warning: #d97706;
+}
+
+/* Base styles for marketing */
+html {
+  color-scheme: light;
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--fi-foreground);
+  background: var(--fi-background);
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--fi-primary);
+  outline-offset: 2px;
+}
+
+/* Marketing-specific typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+/* Marketing button styles */
+.btn-marketing-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, var(--fi-gradient-start) 0%, var(--fi-gradient-end) 100%);
+  color: var(--fi-dark);
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 212, 170, 0.3);
+}
+
+.btn-marketing-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 212, 170, 0.4);
+}
+
+.btn-marketing-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background-color: transparent;
+  color: var(--fi-dark);
+  border: 2px solid var(--fi-dark);
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.btn-marketing-secondary:hover {
+  background-color: var(--fi-dark);
+  color: white;
+}
+
+.btn-marketing-white {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background-color: white;
+  color: var(--fi-dark);
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-marketing-white:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Gradient backgrounds for marketing */
+.marketing-gradient {
+  background: linear-gradient(135deg, var(--fi-gradient-start) 0%, var(--fi-gradient-end) 100%);
+}
+
+.marketing-gradient-dark {
+  background: var(--fi-dark);
+}
+
+.marketing-gradient-subtle {
+  background: linear-gradient(180deg, #f0fdf9 0%, #ffffff 100%);
+}
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, var(--fi-gradient-start) 0%, var(--fi-gradient-end) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card styles */
+.marketing-card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.marketing-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Pricing card highlight */
+.pricing-card-popular {
+  border: 2px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, var(--fi-gradient-start), var(--fi-gradient-end)) border-box;
+}

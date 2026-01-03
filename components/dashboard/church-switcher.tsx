@@ -7,9 +7,33 @@
  * or platform users who can access any church.
  *
  * Shows current church and allows switching to other churches.
+ *
+ * With hostname-based routing:
+ * - This component lives in the admin surface (admin.faith-interactive.com)
+ * - Platform link redirects to platform surface (cross-subdomain)
  */
 
 import { useState, useEffect, useRef } from "react";
+import { buildSurfaceUrl } from "@/lib/hostname/parser";
+
+/**
+ * Platform link component for cross-subdomain navigation
+ */
+function PlatformLink() {
+  const hostname = typeof window !== "undefined" ? window.location.hostname : "";
+  const isLocal = hostname.includes(".local") || hostname.includes("localhost");
+  const useLocalhost = hostname.includes("localhost");
+  const platformUrl = buildSurfaceUrl("platform", "/", { isLocal, useLocalhost });
+
+  return (
+    <a
+      href={platformUrl}
+      className="block w-full text-center px-4 py-2 text-sm text-indigo-600 hover:bg-gray-100 rounded-md transition-colors"
+    >
+      Platform Admin Panel
+    </a>
+  );
+}
 
 interface ChurchOption {
   churchId: string;
@@ -222,15 +246,10 @@ export function ChurchSwitcher({
             )}
           </div>
 
-          {/* Platform admin link */}
+          {/* Platform admin link - cross-subdomain redirect */}
           {isPlatformUser && (
             <div className="border-t border-gray-200 p-2">
-              <a
-                href="/platform"
-                className="block w-full text-center px-4 py-2 text-sm text-indigo-600 hover:bg-gray-100 rounded-md transition-colors"
-              >
-                Platform Admin Panel
-              </a>
+              <PlatformLink />
             </div>
           )}
         </div>

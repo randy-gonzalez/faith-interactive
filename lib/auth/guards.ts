@@ -272,12 +272,15 @@ export async function requireAuthOrRedirect(): Promise<AuthenticatedUser> {
 /**
  * Redirect to dashboard if user doesn't have required role.
  * Use this in page components.
+ *
+ * Note: With hostname-based routing, /dashboard resolves to the
+ * admin surface's dashboard when accessed from admin.faith-interactive.com
  */
 export async function requireRoleOrRedirect(role: UserRole): Promise<AuthenticatedUser> {
   const user = await requireAuthOrRedirect();
 
   if (user.role !== role) {
-    redirect("/admin/dashboard");
+    redirect("/dashboard");
   }
 
   return user;
@@ -369,27 +372,33 @@ export async function requirePlatformRole(
  * Redirect to login if not a platform user.
  * Use this in /platform page components.
  *
- * With the unified login system:
- * - Unauthenticated users go to /login
- * - After login, platform users are redirected to /platform
- * - Non-platform users are redirected to their church dashboard
+ * With hostname-based routing:
+ * - Platform lives at platform.faith-interactive.com
+ * - Login happens at admin.faith-interactive.com/login
+ * - Each surface has isolated cookies
+ *
+ * Since cookies are isolated, platform users need to log in on the platform
+ * subdomain. The /login page within the platform surface handles this.
  */
 export async function requirePlatformUserOrRedirect(): Promise<PlatformUser> {
   const user = await getAuthUser();
 
   if (!user) {
-    // Redirect to unified login page
-    redirect("/login?returnTo=/platform");
+    // Redirect to login within the platform surface
+    // The middleware will rewrite this to /p/login
+    redirect("/login");
   }
 
   if (!hasPlatformRole(user)) {
     // User is authenticated but not a platform user
-    // Redirect them to their church dashboard instead
-    if (user.activeChurchId && user.activeChurch) {
-      redirect(`/admin/dashboard`);
-    }
-    // If they have no active church, send to login to select one
-    redirect("/login");
+    // They shouldn't be on the platform subdomain at all
+    // Redirect them to the admin surface for their church dashboard
+    // Note: This requires a cross-subdomain redirect
+    // Default to localhost for local dev since it's simpler (no /etc/hosts needed)
+    const adminUrl = process.env.NODE_ENV === "production"
+      ? "https://admin.faith-interactive.com/dashboard"
+      : "http://admin.localhost:3000/dashboard";
+    redirect(adminUrl);
   }
 
   return user;

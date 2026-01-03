@@ -159,7 +159,7 @@ export function EventForm({ initialData, canEdit }: EventFormProps) {
         return;
       }
 
-      router.push("/admin/events");
+      router.push("/events");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -212,7 +212,7 @@ export function EventForm({ initialData, canEdit }: EventFormProps) {
         return;
       }
 
-      router.push("/admin/events");
+      router.push("/events");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -375,7 +375,7 @@ export function EventForm({ initialData, canEdit }: EventFormProps) {
                   {registrationCount} registration{registrationCount !== 1 ? "s" : ""}
                 </span>
                 <Link
-                  href={`/admin/events/${initialData.id}/registrations`}
+                  href={`/events/${initialData.id}/registrations`}
                   className="text-blue-600 hover:underline text-sm"
                 >
                   View registrations
@@ -448,7 +448,7 @@ export function EventForm({ initialData, canEdit }: EventFormProps) {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => router.push("/admin/events")}
+            onClick={() => router.push("/events")}
           >
             Cancel
           </Button>

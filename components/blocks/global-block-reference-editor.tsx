@@ -61,7 +61,7 @@ export function GlobalBlockReferenceEditor({
             </div>
             <div className="flex items-center gap-2">
               <a
-                href={`/admin/global-blocks/${refBlock.data.globalBlockId}/edit`}
+                href={`/global-blocks/${refBlock.data.globalBlockId}/edit`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 text-gray-400 hover:text-blue-600 rounded"

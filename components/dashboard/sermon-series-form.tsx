@@ -87,7 +87,7 @@ export function SermonSeriesForm({ initialData, canEdit }: SermonSeriesFormProps
         return;
       }
 
-      router.push("/admin/sermon-series");
+      router.push("/sermon-series");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -141,7 +141,7 @@ export function SermonSeriesForm({ initialData, canEdit }: SermonSeriesFormProps
         return;
       }
 
-      router.push("/admin/sermon-series");
+      router.push("/sermon-series");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -251,7 +251,7 @@ export function SermonSeriesForm({ initialData, canEdit }: SermonSeriesFormProps
           <Button
             type="button"
             variant="ghost"
-            onClick={() => router.push("/admin/sermon-series")}
+            onClick={() => router.push("/sermon-series")}
           >
             Cancel
           </Button>

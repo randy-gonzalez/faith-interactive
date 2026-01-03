@@ -86,7 +86,7 @@ export function VenueForm({ initialData, canEdit }: VenueFormProps) {
         return;
       }
 
-      router.push("/admin/venues");
+      router.push("/venues");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -112,7 +112,7 @@ export function VenueForm({ initialData, canEdit }: VenueFormProps) {
         return;
       }
 
-      router.push("/admin/venues");
+      router.push("/venues");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -238,7 +238,7 @@ export function VenueForm({ initialData, canEdit }: VenueFormProps) {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => router.push("/admin/venues")}
+            onClick={() => router.push("/venues")}
           >
             Cancel
           </Button>

@@ -246,7 +246,7 @@ export function GlobalBlockEditor({ initialData, canEdit }: GlobalBlockEditorPro
         return;
       }
 
-      router.push("/admin/global-blocks");
+      router.push("/global-blocks");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -275,7 +275,7 @@ export function GlobalBlockEditor({ initialData, canEdit }: GlobalBlockEditorPro
         return;
       }
 
-      router.push("/admin/global-blocks");
+      router.push("/global-blocks");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -382,7 +382,7 @@ export function GlobalBlockEditor({ initialData, canEdit }: GlobalBlockEditorPro
               </div>
 
               <div className="flex items-center gap-3">
-                <Button variant="ghost" onClick={() => router.push("/admin/global-blocks")}>
+                <Button variant="ghost" onClick={() => router.push("/global-blocks")}>
                   Cancel
                 </Button>
 

@@ -193,6 +193,9 @@ model User {
   ownedTasks          CrmTask[]  @relation("CrmTaskOwner")
   dncRecords          CrmDnc[]   @relation("CrmDncAddedBy")
 
+  // Marketing site consultation assignments
+  assignedConsultations ConsultationRequest[] @relation("ConsultationAssignee")
+
   // Index for efficient lookups
   @@index([email])
   @@index([platformRole])
@@ -1097,6 +1100,15 @@ model ChurchBranding {
   // Link hover color
   linkHoverColor    String?
 
+  // LIGHT THEME COLORS (for text on dark backgrounds)
+  // These define the text colors used when textTheme="light" is selected
+  // Heading color for light theme (default: #ffffff)
+  lightHeadingColor   String?
+  // Body text color for light theme (default: rgba(255,255,255,0.9))
+  lightTextColor      String?
+  // Subtext/muted color for light theme (default: rgba(255,255,255,0.7))
+  lightSubtextColor   String?
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1594,6 +1606,215 @@ model MarketingSiteSettings {
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ==============================================================================
+// MARKETING BLOG SYSTEM
+// ==============================================================================
+// Blog posts for the Fi marketing website ("Trends" section).
+// Supports categories, tags, and block-based content.
+// ==============================================================================
+
+model BlogCategory {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  sortOrder   Int        @default(0)
+
+  posts       BlogPost[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([slug])
+  @@index([sortOrder])
+}
+
+model BlogTag {
+  id    String        @id @default(cuid())
+  name  String
+  slug  String        @unique
+
+  posts BlogPostTag[]
+
+  createdAt DateTime @default(now())
+
+  @@index([slug])
+}
+
+model BlogPost {
+  id              String              @id @default(cuid())
+  title           String
+  slug            String              @unique
+  excerpt         String?             @db.VarChar(500)
+  // Block-based content (same structure as MarketingPage)
+  blocks          Json                @default("[]")
+  featuredImage   String?
+
+  // Category relationship
+  categoryId      String?
+  category        BlogCategory?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  // Author info (cached for display)
+  authorId        String?
+  authorName      String?
+
+  // Publication
+  status          MarketingPageStatus @default(DRAFT)
+  publishedAt     DateTime?
+
+  // SEO fields
+  metaTitle       String?             @db.VarChar(200)
+  metaDescription String?             @db.VarChar(500)
+  ogImage         String?
+  noIndex         Boolean             @default(false)
+
+  // Relations
+  tags            BlogPostTag[]
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([categoryId])
+  @@index([publishedAt])
+  @@index([status, publishedAt])
+}
+
+// Junction table for BlogPost <-> BlogTag many-to-many
+model BlogPostTag {
+  id       String   @id @default(cuid())
+  postId   String
+  post     BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tagId    String
+  tag      BlogTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, tagId])
+  @@index([postId])
+  @@index([tagId])
+}
+
+// ==============================================================================
+// MARKETING CASE STUDIES
+// ==============================================================================
+// Showcase of church websites built by Faith Interactive.
+// Includes before/after images, testimonials, and metrics.
+// ==============================================================================
+
+model CaseStudy {
+  id               String              @id @default(cuid())
+  churchName       String
+  slug             String              @unique
+  logo             String?
+  description      String              @db.Text
+  // Gallery images as JSON array of URLs
+  images           Json                @default("[]")
+  // Before/after comparison images
+  beforeImage      String?
+  afterImage       String?
+  // Client testimonial
+  testimonialQuote String?             @db.Text
+  testimonialName  String?
+  testimonialTitle String?
+  // Metrics as JSON: { "traffic": "+200%", "conversions": "3x", etc. }
+  metrics          Json?
+  // Link to live site
+  liveSiteUrl      String?
+  // Display options
+  featured         Boolean             @default(false)
+  sortOrder        Int                 @default(0)
+
+  status           MarketingPageStatus @default(DRAFT)
+  publishedAt      DateTime?
+
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([featured])
+  @@index([sortOrder])
+  @@index([status, featured])
+}
+
+// ==============================================================================
+// MARKETING TESTIMONIALS
+// ==============================================================================
+// General testimonials for display across the marketing site.
+// Can be featured on homepage, case studies page, etc.
+// ==============================================================================
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  name        String
+  title       String?  // e.g., "Senior Pastor"
+  company     String?  // e.g., "Grace Community Church"
+  quote       String   @db.Text
+  image       String?
+  featured    Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([featured])
+  @@index([isActive])
+  @@index([sortOrder])
+  @@index([isActive, featured])
+  @@index([isActive, sortOrder])
+}
+
+// ==============================================================================
+// CONSULTATION REQUESTS
+// ==============================================================================
+// Lead capture from the marketing website contact form.
+// Saved to database and emailed to platform admins.
+// ==============================================================================
+
+// Consultation request status
+enum ConsultationStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  CONVERTED
+  CLOSED
+}
+
+model ConsultationRequest {
+  id              String             @id @default(cuid())
+
+  // Contact info
+  name            String
+  email           String
+  phone           String?
+  churchName      String?
+
+  // Interest
+  packageInterest String?            // "free", "small", "large"
+  message         String?            @db.Text
+
+  // Tracking
+  status          ConsultationStatus @default(NEW)
+  notes           String?            @db.Text
+
+  // Spam protection metadata
+  ipAddress       String?
+  userAgent       String?
+
+  // Assignment (to platform user/sales rep)
+  assignedToId    String?
+  assignedTo      User?              @relation("ConsultationAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([assignedToId])
+  @@index([status, createdAt])
 }
 
 // ==============================================================================

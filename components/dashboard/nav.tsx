@@ -30,44 +30,44 @@ interface NavSection {
 const NAV_SECTIONS: NavSection[] = [
   {
     items: [
-      { label: "Dashboard", href: "/admin/dashboard" },
-      { label: "Pages", href: "/admin/pages" },
+      { label: "Dashboard", href: "/dashboard" },
+      { label: "Pages", href: "/pages" },
       {
         label: "Sermons",
-        href: "/admin/sermons",
+        href: "/sermons",
         children: [
-          { label: "Series", href: "/admin/sermon-series" },
-          { label: "Speakers", href: "/admin/speakers" },
-          { label: "Topics", href: "/admin/sermon-topics" },
+          { label: "Series", href: "/sermon-series" },
+          { label: "Speakers", href: "/speakers" },
+          { label: "Topics", href: "/sermon-topics" },
         ],
       },
-      { label: "Events", href: "/admin/events" },
-      { label: "Announcements", href: "/admin/announcements" },
-      { label: "Leadership", href: "/admin/leadership" },
-      { label: "Forms", href: "/admin/forms" },
-      { label: "Media Library", href: "/admin/media" },
+      { label: "Events", href: "/events" },
+      { label: "Announcements", href: "/announcements" },
+      { label: "Leadership", href: "/leadership" },
+      { label: "Forms", href: "/forms" },
+      { label: "Media Library", href: "/media" },
       {
         label: "Theme",
-        href: "/admin/theme",
+        href: "/theme",
         children: [
-          { label: "Header", href: "/admin/theme/header" },
-          { label: "Footer", href: "/admin/theme/footer" },
-          { label: "Global Blocks", href: "/admin/theme/global-blocks" },
-          { label: "Logos", href: "/admin/theme/logos" },
-          { label: "Colors", href: "/admin/theme/colors" },
-          { label: "Typography", href: "/admin/theme/typography" },
-          { label: "Buttons", href: "/admin/theme/buttons" },
+          { label: "Header", href: "/theme/header" },
+          { label: "Footer", href: "/theme/footer" },
+          { label: "Global Blocks", href: "/theme/global-blocks" },
+          { label: "Logos", href: "/theme/logos" },
+          { label: "Colors", href: "/theme/colors" },
+          { label: "Typography", href: "/theme/typography" },
+          { label: "Buttons", href: "/theme/buttons" },
         ],
       },
       {
         label: "Settings",
-        href: "/admin/settings",
+        href: "/settings",
         children: [
-          { label: "General", href: "/admin/settings" },
-          { label: "Custom Domains", href: "/admin/settings/domains", requiredRole: "ADMIN" },
-          { label: "Team", href: "/admin/settings/team", requiredRole: "ADMIN" },
-          { label: "Redirects", href: "/admin/settings/redirects", requiredRole: "ADMIN" },
-          { label: "Launch Checklist", href: "/admin/settings/launch", requiredRole: "ADMIN" },
+          { label: "General", href: "/settings" },
+          { label: "Custom Domains", href: "/settings/domains", requiredRole: "ADMIN" },
+          { label: "Team", href: "/settings/team", requiredRole: "ADMIN" },
+          { label: "Redirects", href: "/settings/redirects", requiredRole: "ADMIN" },
+          { label: "Launch Checklist", href: "/settings/launch", requiredRole: "ADMIN" },
         ],
       },
     ],
@@ -123,8 +123,8 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
         if (item.children) {
           const hasActiveChild = item.children.some((child) => {
             if (pathname.startsWith(child.href)) return true;
-            // Special case: /admin/global-blocks/* should expand Theme
-            if (child.href === "/admin/theme/global-blocks" && pathname.startsWith("/admin/global-blocks")) {
+            // Special case: /global-blocks/* should expand Theme
+            if (child.href === "/theme/global-blocks" && pathname.startsWith("/global-blocks")) {
               return true;
             }
             return false;
@@ -174,15 +174,15 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
             <ul className="space-y-1">
               {section.items.map((item) => {
                 const isActive =
-                  item.href === "/admin/dashboard"
-                    ? pathname === "/admin/dashboard" || pathname === "/admin"
+                  item.href === "/dashboard"
+                    ? pathname === "/dashboard" || pathname === "/"
                     : pathname === item.href || (pathname.startsWith(item.href + "/") && !item.children);
                 const isExpanded = expandedItems.has(item.href);
                 const hasActiveChild = item.children?.some((child) => {
                   // Direct match
                   if (pathname.startsWith(child.href)) return true;
-                  // Special case: /admin/global-blocks/* should highlight Theme > Global Blocks
-                  if (child.href === "/admin/theme/global-blocks" && pathname.startsWith("/admin/global-blocks")) {
+                  // Special case: /global-blocks/* should highlight Theme > Global Blocks
+                  if (child.href === "/theme/global-blocks" && pathname.startsWith("/global-blocks")) {
                     return true;
                   }
                   return false;
@@ -217,12 +217,12 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
                       {isExpanded && (
                         <ul className="mt-1 ml-6 space-y-1">
                           {item.children.map((child) => {
-                            // For exact match routes like /admin/settings, only match exactly
+                            // For exact match routes like /settings, only match exactly
                             // For routes with potential children, use startsWith
                             let isChildActive = pathname === child.href ||
-                              (pathname.startsWith(child.href + "/") && child.href !== "/admin/settings");
-                            // Special case: /admin/global-blocks/* should highlight Global Blocks
-                            if (child.href === "/admin/theme/global-blocks" && pathname.startsWith("/admin/global-blocks")) {
+                              (pathname.startsWith(child.href + "/") && child.href !== "/settings");
+                            // Special case: /global-blocks/* should highlight Global Blocks
+                            if (child.href === "/theme/global-blocks" && pathname.startsWith("/global-blocks")) {
                               isChildActive = true;
                             }
                             return (

@@ -147,6 +147,7 @@ export const blockBackgroundSchema = z.object({
   imageUrl: z.string().optional(),
   videoUrl: z.string().optional(),
   overlay: z.string().optional(),
+  textTheme: z.enum(["light", "dark", "auto"]).optional(),
 });
 
 /**
@@ -741,3 +742,149 @@ export const globalBlockSchema = z.object({
 });
 
 export type GlobalBlockInput = z.infer<typeof globalBlockSchema>;
+
+// ==============================================================================
+// MARKETING BLOG SCHEMAS
+// ==============================================================================
+
+/**
+ * Blog category validation
+ */
+export const blogCategorySchema = z.object({
+  name: z.string().min(1, "Name is required").max(100, "Name too long"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .max(100, "Slug too long")
+    .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
+    .transform((s) => s.toLowerCase()),
+  description: z.string().max(500, "Description too long").optional().nullable(),
+  sortOrder: z.number().int().min(0).optional().default(0),
+});
+
+export type BlogCategoryInput = z.infer<typeof blogCategorySchema>;
+
+/**
+ * Blog tag validation
+ */
+export const blogTagSchema = z.object({
+  name: z.string().min(1, "Name is required").max(50, "Name too long"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .max(50, "Slug too long")
+    .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
+    .transform((s) => s.toLowerCase()),
+});
+
+export type BlogTagInput = z.infer<typeof blogTagSchema>;
+
+/**
+ * Blog post validation
+ */
+export const blogPostSchema = z.object({
+  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .max(100, "Slug too long")
+    .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
+    .transform((s) => s.toLowerCase()),
+  excerpt: z.string().max(500, "Excerpt too long").optional().nullable(),
+  blocks: z.array(blockSchema).optional().default([]),
+  featuredImage: urlOrPath,
+  categoryId: z.string().optional().nullable(),
+  tagIds: z.array(z.string()).optional().default([]),
+  authorName: z.string().max(100, "Author name too long").optional().nullable(),
+  status: z.enum(["DRAFT", "PUBLISHED"]).optional().default("DRAFT"),
+  // SEO fields
+  metaTitle: z.string().max(200, "Meta title too long").optional().nullable(),
+  metaDescription: z.string().max(500, "Meta description too long").optional().nullable(),
+  ogImage: urlOrPath,
+  noIndex: z.boolean().optional().default(false),
+});
+
+export type BlogPostInput = z.infer<typeof blogPostSchema>;
+
+// ==============================================================================
+// MARKETING CASE STUDY SCHEMAS
+// ==============================================================================
+
+/**
+ * Case study validation
+ */
+export const caseStudySchema = z.object({
+  churchName: z.string().min(1, "Church name is required").max(200, "Church name too long"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .max(100, "Slug too long")
+    .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
+    .transform((s) => s.toLowerCase()),
+  logo: urlOrPath,
+  description: z.string().min(1, "Description is required"),
+  images: z.array(z.string()).optional().default([]),
+  beforeImage: urlOrPath,
+  afterImage: urlOrPath,
+  testimonialQuote: z.string().max(1000, "Testimonial too long").optional().nullable(),
+  testimonialName: z.string().max(100, "Name too long").optional().nullable(),
+  testimonialTitle: z.string().max(100, "Title too long").optional().nullable(),
+  metrics: z.record(z.string()).optional().nullable(),
+  liveSiteUrl: urlOrPath,
+  featured: z.boolean().optional().default(false),
+  sortOrder: z.number().int().min(0).optional().default(0),
+  status: z.enum(["DRAFT", "PUBLISHED"]).optional().default("DRAFT"),
+});
+
+export type CaseStudyInput = z.infer<typeof caseStudySchema>;
+
+// ==============================================================================
+// MARKETING TESTIMONIAL SCHEMAS
+// ==============================================================================
+
+/**
+ * Testimonial validation
+ */
+export const testimonialSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100, "Name too long"),
+  title: z.string().max(100, "Title too long").optional().nullable(),
+  company: z.string().max(100, "Company too long").optional().nullable(),
+  quote: z.string().min(1, "Quote is required").max(1000, "Quote too long"),
+  image: urlOrPath,
+  featured: z.boolean().optional().default(false),
+  sortOrder: z.number().int().min(0).optional().default(0),
+  isActive: z.boolean().optional().default(true),
+});
+
+export type TestimonialInput = z.infer<typeof testimonialSchema>;
+
+// ==============================================================================
+// CONSULTATION REQUEST SCHEMAS
+// ==============================================================================
+
+/**
+ * Consultation form validation (public submission)
+ */
+export const consultationFormSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100, "Name too long"),
+  email: z.string().min(1, "Email is required").email("Invalid email").max(255, "Email too long"),
+  phone: z.string().max(20, "Phone number too long").optional().nullable(),
+  churchName: z.string().max(200, "Church name too long").optional().nullable(),
+  packageInterest: z.enum(["free", "small", "large"]).optional().nullable(),
+  message: z.string().max(5000, "Message too long").optional().nullable(),
+  // Honeypot field - should be empty if submitted by a human
+  website: z.string().max(0, "Invalid submission").optional(),
+});
+
+export type ConsultationFormInput = z.infer<typeof consultationFormSchema>;
+
+/**
+ * Consultation status update validation (admin)
+ */
+export const consultationUpdateSchema = z.object({
+  status: z.enum(["NEW", "CONTACTED", "QUALIFIED", "CONVERTED", "CLOSED"]).optional(),
+  notes: z.string().max(5000, "Notes too long").optional().nullable(),
+  assignedToId: z.string().optional().nullable(),
+});
+
+export type ConsultationUpdateInput = z.infer<typeof consultationUpdateSchema>;

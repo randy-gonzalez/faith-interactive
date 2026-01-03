@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { getRoleLabel } from "@/lib/auth/permissions";
 import { ChurchSwitcher } from "./church-switcher";
+import { buildSurfaceUrl } from "@/lib/hostname/parser";
 import type { UserRole, PlatformRole } from "@prisma/client";
 
 interface DashboardHeaderProps {
@@ -94,23 +95,27 @@ export function DashboardHeader({
 
 /**
  * View Site link that constructs the subdomain URL for the church's public site.
- * Since admin is always on the main domain, we construct the subdomain URL.
+ * Uses buildSurfaceUrl to correctly construct the tenant URL.
  *
  * Examples:
- * - localhost:3000 → demo.localhost:3000
- * - faithinteractive.com → demo.faithinteractive.com
+ * - admin.localhost:3000 → hope-community.localhost:3000
+ * - admin.faith-interactive.com → hope-community.faith-interactive.com
  */
 function ViewSiteLink({ slug }: { slug: string }) {
   const [siteUrl, setSiteUrl] = useState<string | null>(null);
 
   // Calculate URL on client-side only to avoid hydration mismatch
   useEffect(() => {
-    const protocol = window.location.protocol;
-    const host = window.location.host;
+    const hostname = window.location.hostname;
+    const isLocal = hostname.includes("localhost") || hostname.includes(".local");
 
-    // Construct subdomain URL: slug.host
-    // e.g., demo.localhost:3000 or demo.faithinteractive.com
-    setSiteUrl(`${protocol}//${slug}.${host}`);
+    // Use buildSurfaceUrl to correctly construct tenant URL
+    const url = buildSurfaceUrl("tenant", "/", {
+      churchSlug: slug,
+      isLocal,
+      useLocalhost: hostname.includes("localhost"),
+    });
+    setSiteUrl(url);
   }, [slug]);
 
   // Don't render until we have the URL (avoids hydration mismatch)

@@ -88,7 +88,7 @@ export async function ChurchHomePage() {
       homePage.blocks as unknown as Block[],
       church.id
     );
-    homePageContent = <BlockRenderer blocks={resolvedBlocks} />;
+    homePageContent = <BlockRenderer blocks={resolvedBlocks} churchId={church.id} />;
   }
 
   // Default welcome page content

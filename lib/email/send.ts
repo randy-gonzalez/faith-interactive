@@ -421,3 +421,116 @@ This submission was sent through your ${churchName} website.
     toEmails.map((toEmail) => sendEmail({ to: toEmail, subject, text, html }))
   );
 }
+
+/**
+ * Send a consultation request notification email to platform admins.
+ * Used for the public marketing website contact form.
+ */
+export async function sendConsultationNotificationEmail(
+  toEmails: string[],
+  data: {
+    name: string;
+    email: string;
+    phone: string | null;
+    churchName: string | null;
+    packageInterest: string | null;
+    message: string | null;
+  },
+  consultationId: string
+): Promise<void> {
+  const subject = `New Consultation Request${data.churchName ? ` - ${data.churchName}` : ` from ${data.name}`}`;
+
+  const packageLabels: Record<string, string> = {
+    free: "FREE (Church Plants) + $25/mo platform",
+    small: "Small Church ($500 setup) + $25/mo platform",
+    large: "Large Church ($1,500 setup) + $25/mo platform",
+  };
+
+  const packageDisplay = data.packageInterest
+    ? packageLabels[data.packageInterest] || data.packageInterest
+    : "Not specified";
+
+  const text = `
+New Consultation Request
+
+Name: ${data.name}
+Email: ${data.email}
+${data.phone ? `Phone: ${data.phone}` : "Phone: Not provided"}
+${data.churchName ? `Church Name: ${data.churchName}` : "Church Name: Not provided"}
+Package Interest: ${packageDisplay}
+
+${data.message ? `Message:\n${data.message}` : "No message provided"}
+
+---
+View in admin: https://platform.faith-interactive.com/marketing/consultations/${consultationId}
+`.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #77f2a1 0%, #00ffce 100%); padding: 24px; border-radius: 8px 8px 0 0;">
+    <h1 style="color: #000646; font-size: 24px; margin: 0;">New Consultation Request</h1>
+  </div>
+
+  <div style="background-color: #f9fafb; padding: 24px; border: 1px solid #e5e7eb; border-top: none;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <td style="padding: 8px 0; font-weight: 600; color: #374151; width: 140px;">Name:</td>
+        <td style="padding: 8px 0; color: #1f2937;">${data.name}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; font-weight: 600; color: #374151;">Email:</td>
+        <td style="padding: 8px 0;"><a href="mailto:${data.email}" style="color: #2563eb;">${data.email}</a></td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; font-weight: 600; color: #374151;">Phone:</td>
+        <td style="padding: 8px 0; color: #1f2937;">${data.phone || "Not provided"}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; font-weight: 600; color: #374151;">Church Name:</td>
+        <td style="padding: 8px 0; color: #1f2937;">${data.churchName || "Not provided"}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; font-weight: 600; color: #374151;">Package Interest:</td>
+        <td style="padding: 8px 0;">
+          <span style="display: inline-block; background-color: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 16px; font-size: 14px;">
+            ${packageDisplay}
+          </span>
+        </td>
+      </tr>
+    </table>
+
+    ${data.message ? `
+    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+      <h3 style="color: #1f2937; font-size: 16px; margin: 0 0 12px 0;">Message:</h3>
+      <div style="background-color: #fff; border: 1px solid #e5e7eb; padding: 16px; border-radius: 8px; white-space: pre-wrap;">${data.message}</div>
+    </div>
+    ` : ""}
+
+    <div style="margin-top: 24px; text-align: center;">
+      <a href="https://platform.faith-interactive.com/marketing/consultations/${consultationId}"
+         style="display: inline-block; background: linear-gradient(135deg, #77f2a1 0%, #00ffce 100%); color: #000646; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+        View in Admin Dashboard
+      </a>
+    </div>
+  </div>
+
+  <div style="padding: 16px; text-align: center;">
+    <p style="color: #6b7280; font-size: 12px; margin: 0;">
+      This consultation request was submitted through the Faith Interactive website.
+    </p>
+  </div>
+</body>
+</html>
+`.trim();
+
+  // Send to all platform admin recipients
+  await Promise.all(
+    toEmails.map((toEmail) => sendEmail({ to: toEmail, subject, text, html }))
+  );
+}

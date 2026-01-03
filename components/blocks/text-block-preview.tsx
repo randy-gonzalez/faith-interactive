@@ -9,6 +9,7 @@
 import type { Block, TextBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
+import { getTextColors } from "@/lib/blocks/get-text-colors";
 
 interface TextBlockPreviewProps {
   block: Block;
@@ -31,8 +32,7 @@ export function TextBlockPreview({ block }: TextBlockPreviewProps) {
   };
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
-  const hasBackground = background && background.type !== "color";
-  const textColorClass = hasBackground ? "text-white" : "text-gray-900";
+  const textColors = getTextColors(background?.textTheme, background?.type);
   const advancedProps = getAdvancedProps(advanced);
   const combinedClassName = `block-preview py-12 px-6 relative ${advancedProps.className || ""}`.trim();
 
@@ -50,11 +50,12 @@ export function TextBlockPreview({ block }: TextBlockPreviewProps) {
       <div className={`mx-auto relative z-10 ${maxWidthClasses[data.maxWidth]} ${alignmentClasses[data.alignment]}`}>
         {data.content ? (
           <div
-            className={`prose ${data.maxWidth === "full" ? "prose-lg max-w-none" : ""} ${textColorClass}`}
+            className={`prose ${data.maxWidth === "full" ? "prose-lg max-w-none" : ""}`}
+            style={{ color: textColors.text }}
             dangerouslySetInnerHTML={{ __html: data.content }}
           />
         ) : (
-          <p className="text-gray-400 italic">Add text content...</p>
+          <p style={{ color: textColors.subtext, fontStyle: "italic" }}>Add text content...</p>
         )}
       </div>
     </div>

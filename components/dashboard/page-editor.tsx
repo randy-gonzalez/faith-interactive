@@ -204,7 +204,7 @@ export function PageEditor({ initialData, canEdit, churchSlug }: PageEditorProps
 
       // Redirect to edit page if creating new
       if (!isEditing) {
-        router.push(`/admin/pages/${data.data.page.id}/edit`);
+        router.push(`/pages/${data.data.page.id}/edit`);
       } else {
         // Show success animation for existing pages
         setShowSaveSuccess(true);
@@ -238,7 +238,7 @@ export function PageEditor({ initialData, canEdit, churchSlug }: PageEditorProps
         return;
       }
 
-      router.push("/admin/pages");
+      router.push("/pages");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");

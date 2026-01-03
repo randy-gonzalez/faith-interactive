@@ -3,6 +3,9 @@
  *
  * Component that renders blocks array to HTML for public pages.
  * This is used on the public-facing website to display page content.
+ *
+ * Note: This is a server component that can render async components
+ * like SermonFeatureBlockServer which fetches data from the database.
  */
 
 import type { Block, PopupBlock } from "@/types/blocks";
@@ -14,8 +17,8 @@ import { CardGridBlockPreview } from "./card-grid-block-preview";
 import { FeatureBlockPreview } from "./feature-block-preview";
 import { ServiceTimesBlockPreview } from "./service-times-block-preview";
 import { ContactBlockPreview } from "./contact-block-preview";
-import { SermonFeatureBlockPreview } from "./sermon-feature-block-preview";
-import { EventsFeatureBlockPreview } from "./events-feature-block-preview";
+import { SermonFeatureBlockServer } from "./sermon-feature-block-server";
+import { EventsFeatureBlockServer } from "./events-feature-block-server";
 import { AccordionBlockPreview } from "./accordion-block-preview";
 import { DividerBlockPreview } from "./divider-block-preview";
 import { ButtonGroupBlockPreview } from "./button-group-block-preview";
@@ -26,6 +29,7 @@ import { PopupRenderer } from "@/components/public/popup-renderer";
 
 interface BlockRendererProps {
   blocks: unknown; // JSON from database
+  churchId?: string; // Required for data-fetching blocks (sermon-feature, events-feature)
 }
 
 // Type guard to validate block structure
@@ -39,7 +43,7 @@ function isValidBlock(block: unknown): block is Block {
   );
 }
 
-export function BlockRenderer({ blocks }: BlockRendererProps) {
+export function BlockRenderer({ blocks, churchId }: BlockRendererProps) {
   // Parse blocks from JSON if needed
   const parsedBlocks: Block[] = Array.isArray(blocks)
     ? (blocks.filter(isValidBlock) as Block[])
@@ -78,9 +82,15 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
             case "contact":
               return <ContactBlockPreview key={block.id} block={block} />;
             case "sermon-feature":
-              return <SermonFeatureBlockPreview key={block.id} block={block} />;
+              // Use server component to fetch real sermon data
+              return churchId ? (
+                <SermonFeatureBlockServer key={block.id} block={block} churchId={churchId} />
+              ) : null;
             case "events-feature":
-              return <EventsFeatureBlockPreview key={block.id} block={block} />;
+              // Use server component to fetch real event data
+              return churchId ? (
+                <EventsFeatureBlockServer key={block.id} block={block} churchId={churchId} />
+              ) : null;
             case "accordion":
               return <AccordionBlockPreview key={block.id} block={block} />;
             case "divider":

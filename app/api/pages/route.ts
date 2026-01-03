@@ -10,6 +10,7 @@ import { requireAuthContext, requireContentEditor, AuthError } from "@/lib/auth/
 import { getTenantPrisma } from "@/lib/db/tenant-prisma";
 import { pageSchema, formatZodError } from "@/lib/validation/schemas";
 import { isReservedSlug } from "@/lib/constants/reserved-slugs";
+import { generateUniqueSlug } from "@/lib/utils/slugify";
 import { logger } from "@/lib/logging/logger";
 import type { ApiResponse } from "@/types";
 
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
     const {
       title,
       blocks,
-      urlPath,
+      urlPath: providedUrlPath,
       featuredImageUrl,
       parentId,
       sortOrder,
@@ -99,16 +100,18 @@ export async function POST(request: NextRequest) {
       isHomePage,
     } = parseResult.data;
 
-    // Check for reserved slugs
-    if (urlPath && isReservedSlug(urlPath)) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: `The URL path "${urlPath}" is reserved and cannot be used` },
-        { status: 400 }
-      );
-    }
+    // Determine the final URL path
+    let urlPath = providedUrlPath;
 
-    // Check for duplicate urlPath if provided
     if (urlPath) {
+      // User provided a slug - check for reserved and duplicates
+      if (isReservedSlug(urlPath)) {
+        return NextResponse.json<ApiResponse>(
+          { success: false, error: `The URL path "${urlPath}" is reserved and cannot be used` },
+          { status: 400 }
+        );
+      }
+
       const existing = await db.page.findFirst({
         where: { urlPath },
       });
@@ -117,6 +120,23 @@ export async function POST(request: NextRequest) {
           { success: false, error: "A page with this URL path already exists" },
           { status: 400 }
         );
+      }
+    } else {
+      // Auto-generate slug from title
+      // Get all existing slugs to ensure uniqueness
+      const existingPages = await db.page.findMany({
+        select: { urlPath: true },
+      });
+      const existingSlugs = existingPages
+        .map((p) => p.urlPath)
+        .filter((slug): slug is string => slug !== null);
+
+      urlPath = generateUniqueSlug(title, existingSlugs);
+
+      // Ensure auto-generated slug isn't reserved
+      while (isReservedSlug(urlPath)) {
+        existingSlugs.push(urlPath);
+        urlPath = generateUniqueSlug(title, existingSlugs);
       }
     }
 
@@ -148,7 +168,7 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         blocks: blocks || [],
-        urlPath: urlPath || null,
+        urlPath, // Always has a value now (either provided or auto-generated)
         featuredImageUrl: featuredImageUrl || null,
         parentId: parentId || null,
         sortOrder: sortOrder || 0,

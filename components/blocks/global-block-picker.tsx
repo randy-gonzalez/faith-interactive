@@ -151,7 +151,7 @@ export function GlobalBlockPicker({
               </p>
               {globalBlocks.length === 0 && (
                 <a
-                  href="/admin/global-blocks/new"
+                  href="/global-blocks/new"
                   className="text-blue-600 hover:underline text-sm mt-2 inline-block"
                 >
                   Create your first global block

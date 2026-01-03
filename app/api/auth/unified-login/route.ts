@@ -4,12 +4,12 @@
  * POST /api/auth/unified-login
  *
  * Single login endpoint for all users (platform and church).
- * All admin functionality is on the main domain.
+ * Login happens on the admin surface (admin.faith-interactive.com).
  *
- * Redirect logic:
- * - Platform users → /platform
- * - Single church users → /admin/dashboard (with church context in session)
- * - Multi-church users → /select-church page
+ * Redirect logic (with hostname-based routing):
+ * - Platform users → cross-subdomain redirect to platform surface
+ * - Single church users → /dashboard (same surface, session has church context)
+ * - Multi-church users → /select-church page (same surface)
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -19,6 +19,7 @@ import { createSession } from "@/lib/auth/session";
 import { createSessionCookieHeader } from "@/lib/auth/cookies";
 import { loginSchema, formatZodError } from "@/lib/validation/schemas";
 import { logger } from "@/lib/logging/logger";
+import { buildSurfaceUrl } from "@/lib/hostname/parser";
 
 /**
  * Validate that a returnTo path is safe (must be a relative path on our domain).
@@ -136,23 +137,35 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine initial active church and redirect
-    // All admin routes are on the main domain
+    // With hostname-based routing:
+    // - Login happens on admin surface (admin.faith-interactive.com or admin.localhost)
+    // - Platform users redirect to platform surface (cross-subdomain)
+    // - Church users stay on admin surface (same-surface paths)
+    const isLocal = process.env.NODE_ENV !== "production";
+    // Default to localhost for local dev (simpler setup, no /etc/hosts needed)
+    const useLocalhost = isLocal;
     let activeChurchId: string | null = null;
     let redirectUrl: string;
 
-    // Case A: Platform user → /platform (or returnTo if valid)
+    // Case A: Platform user → platform surface (cross-subdomain redirect)
     if (user.platformRole) {
-      redirectUrl = returnTo && isValidReturnTo(returnTo) ? returnTo : "/platform";
+      if (returnTo && isValidReturnTo(returnTo)) {
+        // If returnTo is provided, honor it (should be within platform surface)
+        // Construct full platform URL with the path
+        redirectUrl = buildSurfaceUrl("platform", returnTo, { isLocal, useLocalhost });
+      } else {
+        redirectUrl = buildSurfaceUrl("platform", "/", { isLocal, useLocalhost });
+      }
       // Platform users start with no active church context
     }
-    // Case B: User with exactly one church → /admin/dashboard
+    // Case B: User with exactly one church → /dashboard (same admin surface)
     else if (user.memberships.length === 1) {
       const membership = user.memberships[0];
       activeChurchId = membership.churchId;
       // Use returnTo if valid, otherwise default admin dashboard
-      redirectUrl = returnTo && isValidReturnTo(returnTo) ? returnTo : "/admin/dashboard";
+      redirectUrl = returnTo && isValidReturnTo(returnTo) ? returnTo : "/dashboard";
     }
-    // Case C: User with multiple churches → /select-church page
+    // Case C: User with multiple churches → /select-church page (same admin surface)
     else if (user.memberships.length > 1) {
       // Set primary church as active, or first one
       const primaryMembership =
@@ -215,8 +228,14 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     logger.error("Unified login error", error instanceof Error ? error : null);
+    console.error("Unified login error details:", error);
     return NextResponse.json<UnifiedLoginResponse>(
-      { success: false, error: "An unexpected error occurred" },
+      {
+        success: false,
+        error: process.env.NODE_ENV !== "production" && error instanceof Error
+          ? `Error: ${error.message}`
+          : "An unexpected error occurred"
+      },
       { status: 500 }
     );
   }

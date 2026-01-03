@@ -9,6 +9,7 @@
 import type { Block, VideoBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
+import { getTextColors } from "@/lib/blocks/get-text-colors";
 
 interface VideoBlockPreviewProps {
   block: Block;
@@ -48,6 +49,7 @@ export function VideoBlockPreview({ block }: VideoBlockPreviewProps) {
   };
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
+  const textColors = getTextColors(background?.textTheme, background?.type);
   const embedUrl = getEmbedUrl(data.videoUrl, data.autoplay);
   const advancedProps = getAdvancedProps(advanced);
   const combinedClassName = `block-preview py-8 px-6 relative ${advancedProps.className || ""}`.trim();
@@ -71,7 +73,7 @@ export function VideoBlockPreview({ block }: VideoBlockPreviewProps) {
           </div>
         ) : (
           <div className={`${aspectRatioClasses[data.aspectRatio]} bg-gray-200 rounded-lg flex items-center justify-center`}>
-            <span className="text-gray-400">
+            <span style={{ color: textColors.subtext }}>
               {data.videoUrl ? "Invalid video URL" : "Add a video URL..."}
             </span>
           </div>

@@ -3,20 +3,34 @@
 /**
  * Sermon Feature Block Preview Component
  *
- * Live preview rendering of sermon feature block with placeholder data.
- * On actual pages, this will fetch real sermons from the database.
+ * Live preview rendering of sermon feature block.
+ * Accepts real sermon data for public pages, falls back to placeholder in editor.
  */
 
 import type { Block, SermonFeatureBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
+import { getTextColors, resolveTextTheme } from "@/lib/blocks/get-text-colors";
+
+/**
+ * Sermon data shape for the block
+ */
+export interface SermonData {
+  id: string;
+  title: string;
+  speaker: string;
+  date: string;
+  description?: string;
+}
 
 interface SermonFeatureBlockPreviewProps {
   block: Block;
+  sermons?: SermonData[]; // Real sermon data from database
+  isPreview?: boolean; // True when rendering in editor preview
 }
 
-// Placeholder sermon data for preview
-const PLACEHOLDER_SERMONS = [
+// Placeholder sermon data for editor preview
+const PLACEHOLDER_SERMONS: SermonData[] = [
   {
     id: "1",
     title: "Walking in Faith",
@@ -40,19 +54,21 @@ const PLACEHOLDER_SERMONS = [
   },
 ];
 
-export function SermonFeatureBlockPreview({ block }: SermonFeatureBlockPreviewProps) {
+export function SermonFeatureBlockPreview({ block, sermons, isPreview = false }: SermonFeatureBlockPreviewProps) {
   const sermonFeatureBlock = block as SermonFeatureBlock;
   const { data, background, advanced } = sermonFeatureBlock;
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
-  const hasBackground = background && background.type !== "color";
-  const textColorClass = hasBackground ? "text-white" : "text-gray-900";
-  const subTextColorClass = hasBackground ? "text-white/70" : "text-gray-600";
-  const cardBg = hasBackground ? "bg-white/10 backdrop-blur-sm" : "bg-white shadow-md";
+  const textColors = getTextColors(background?.textTheme, background?.type);
+  const useLightTheme = resolveTextTheme(background?.textTheme, background?.type);
+  const cardBg = useLightTheme ? "bg-white/10 backdrop-blur-sm" : "bg-white shadow-md";
   const advancedProps = getAdvancedProps(advanced);
   const combinedClassName = `block-preview py-12 px-6 relative ${advancedProps.className || ""}`.trim();
 
-  const displayedSermons = PLACEHOLDER_SERMONS.slice(0, data.count);
+  // Use real sermons if provided, otherwise fall back to placeholder
+  const sourceSermons = sermons && sermons.length > 0 ? sermons : PLACEHOLDER_SERMONS;
+  const displayedSermons = sourceSermons.slice(0, data.count);
+  const showPlaceholderMessage = isPreview || (!sermons || sermons.length === 0);
 
   return (
     <div {...advancedProps} className={combinedClassName} style={backgroundStyle}>
@@ -63,7 +79,10 @@ export function SermonFeatureBlockPreview({ block }: SermonFeatureBlockPreviewPr
 
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="flex items-center justify-between mb-8">
-          <h2 className={`text-2xl md:text-3xl font-bold ${textColorClass}`}>
+          <h2
+            className="text-2xl md:text-3xl font-bold"
+            style={{ color: textColors.heading }}
+          >
             {data.heading}
           </h2>
           {data.buttonText && data.buttonUrl && (
@@ -71,8 +90,8 @@ export function SermonFeatureBlockPreview({ block }: SermonFeatureBlockPreviewPr
               href={data.buttonUrl}
               className="hidden sm:inline-block px-4 py-2 font-medium transition-opacity hover:opacity-90"
               style={{
-                backgroundColor: hasBackground ? "#ffffff" : "var(--btn-primary-bg, #2563eb)",
-                color: hasBackground ? "#1f2937" : "var(--btn-primary-text, #ffffff)",
+                backgroundColor: useLightTheme ? textColors.heading : "var(--btn-primary-bg, #2563eb)",
+                color: useLightTheme ? "#1f2937" : "var(--btn-primary-text, #ffffff)",
                 borderRadius: "var(--btn-radius, 6px)",
               }}
             >
@@ -87,17 +106,17 @@ export function SermonFeatureBlockPreview({ block }: SermonFeatureBlockPreviewPr
               key={sermon.id}
               className={`p-6 rounded-lg ${cardBg}`}
             >
-              <div className={`text-sm ${subTextColorClass} mb-2`}>
+              <div className="text-sm mb-2" style={{ color: textColors.subtext }}>
                 {sermon.date}
               </div>
-              <h3 className={`text-lg font-semibold ${textColorClass} mb-1`}>
+              <h3 className="text-lg font-semibold mb-1" style={{ color: textColors.heading }}>
                 {sermon.title}
               </h3>
-              <div className={`text-sm ${subTextColorClass} mb-3`}>
+              <div className="text-sm mb-3" style={{ color: textColors.subtext }}>
                 {sermon.speaker}
               </div>
               {data.showDescription && (
-                <p className={`text-sm ${subTextColorClass}`}>
+                <p className="text-sm" style={{ color: textColors.subtext }}>
                   {sermon.description}
                 </p>
               )}
@@ -111,8 +130,8 @@ export function SermonFeatureBlockPreview({ block }: SermonFeatureBlockPreviewPr
               href={data.buttonUrl}
               className="inline-block px-6 py-3 font-medium transition-opacity hover:opacity-90"
               style={{
-                backgroundColor: hasBackground ? "#ffffff" : "var(--btn-primary-bg, #2563eb)",
-                color: hasBackground ? "#1f2937" : "var(--btn-primary-text, #ffffff)",
+                backgroundColor: useLightTheme ? textColors.heading : "var(--btn-primary-bg, #2563eb)",
+                color: useLightTheme ? "#1f2937" : "var(--btn-primary-text, #ffffff)",
                 borderRadius: "var(--btn-radius, 6px)",
               }}
             >
@@ -121,9 +140,11 @@ export function SermonFeatureBlockPreview({ block }: SermonFeatureBlockPreviewPr
           </div>
         )}
 
-        <p className={`text-xs ${subTextColorClass} text-center mt-6 italic`}>
-          Preview showing placeholder data. Actual sermons will be displayed on the live page.
-        </p>
+        {showPlaceholderMessage && (
+          <p className="text-xs text-center mt-6 italic" style={{ color: textColors.subtext }}>
+            Preview showing placeholder data. Actual sermons will be displayed on the live page.
+          </p>
+        )}
       </div>
     </div>
   );

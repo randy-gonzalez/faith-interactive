@@ -8,7 +8,7 @@
  */
 
 import { useState } from "react";
-import type { BlockBackground } from "@/types/blocks";
+import type { BlockBackground, TextTheme } from "@/types/blocks";
 import { MediaPicker } from "@/components/dashboard/media-picker";
 import { BrandingColorPicker } from "@/components/ui/branding-color-picker";
 
@@ -24,6 +24,12 @@ const BACKGROUND_TYPES = [
   { id: "image", label: "Image" },
   { id: "video", label: "Video" },
 ] as const;
+
+const TEXT_THEME_OPTIONS: { id: TextTheme; label: string; description: string }[] = [
+  { id: "auto", label: "Auto", description: "Detect based on background" },
+  { id: "light", label: "Light", description: "White text for dark backgrounds" },
+  { id: "dark", label: "Dark", description: "Dark text for light backgrounds" },
+];
 
 // Preset gradients for quick selection
 const PRESET_GRADIENTS = [
@@ -226,6 +232,37 @@ export function BlockBackgroundEditor({
           )}
         </div>
       )}
+
+      {/* Text Theme Selector */}
+      <div className="pt-4 border-t border-gray-200">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Text Theme
+        </label>
+        <p className="text-xs text-gray-500 mb-3">
+          Choose how text appears on this background
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {TEXT_THEME_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => updateBackground({ textTheme: option.id })}
+              disabled={disabled}
+              className={`px-4 py-2 text-sm rounded-md border transition-colors ${
+                (background.textTheme || "auto") === option.id
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+              } disabled:opacity-50`}
+              title={option.description}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-gray-400">
+          {TEXT_THEME_OPTIONS.find((o) => o.id === (background.textTheme || "auto"))?.description}
+        </p>
+      </div>
     </div>
   );
 }

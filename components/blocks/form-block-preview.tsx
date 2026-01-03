@@ -12,6 +12,7 @@ import type { Block, FormBlock } from "@/types/blocks";
 import { DynamicForm } from "@/components/public/dynamic-form";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
+import { getTextColors, resolveTextTheme } from "@/lib/blocks/get-text-colors";
 import type { FormField, FormSettings } from "@/types/forms";
 
 interface FormBlockPreviewProps {
@@ -36,6 +37,8 @@ export function FormBlockPreview({ block, isEditor = false }: FormBlockPreviewPr
   const [error, setError] = useState<string | null>(null);
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
+  const textColors = getTextColors(background?.textTheme, background?.type);
+  const useLightTheme = resolveTextTheme(background?.textTheme, background?.type);
   const advancedProps = getAdvancedProps(advanced);
 
   // Fetch form data
@@ -188,40 +191,40 @@ export function FormBlockPreview({ block, isEditor = false }: FormBlockPreviewPr
       )}
       <div className={`${maxWidthClass} ${alignmentClass} relative z-10`}>
         {heading && (
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-4" style={{ color: textColors.heading }}>
             {heading}
           </h2>
         )}
         {description && (
-          <p className="text-gray-600 text-center mb-8">{description}</p>
+          <p className="text-center mb-8" style={{ color: textColors.subtext }}>{description}</p>
         )}
 
         {isEditor ? (
           // In editor mode, show a preview placeholder
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-            <p className="text-sm text-gray-500 text-center mb-4">
+          <div className={`${useLightTheme ? "bg-white/10 backdrop-blur-sm border border-white/20" : "bg-gray-50 border border-gray-200"} rounded-lg p-6`}>
+            <p className="text-sm text-center mb-4" style={{ color: textColors.subtext }}>
               Form Preview: {formData.name}
             </p>
             <div className="space-y-4 opacity-60 pointer-events-none">
               {formData.fields.slice(0, 3).map((field) => (
                 <div key={field.id}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium mb-1" style={{ color: textColors.text }}>
                     {field.label}
                     {field.required && " *"}
                   </label>
                   {field.type === "textarea" ? (
-                    <div className="w-full h-20 bg-white border border-gray-300 rounded-lg" />
+                    <div className={`w-full h-20 rounded-lg ${useLightTheme ? "bg-white/20 border border-white/30" : "bg-white border border-gray-300"}`} />
                   ) : (
-                    <div className="w-full h-10 bg-white border border-gray-300 rounded-lg" />
+                    <div className={`w-full h-10 rounded-lg ${useLightTheme ? "bg-white/20 border border-white/30" : "bg-white border border-gray-300"}`} />
                   )}
                 </div>
               ))}
               {formData.fields.length > 3 && (
-                <p className="text-xs text-gray-400 text-center">
+                <p className="text-xs text-center" style={{ color: textColors.subtext }}>
                   + {formData.fields.length - 3} more fields
                 </p>
               )}
-              <div className="h-10 bg-blue-600 rounded-lg" />
+              <div className="h-10 rounded-lg" style={{ backgroundColor: useLightTheme ? "#ffffff" : "var(--btn-primary-bg, #2563eb)" }} />
             </div>
           </div>
         ) : (

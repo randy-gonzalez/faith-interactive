@@ -10,6 +10,8 @@
 import type { Block, CustomHtmlBlock } from "@/types/blocks";
 import { sanitizeHtml } from "@/lib/security/html-sanitizer";
 import { getAdvancedProps } from "./block-advanced-editor";
+import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
+import { getTextColors } from "@/lib/blocks/get-text-colors";
 
 interface CustomHtmlBlockPreviewProps {
   block: Block;
@@ -22,6 +24,9 @@ export function CustomHtmlBlockPreview({ block }: CustomHtmlBlockPreviewProps) {
   // Sanitize HTML before rendering
   const sanitizedHtml = sanitizeHtml(data.html);
   const advancedProps = getAdvancedProps(advanced);
+
+  const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
+  const textColors = getTextColors(background?.textTheme, background?.type);
 
   const maxWidthClasses = {
     narrow: "max-w-2xl",
@@ -49,40 +54,21 @@ export function CustomHtmlBlockPreview({ block }: CustomHtmlBlockPreviewProps) {
     large: "pb-16",
   };
 
-  // Build background styles
-  const backgroundStyles: React.CSSProperties = {};
-  if (background) {
-    switch (background.type) {
-      case "color":
-        if (background.color) {
-          backgroundStyles.backgroundColor = background.color;
-        }
-        break;
-      case "gradient":
-        if (background.gradient) {
-          backgroundStyles.background = background.gradient;
-        }
-        break;
-      case "image":
-        if (background.imageUrl) {
-          backgroundStyles.backgroundImage = `url(${background.imageUrl})`;
-          backgroundStyles.backgroundSize = "cover";
-          backgroundStyles.backgroundPosition = "center";
-        }
-        break;
-    }
-  }
-
   // If no content, show placeholder in editor context
   if (!sanitizedHtml) {
     return (
       <div
         {...advancedProps}
-        className={`block-preview px-6 ${paddingTopClasses[data.paddingTop]} ${paddingBottomClasses[data.paddingBottom]} ${advancedProps.className || ""}`.trim()}
-        style={backgroundStyles}
+        className={`block-preview px-6 relative ${paddingTopClasses[data.paddingTop]} ${paddingBottomClasses[data.paddingBottom]} ${advancedProps.className || ""}`.trim()}
+        style={backgroundStyle}
       >
+        {/* Image overlay (for image backgrounds) */}
+        {background?.type === "image" && background.imageUrl && overlay && (
+          <div className="absolute inset-0" style={overlay} />
+        )}
         <div
-          className={`${maxWidthClasses[data.maxWidth]} ${alignmentClasses[data.alignment]} text-center text-gray-400 py-8 border-2 border-dashed border-gray-200 rounded-lg`}
+          className={`${maxWidthClasses[data.maxWidth]} ${alignmentClasses[data.alignment]} text-center py-8 border-2 border-dashed border-gray-200 rounded-lg relative z-10`}
+          style={{ color: textColors.subtext }}
         >
           Custom HTML block - No content
         </div>
@@ -93,11 +79,16 @@ export function CustomHtmlBlockPreview({ block }: CustomHtmlBlockPreviewProps) {
   return (
     <div
       {...advancedProps}
-      className={`block-preview px-6 ${paddingTopClasses[data.paddingTop]} ${paddingBottomClasses[data.paddingBottom]} ${advancedProps.className || ""}`.trim()}
-      style={backgroundStyles}
+      className={`block-preview px-6 relative ${paddingTopClasses[data.paddingTop]} ${paddingBottomClasses[data.paddingBottom]} ${advancedProps.className || ""}`.trim()}
+      style={backgroundStyle}
     >
+      {/* Image overlay (for image backgrounds) */}
+      {background?.type === "image" && background.imageUrl && overlay && (
+        <div className="absolute inset-0" style={overlay} />
+      )}
       <div
-        className={`${maxWidthClasses[data.maxWidth]} ${alignmentClasses[data.alignment]}`}
+        className={`${maxWidthClasses[data.maxWidth]} ${alignmentClasses[data.alignment]} relative z-10`}
+        style={{ color: textColors.text }}
         dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
       />
     </div>

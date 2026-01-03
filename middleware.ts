@@ -1,71 +1,76 @@
 /**
- * Next.js Middleware
+ * Next.js Middleware - Hostname-Based Routing
  *
- * This middleware runs on every request and handles:
- * 1. Hostname-based routing (marketing vs church subdomain vs custom domain)
- * 2. Custom domain resolution (preferred) → subdomain extraction → tenant resolution
- * 3. Redirect rules for tenant public routes
- * 4. Maintenance mode check
- * 5. Authentication checks for protected routes on main domain (/admin/*)
- * 6. Rate limiting (foundation)
+ * This middleware implements hard isolation by hostname:
  *
- * Route Structure:
- * - Main domain (faithinteractive.com) → Marketing site + Admin (/admin/*)
- * - Subdomain (grace.faithinteractive.com) → Church public site only (no admin)
- * - Custom domain (www.gracechurch.org) → Church public site only (no admin)
+ * Production:
+ * - faith-interactive.com                => (marketing) surface
+ * - platform.faith-interactive.com       => (platform) surface
+ * - admin.faith-interactive.com          => (admin) surface
+ * - *.faith-interactive.com              => (tenant) surface
+ * - Custom domains                       => (tenant) surface
  *
- * IMPORTANT: All admin routes are on the main domain only.
- * Subdomains/custom domains redirect /admin/* to main domain.
+ * Local Development:
+ * - faith-interactive.local              => (marketing) surface
+ * - platform.faith-interactive.local     => (platform) surface
+ * - admin.faith-interactive.local        => (admin) surface
+ * - *.faith-interactive.local            => (tenant) surface
  *
- * Tenant Resolution Priority:
- * 1. Custom domain lookup (active domains only)
- * 2. Subdomain extraction
+ * Each surface has:
+ * - Isolated route group with own layout
+ * - Isolated CSS
+ * - Isolated auth rules
+ * - No cross-surface route bleed
  *
- * IMPORTANT: This runs on the Edge runtime, so we can't use
- * Prisma directly. We use fetch to call internal API routes
- * for database operations.
+ * @see lib/hostname/parser.ts for hostname parsing utilities
  */
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import {
+  parseHostname,
+  getSurfaceRoutePrefix,
+  type AppSurface,
+} from "@/lib/hostname/parser";
 
-// Headers used to pass tenant context to the application
-const TENANT_HEADER_ID = "x-church-id";
-const TENANT_HEADER_SLUG = "x-church-slug";
-const TENANT_HEADER_NAME = "x-church-name";
-const TENANT_HEADER_CUSTOM_DOMAIN = "x-custom-domain"; // Set when resolved via custom domain
+// ============================================================================
+// Constants
+// ============================================================================
 
-// Request ID header for correlation (Phase 5)
-const REQUEST_ID_HEADER = "x-request-id";
+/** Headers used to pass context to the application */
+const HEADERS = {
+  CHURCH_ID: "x-church-id",
+  CHURCH_SLUG: "x-church-slug",
+  CHURCH_NAME: "x-church-name",
+  CUSTOM_DOMAIN: "x-custom-domain",
+  REQUEST_ID: "x-request-id",
+  SURFACE_TYPE: "x-surface-type",
+  SITE_TYPE: "x-site-type", // Legacy: "marketing" | "church"
+} as const;
 
-// Session cookie name
+/** Session cookie name */
 const SESSION_COOKIE_NAME = "fi_session";
 
-// Routes that don't require tenant context (global routes)
+/** Routes that don't require tenant context (global routes) */
 const GLOBAL_ROUTES = [
   "/api/health",
-  "/api/internal/resolve-domain", // Custom domain resolution for middleware
-  "/api/internal/check-redirect", // Redirect rule checking for middleware
-  "/api/internal/check-maintenance", // Maintenance mode checking for middleware
+  "/api/internal/resolve-domain",
+  "/api/internal/check-redirect",
+  "/api/internal/check-maintenance",
 ];
 
-// Known localhost patterns for development
-const LOCALHOST_PATTERNS = [
-  "localhost",
-  "127.0.0.1",
-  "::1",
-];
+// ============================================================================
+// Rate Limiting (Edge-compatible, in-memory)
+// ============================================================================
 
-/**
- * Simple in-memory rate limiting for Edge runtime.
- * Note: This resets on deployment and isn't shared across regions.
- * For production, consider using a KV store or Redis.
- */
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(ip: string): { allowed: boolean; remaining: number } {
   const max = parseInt(process.env.RATE_LIMIT_MAX || "100", 10);
-  const windowSeconds = parseInt(process.env.RATE_LIMIT_WINDOW_SECONDS || "60", 10);
+  const windowSeconds = parseInt(
+    process.env.RATE_LIMIT_WINDOW_SECONDS || "60",
+    10
+  );
   const now = Date.now();
   const windowMs = windowSeconds * 1000;
 
@@ -81,107 +86,14 @@ function checkRateLimit(ip: string): { allowed: boolean; remaining: number } {
   return { allowed, remaining: Math.max(0, max - existing.count) };
 }
 
-/**
- * Extract subdomain from hostname.
- *
- * Examples:
- * - grace.faithinteractive.com → "grace"
- * - demo.localhost:3000 → "demo"
- * - localhost:3000 → null (no subdomain)
- * - faithinteractive.com → null (no subdomain)
- */
-function extractSubdomain(hostname: string): string | null {
-  // Remove port if present
-  const host = hostname.split(":")[0];
-
-  // Handle localhost development
-  for (const localhost of LOCALHOST_PATTERNS) {
-    if (host.endsWith(`.${localhost}`)) {
-      const subdomain = host.replace(`.${localhost}`, "");
-      return subdomain || null;
-    }
-    if (host === localhost) {
-      return null;
-    }
-  }
-
-  // Handle production domains (e.g., grace.faithinteractive.com)
-  const parts = host.split(".");
-
-  // Expect format: subdomain.domain.tld (at least 3 parts)
-  if (parts.length >= 3) {
-    const subdomain = parts[0];
-    // Ignore "www" as a subdomain
-    if (subdomain.toLowerCase() === "www") {
-      return null;
-    }
-    return subdomain;
-  }
-
-  return null;
-}
-
-/**
- * Check if a route requires authentication (admin routes)
- */
-function isAdminRoute(pathname: string): boolean {
-  return pathname.startsWith("/admin");
-}
-
-/**
- * Check if a route is global (doesn't require tenant context)
- */
-function isGlobalRoute(pathname: string): boolean {
-  return GLOBAL_ROUTES.some((route) => pathname.startsWith(route));
-}
-
-/**
- * Check if a route is a public-facing route (not admin, not API, not auth)
- */
-function isPublicRoute(pathname: string): boolean {
-  return (
-    !pathname.startsWith("/admin") &&
-    !pathname.startsWith("/api") &&
-    !pathname.startsWith("/login") &&
-    !pathname.startsWith("/forgot-password") &&
-    !pathname.startsWith("/reset-password") &&
-    !pathname.startsWith("/accept-invite")
-  );
-}
-
-/**
- * Check if a hostname is likely a custom domain (not our main domain or subdomain).
- * Returns true if hostname doesn't match known patterns.
- */
-function isPotentialCustomDomain(hostname: string): boolean {
-  const host = hostname.split(":")[0].toLowerCase();
-
-  // Known main domains
-  const mainDomains = ["faithinteractive.com", "faithinteractive.test"];
-
-  // Check if it's a localhost pattern
-  for (const localhost of LOCALHOST_PATTERNS) {
-    if (host === localhost || host.endsWith(`.${localhost}`)) {
-      return false;
-    }
-  }
-
-  // Check if it's our main domain or a subdomain of it
-  for (const domain of mainDomains) {
-    if (host === domain || host === `www.${domain}` || host.endsWith(`.${domain}`)) {
-      return false;
-    }
-  }
-
-  // Otherwise, it might be a custom domain
-  return true;
-}
+// ============================================================================
+// Helper Functions
+// ============================================================================
 
 /**
  * Get client IP from request headers
  */
 function getClientIp(request: NextRequest): string {
-  // Try various headers (Cloudflare, proxies, etc.)
   const cfIp = request.headers.get("cf-connecting-ip");
   if (cfIp) return cfIp;
 
@@ -195,250 +107,118 @@ function getClientIp(request: NextRequest): string {
 }
 
 /**
- * Generate a unique request ID for correlation (Phase 5)
- * Format: req_<timestamp>_<random>
- * Uses an existing request ID if provided by upstream (e.g., Cloudflare)
+ * Generate or retrieve request ID for correlation
  */
 function getOrGenerateRequestId(request: NextRequest): string {
-  // Check for existing request ID from upstream (Cloudflare, load balancer, etc.)
-  const existingId = request.headers.get(REQUEST_ID_HEADER) ||
-                     request.headers.get("cf-ray"); // Cloudflare Ray ID
+  const existingId =
+    request.headers.get(HEADERS.REQUEST_ID) || request.headers.get("cf-ray");
   if (existingId) return existingId;
 
-  // Generate a new request ID
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 10);
   return `req_${timestamp}_${random}`;
 }
 
 /**
- * Get the main domain URL (without subdomain) for redirects.
- *
- * Examples:
- * - demo.localhost:3000 → http://localhost:3000
- * - grace.faithinteractive.com → https://faithinteractive.com
- * - www.gracechurch.org (custom domain) → uses NEXT_PUBLIC_APP_URL
+ * Check if a route is global (doesn't require surface routing)
  */
-function getMainDomainUrl(request: NextRequest): string {
-  // Use environment variable if set (recommended for production)
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (appUrl) {
-    return appUrl;
-  }
-
-  const hostname = request.headers.get("host") || "";
-  const protocol = request.nextUrl.protocol;
-  const host = hostname.split(":")[0];
-  const port = hostname.includes(":") ? `:${hostname.split(":")[1]}` : "";
-
-  // Handle localhost development
-  for (const localhost of LOCALHOST_PATTERNS) {
-    if (host.endsWith(`.${localhost}`)) {
-      // demo.localhost → localhost
-      return `${protocol}//${localhost}${port}`;
-    }
-    if (host === localhost) {
-      return `${protocol}//${localhost}${port}`;
-    }
-  }
-
-  // Handle production domains (e.g., grace.faithinteractive.com → faithinteractive.com)
-  const parts = host.split(".");
-  if (parts.length >= 3) {
-    // Remove subdomain: grace.faithinteractive.com → faithinteractive.com
-    const mainDomain = parts.slice(1).join(".");
-    return `${protocol}//${mainDomain}${port}`;
-  }
-
-  // Already on main domain
-  return `${protocol}//${hostname}`;
+function isGlobalRoute(pathname: string): boolean {
+  return GLOBAL_ROUTES.some((route) => pathname.startsWith(route));
 }
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const hostname = request.headers.get("host") || "";
+/**
+ * Resolve custom domain to church slug via internal API
+ */
+async function resolveCustomDomain(
+  hostname: string,
+  request: NextRequest
+): Promise<string | null> {
+  try {
+    const resolveUrl = new URL("/api/internal/resolve-domain", request.url);
+    resolveUrl.searchParams.set("hostname", hostname.split(":")[0].toLowerCase());
 
-  // Skip middleware for static files and Next.js internals
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/static") ||
-    pathname.includes(".") // Files with extensions (images, etc.)
-  ) {
-    return NextResponse.next();
-  }
-
-  // Generate request ID for correlation (Phase 5)
-  const requestId = getOrGenerateRequestId(request);
-
-  // Rate limiting check
-  const clientIp = getClientIp(request);
-  const rateLimitResult = checkRateLimit(clientIp);
-
-  if (!rateLimitResult.allowed) {
-    return new NextResponse("Too Many Requests", {
-      status: 429,
-      headers: {
-        "Retry-After": "60",
-        "X-RateLimit-Remaining": "0",
-        [REQUEST_ID_HEADER]: requestId,
-      },
+    const response = await fetch(resolveUrl.toString(), {
+      headers: { "x-internal-request": "1" },
+      next: { revalidate: 300 }, // Cache for 5 minutes
     });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.churchSlug || null;
+    }
+  } catch (error) {
+    console.error("Custom domain resolution failed:", error);
   }
+  return null;
+}
 
-  // Global routes don't need tenant context
-  if (isGlobalRoute(pathname)) {
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set(REQUEST_ID_HEADER, requestId);
+/**
+ * Check for redirect rules on tenant public routes
+ */
+async function checkRedirectRule(
+  churchSlug: string,
+  pathname: string,
+  request: NextRequest
+): Promise<string | null> {
+  try {
+    const redirectUrl = new URL("/api/internal/check-redirect", request.url);
+    redirectUrl.searchParams.set("churchSlug", churchSlug);
+    redirectUrl.searchParams.set("path", pathname);
 
-    const response = NextResponse.next({
-      request: { headers: requestHeaders },
+    const response = await fetch(redirectUrl.toString(), {
+      headers: { "x-internal-request": "1" },
+      next: { revalidate: 60 },
     });
-    response.headers.set("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
-    response.headers.set(REQUEST_ID_HEADER, requestId);
-    return response;
-  }
 
-  // Tenant Resolution Priority:
-  // 1. Custom domain lookup (for potential custom domains)
-  // 2. Subdomain extraction
-  let tenantSlug: string | null = null;
-  let isCustomDomain = false;
-  let customDomainHostname: string | null = null;
-
-  // Check if this might be a custom domain
-  if (isPotentialCustomDomain(hostname)) {
-    // Try to resolve custom domain via internal API
-    // Note: This API call is cached and optimized for Edge
-    try {
-      const normalizedHost = hostname.split(":")[0].toLowerCase();
-      const resolveUrl = new URL("/api/internal/resolve-domain", request.url);
-      resolveUrl.searchParams.set("hostname", normalizedHost);
-
-      const response = await fetch(resolveUrl.toString(), {
-        headers: {
-          "x-internal-request": "1",
-        },
-        // Cache for 5 minutes to reduce DB load
-        next: { revalidate: 300 },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.churchSlug) {
-          tenantSlug = data.churchSlug;
-          isCustomDomain = true;
-          customDomainHostname = normalizedHost;
-        }
+    if (response.ok) {
+      const data = await response.json();
+      if (data.redirect?.destinationUrl) {
+        return data.redirect.destinationUrl.startsWith("/")
+          ? new URL(data.redirect.destinationUrl, request.url).toString()
+          : data.redirect.destinationUrl;
       }
-    } catch (error) {
-      // Custom domain lookup failed, continue with subdomain extraction
-      console.error("Custom domain resolution failed:", error);
     }
+  } catch (error) {
+    console.error("Redirect check failed:", error);
   }
+  return null;
+}
 
-  // Fall back to subdomain extraction if custom domain didn't match
-  if (!tenantSlug) {
-    tenantSlug = extractSubdomain(hostname);
-  }
+/**
+ * Check for maintenance mode on tenant public routes
+ */
+async function checkMaintenanceMode(
+  churchSlug: string,
+  request: NextRequest
+): Promise<boolean> {
+  try {
+    const maintenanceUrl = new URL(
+      "/api/internal/check-maintenance",
+      request.url
+    );
+    maintenanceUrl.searchParams.set("churchSlug", churchSlug);
 
-  // No tenant = main domain = marketing site + admin
-  if (!tenantSlug) {
-    // Check if this was an unrecognized custom domain
-    if (isPotentialCustomDomain(hostname)) {
-      // Log unrecognized domain for observability
-      console.warn(`Unrecognized hostname: ${hostname}`);
-      // Could redirect to main site or show an error page
-      const mainSiteUrl = new URL("/", request.url);
-      mainSiteUrl.host = process.env.NEXT_PUBLIC_MAIN_DOMAIN || "faithinteractive.com";
-      // For now, just continue to marketing site
-    }
-
-    // Check authentication for admin routes on main domain
-    if (isAdminRoute(pathname)) {
-      const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
-
-      if (!sessionToken) {
-        // Redirect to login with return URL
-        const loginUrl = new URL("/login", request.url);
-        loginUrl.searchParams.set("returnTo", pathname);
-        return NextResponse.redirect(loginUrl);
-      }
-
-      // Note: Full session validation happens in the route handler
-      // We just check for cookie presence here to avoid database calls in Edge
-    }
-
-    // Main domain routes
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set(REQUEST_ID_HEADER, requestId);
-
-    const response = NextResponse.next({
-      request: { headers: requestHeaders },
+    const response = await fetch(maintenanceUrl.toString(), {
+      headers: { "x-internal-request": "1" },
+      next: { revalidate: 30 },
     });
-    response.headers.set("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
-    response.headers.set("x-site-type", "marketing");
-    response.headers.set(REQUEST_ID_HEADER, requestId);
-    return response;
-  }
 
-  // Has tenant = church site
-
-  // Check for redirect rules on public routes
-  // Skip redirects for admin, API, and auth routes
-  if (isPublicRoute(pathname)) {
-    try {
-      const redirectUrl = new URL("/api/internal/check-redirect", request.url);
-      redirectUrl.searchParams.set("churchSlug", tenantSlug);
-      redirectUrl.searchParams.set("path", pathname);
-
-      const redirectResponse = await fetch(redirectUrl.toString(), {
-        headers: { "x-internal-request": "1" },
-        next: { revalidate: 60 }, // Cache for 1 minute
-      });
-
-      if (redirectResponse.ok) {
-        const redirectData = await redirectResponse.json();
-        if (redirectData.redirect?.destinationUrl) {
-          // Build the redirect URL
-          let targetUrl: string;
-          if (redirectData.redirect.destinationUrl.startsWith("/")) {
-            // Relative path - keep on same host
-            targetUrl = new URL(redirectData.redirect.destinationUrl, request.url).toString();
-          } else {
-            // Absolute URL
-            targetUrl = redirectData.redirect.destinationUrl;
-          }
-
-          return NextResponse.redirect(targetUrl, {
-            status: 301, // Permanent redirect
-            headers: {
-              "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
-              [REQUEST_ID_HEADER]: requestId,
-            },
-          });
-        }
-      }
-    } catch (error) {
-      // Redirect check failed, continue without redirect
-      console.error("Redirect check failed:", error);
+    if (response.ok) {
+      const data = await response.json();
+      return data.maintenanceMode === true;
     }
+  } catch (error) {
+    console.error("Maintenance check failed:", error);
+  }
+  return false;
+}
 
-    // Check for maintenance mode on public routes
-    try {
-      const maintenanceUrl = new URL("/api/internal/check-maintenance", request.url);
-      maintenanceUrl.searchParams.set("churchSlug", tenantSlug);
-
-      const maintenanceResponse = await fetch(maintenanceUrl.toString(), {
-        headers: { "x-internal-request": "1" },
-        next: { revalidate: 30 }, // Cache for 30 seconds
-      });
-
-      if (maintenanceResponse.ok) {
-        const maintenanceData = await maintenanceResponse.json();
-        if (maintenanceData.maintenanceMode) {
-          // Return maintenance page response
-          return new NextResponse(
-            `<!DOCTYPE html>
+/**
+ * Return maintenance mode HTML response
+ */
+function maintenanceResponse(requestId: string): NextResponse {
+  return new NextResponse(
+    `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -469,82 +249,216 @@ export async function middleware(request: NextRequest) {
   </div>
 </body>
 </html>`,
-            {
-              status: 503,
-              headers: {
-                "Content-Type": "text/html",
-                "Retry-After": "3600",
-                "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
-                [REQUEST_ID_HEADER]: requestId,
-              },
-            }
-          );
-        }
-      }
-    } catch (error) {
-      // Maintenance check failed, continue normally
-      console.error("Maintenance check failed:", error);
+    {
+      status: 503,
+      headers: {
+        "Content-Type": "text/html",
+        "Retry-After": "3600",
+        [HEADERS.REQUEST_ID]: requestId,
+      },
+    }
+  );
+}
+
+/**
+ * Build the login redirect URL for a surface
+ */
+function getLoginUrl(surface: AppSurface, request: NextRequest): URL {
+  // All surfaces have their own /login route within the surface
+  const loginUrl = new URL("/login", request.url);
+  loginUrl.searchParams.set("returnTo", request.nextUrl.pathname);
+  return loginUrl;
+}
+
+// ============================================================================
+// Main Middleware
+// ============================================================================
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const hostname = request.headers.get("host") || "";
+
+  // Skip middleware for static files and Next.js internals
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/static") ||
+    pathname.includes(".")
+  ) {
+    return NextResponse.next();
+  }
+
+  const requestId = getOrGenerateRequestId(request);
+
+  // Debug logging for hostname routing
+  if (process.env.NODE_ENV !== "production") {
+    const parsed = parseHostname(hostname);
+    console.log(`[Middleware] hostname=${hostname} surface=${parsed.surface} slug=${parsed.churchSlug} path=${pathname}`);
+  }
+
+  // Rate limiting
+  const clientIp = getClientIp(request);
+  const rateLimitResult = checkRateLimit(clientIp);
+
+  if (!rateLimitResult.allowed) {
+    return new NextResponse("Too Many Requests", {
+      status: 429,
+      headers: {
+        "Retry-After": "60",
+        "X-RateLimit-Remaining": "0",
+        [HEADERS.REQUEST_ID]: requestId,
+      },
+    });
+  }
+
+  // Global routes don't need surface routing
+  if (isGlobalRoute(pathname)) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set(HEADERS.REQUEST_ID, requestId);
+
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    response.headers.set("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+    response.headers.set(HEADERS.REQUEST_ID, requestId);
+    return response;
+  }
+
+  // Parse hostname to determine surface
+  const parsed = parseHostname(hostname);
+  let { surface, churchSlug } = parsed;
+  let customDomainHostname: string | null = null;
+
+  // For custom domains, resolve church slug via database
+  if (surface === "tenant" && !churchSlug) {
+    churchSlug = await resolveCustomDomain(hostname, request);
+    if (churchSlug) {
+      customDomainHostname = hostname.split(":")[0].toLowerCase();
+    } else {
+      // Unrecognized custom domain - could redirect to marketing or show error
+      console.warn(`Unrecognized hostname: ${hostname}`);
+      // For now, treat as marketing
+      surface = "marketing";
     }
   }
 
-  // Redirect admin and auth routes on subdomains to the main domain
-  // All admin functionality lives on the main domain only
-  const routesToRedirectToMainDomain = [
-    "/admin",
-    "/login",
-    "/forgot-password",
-    "/reset-password",
-    "/select-church",
-  ];
-
-  const shouldRedirectToMainDomain = routesToRedirectToMainDomain.some((route) =>
-    pathname === route || pathname.startsWith(`${route}/`)
-  );
-
-  if (shouldRedirectToMainDomain) {
-    const mainDomainUrl = getMainDomainUrl(request);
-    const redirectUrl = new URL(pathname, mainDomainUrl);
-
-    // Preserve query params
-    request.nextUrl.searchParams.forEach((value, key) => {
-      redirectUrl.searchParams.set(key, value);
-    });
-
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  // Create response with tenant context in headers (for public pages only)
+  // Build request headers for downstream
   const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(HEADERS.REQUEST_ID, requestId);
+  requestHeaders.set(HEADERS.SURFACE_TYPE, surface);
 
-  // Pass request ID for correlation (Phase 5)
-  requestHeaders.set(REQUEST_ID_HEADER, requestId);
+  // Surface-specific handling
+  switch (surface) {
+    case "marketing": {
+      requestHeaders.set(HEADERS.SITE_TYPE, "marketing");
+      break;
+    }
 
-  // Pass the slug for tenant resolution in server components/routes
-  requestHeaders.set(TENANT_HEADER_SLUG, tenantSlug);
-  requestHeaders.set("x-site-type", "church");
+    case "platform": {
+      requestHeaders.set(HEADERS.SITE_TYPE, "platform");
 
-  // Mark if this was resolved via custom domain
-  if (isCustomDomain && customDomainHostname) {
-    requestHeaders.set(TENANT_HEADER_CUSTOM_DOMAIN, customDomainHostname);
+      // Auth check for platform - cookie presence only (full validation in layout)
+      if (pathname !== "/login" && !pathname.startsWith("/api/")) {
+        const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+        if (!sessionToken) {
+          return NextResponse.redirect(getLoginUrl(surface, request));
+        }
+      }
+      break;
+    }
+
+    case "admin": {
+      requestHeaders.set(HEADERS.SITE_TYPE, "admin");
+
+      // Auth check for admin - cookie presence only (full validation in layout)
+      if (
+        pathname !== "/login" &&
+        pathname !== "/forgot-password" &&
+        pathname !== "/reset-password" &&
+        pathname !== "/accept-invite" &&
+        !pathname.startsWith("/api/")
+      ) {
+        const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+        if (!sessionToken) {
+          return NextResponse.redirect(getLoginUrl(surface, request));
+        }
+      }
+      break;
+    }
+
+    case "tenant": {
+      requestHeaders.set(HEADERS.SITE_TYPE, "church");
+
+      if (!churchSlug) {
+        // This shouldn't happen if we handled custom domains above
+        console.error("Tenant surface without church slug");
+        return NextResponse.redirect(new URL("/", request.url));
+      }
+
+      requestHeaders.set(HEADERS.CHURCH_SLUG, churchSlug);
+
+      if (customDomainHostname) {
+        requestHeaders.set(HEADERS.CUSTOM_DOMAIN, customDomainHostname);
+      }
+
+      // Check for redirect rules
+      const redirectTarget = await checkRedirectRule(
+        churchSlug,
+        pathname,
+        request
+      );
+      if (redirectTarget) {
+        return NextResponse.redirect(redirectTarget, {
+          status: 301,
+          headers: {
+            "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
+            [HEADERS.REQUEST_ID]: requestId,
+          },
+        });
+      }
+
+      // Check for maintenance mode
+      const isInMaintenance = await checkMaintenanceMode(churchSlug, request);
+      if (isInMaintenance) {
+        return maintenanceResponse(requestId);
+      }
+      break;
+    }
   }
 
-  const response = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
+  // API routes should NOT be rewritten - they stay at /api/*
+  // Only rewrite page routes to surface-specific prefixes
+  if (pathname.startsWith("/api/")) {
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    response.headers.set("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+    response.headers.set(HEADERS.REQUEST_ID, requestId);
+    return response;
+  }
+
+  // Rewrite page routes to the appropriate route group
+  const routePrefix = getSurfaceRoutePrefix(surface);
+  const rewritePath = `${routePrefix}${pathname === "/" ? "" : pathname}`;
+
+  const rewriteUrl = new URL(rewritePath, request.url);
+
+  // Preserve query params
+  request.nextUrl.searchParams.forEach((value, key) => {
+    rewriteUrl.searchParams.set(key, value);
   });
 
-  // Add rate limit headers
-  response.headers.set("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+  const response = NextResponse.rewrite(rewriteUrl, {
+    request: { headers: requestHeaders },
+  });
 
-  // Add request ID to response headers for client-side correlation
-  response.headers.set(REQUEST_ID_HEADER, requestId);
+  // Add standard headers
+  response.headers.set(
+    "X-RateLimit-Remaining",
+    rateLimitResult.remaining.toString()
+  );
+  response.headers.set(HEADERS.REQUEST_ID, requestId);
 
   return response;
 }
 
 /**
- * Configure which routes the middleware runs on.
+ * Configure which routes the middleware runs on
  */
 export const config = {
   matcher: [

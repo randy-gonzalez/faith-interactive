@@ -9,6 +9,7 @@
 import type { Block, FeatureBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
+import { getTextColors, resolveTextTheme } from "@/lib/blocks/get-text-colors";
 
 interface FeatureBlockPreviewProps {
   block: Block;
@@ -19,10 +20,8 @@ export function FeatureBlockPreview({ block }: FeatureBlockPreviewProps) {
   const { data, background, advanced } = featureBlock;
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
-  const hasBackground = background && background.type !== "color";
-  const hasDarkBackground = background?.type === "color" && background.color;
-  const textColorClass = hasBackground || hasDarkBackground ? "text-white" : "text-gray-900";
-  const subTextColorClass = hasBackground || hasDarkBackground ? "text-white/80" : "text-gray-600";
+  const textColors = getTextColors(background?.textTheme, background?.type);
+  const useLightTheme = resolveTextTheme(background?.textTheme, background?.type);
   const advancedProps = getAdvancedProps(advanced);
 
   const imageContent = data.imageUrl ? (
@@ -40,19 +39,23 @@ export function FeatureBlockPreview({ block }: FeatureBlockPreviewProps) {
   const textContent = (
     <div className="flex flex-col justify-center">
       {data.heading ? (
-        <h2 className={`text-2xl md:text-3xl font-bold ${textColorClass} mb-4`}>
+        <h2
+          className="text-2xl md:text-3xl font-bold mb-4"
+          style={{ color: textColors.heading }}
+        >
           {data.heading}
         </h2>
       ) : (
-        <h2 className="text-2xl font-bold text-gray-300 mb-4">Add a heading...</h2>
+        <h2 style={{ color: textColors.subtext }} className="text-2xl font-bold mb-4">Add a heading...</h2>
       )}
       {data.content ? (
         <div
-          className={`prose ${subTextColorClass}`}
+          className="prose"
+          style={{ color: textColors.text }}
           dangerouslySetInnerHTML={{ __html: data.content }}
         />
       ) : (
-        <p className="text-gray-400 italic">Add content...</p>
+        <p style={{ color: textColors.subtext, fontStyle: "italic" }}>Add content...</p>
       )}
       {data.buttonText && data.buttonUrl && (
         <div className="mt-6">
@@ -60,8 +63,8 @@ export function FeatureBlockPreview({ block }: FeatureBlockPreviewProps) {
             href={data.buttonUrl}
             className="inline-block px-6 py-3 font-semibold transition-opacity hover:opacity-90"
             style={{
-              backgroundColor: hasBackground ? "#ffffff" : "var(--btn-primary-bg, #2563eb)",
-              color: hasBackground ? "#1f2937" : "var(--btn-primary-text, #ffffff)",
+              backgroundColor: useLightTheme ? textColors.heading : "var(--btn-primary-bg, #2563eb)",
+              color: useLightTheme ? "#1f2937" : "var(--btn-primary-text, #ffffff)",
               borderRadius: "var(--btn-radius, 6px)",
             }}
           >

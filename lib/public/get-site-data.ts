@@ -54,6 +54,10 @@ export interface BrandingData {
   borderRadius: number | null;
   linkColor: string | null;
   linkHoverColor: string | null;
+  // Light theme colors (for text on dark backgrounds)
+  lightHeadingColor: string | null;
+  lightTextColor: string | null;
+  lightSubtextColor: string | null;
   // Logos
   logoHeaderUrl: string | null;
   logoLightUrl: string | null;
@@ -182,6 +186,10 @@ export const getSiteData = cache(async (): Promise<SiteData | null> => {
         borderRadius: church.branding.borderRadius,
         linkColor: church.branding.linkColor,
         linkHoverColor: church.branding.linkHoverColor,
+        // Light theme colors
+        lightHeadingColor: church.branding.lightHeadingColor,
+        lightTextColor: church.branding.lightTextColor,
+        lightSubtextColor: church.branding.lightSubtextColor,
         // Logos
         logoHeaderUrl: church.branding.logoHeaderUrl,
         logoLightUrl: church.branding.logoLightUrl,

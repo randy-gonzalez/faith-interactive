@@ -43,6 +43,9 @@ export function createBrandColorReference(name: BrandColorName): string {
   return `brand:${name}`;
 }
 
+// Text theme options for block backgrounds
+export type TextTheme = "light" | "dark" | "auto";
+
 // Shared background configuration for all blocks
 export interface BlockBackground {
   type: "color" | "gradient" | "image" | "video";
@@ -51,6 +54,7 @@ export interface BlockBackground {
   imageUrl?: string;
   videoUrl?: string;
   overlay?: ColorValue; // Optional overlay color/opacity
+  textTheme?: TextTheme; // Text color theme: "light" (white text), "dark" (dark text), "auto" (detect)
 }
 
 // Advanced settings for all blocks

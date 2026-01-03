@@ -5,10 +5,15 @@
  *
  * Switches the platform user's active church context and redirects to the admin dashboard.
  * Used in platform pages to allow staff to manage any church.
+ *
+ * With hostname-based routing:
+ * - Platform lives at platform.faith-interactive.com
+ * - Admin lives at admin.faith-interactive.com
+ * - This button triggers a cross-subdomain redirect to admin surface
  */
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { buildSurfaceUrl } from "@/lib/hostname/parser";
 
 interface ManageChurchButtonProps {
   churchId: string;
@@ -23,7 +28,6 @@ export function ManageChurchButton({
   variant = "link",
   className,
 }: ManageChurchButtonProps) {
-  const router = useRouter();
   const [switching, setSwitching] = useState(false);
 
   async function handleManage() {
@@ -44,9 +48,13 @@ export function ManageChurchButton({
         return;
       }
 
-      // Redirect to admin dashboard
-      router.push(data.redirectUrl || "/admin/dashboard");
-      router.refresh();
+      // Cross-subdomain redirect to admin surface
+      // The API returns a relative path, but we need to redirect to the admin subdomain
+      const hostname = window.location.hostname;
+      const isLocal = hostname.includes(".local") || hostname.includes("localhost");
+      const useLocalhost = hostname.includes("localhost");
+      const adminUrl = buildSurfaceUrl("admin", data.redirectUrl || "/dashboard", { isLocal, useLocalhost });
+      window.location.href = adminUrl;
     } catch (error) {
       console.error("Failed to switch church:", error);
       setSwitching(false);

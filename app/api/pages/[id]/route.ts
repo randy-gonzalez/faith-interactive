@@ -14,6 +14,7 @@ import { requireAuthContext, requireContentEditor, AuthError } from "@/lib/auth/
 import { getTenantPrisma } from "@/lib/db/tenant-prisma";
 import { pageSchema, formatZodError } from "@/lib/validation/schemas";
 import { isReservedSlug } from "@/lib/constants/reserved-slugs";
+import { generateUniqueSlug } from "@/lib/utils/slugify";
 import { logger } from "@/lib/logging/logger";
 import type { ApiResponse } from "@/types";
 
@@ -97,7 +98,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     const {
       title,
       blocks,
-      urlPath,
+      urlPath: providedUrlPath,
       featuredImageUrl,
       parentId,
       sortOrder,
@@ -110,25 +111,50 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       status,
     } = parseResult.data;
 
-    // Check for reserved slugs
-    if (urlPath && isReservedSlug(urlPath)) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: `The URL path "${urlPath}" is reserved and cannot be used` },
-        { status: 400 }
-      );
-    }
+    // Determine the final URL path
+    let urlPath = providedUrlPath;
 
-    // Check for duplicate urlPath if changed
-    if (urlPath && urlPath !== existing.urlPath) {
-      const duplicate = await db.page.findFirst({
-        where: { urlPath, id: { not: id } },
-      });
-      if (duplicate) {
+    if (urlPath) {
+      // User provided a slug - check for reserved and duplicates
+      if (isReservedSlug(urlPath)) {
         return NextResponse.json<ApiResponse>(
-          { success: false, error: "A page with this URL path already exists" },
+          { success: false, error: `The URL path "${urlPath}" is reserved and cannot be used` },
           { status: 400 }
         );
       }
+
+      // Check for duplicate urlPath if changed
+      if (urlPath !== existing.urlPath) {
+        const duplicate = await db.page.findFirst({
+          where: { urlPath, id: { not: id } },
+        });
+        if (duplicate) {
+          return NextResponse.json<ApiResponse>(
+            { success: false, error: "A page with this URL path already exists" },
+            { status: 400 }
+          );
+        }
+      }
+    } else if (!existing.urlPath) {
+      // No slug provided and page doesn't have one - auto-generate from title
+      const existingPages = await db.page.findMany({
+        where: { id: { not: id } },
+        select: { urlPath: true },
+      });
+      const existingSlugs = existingPages
+        .map((p) => p.urlPath)
+        .filter((slug): slug is string => slug !== null);
+
+      urlPath = generateUniqueSlug(title, existingSlugs);
+
+      // Ensure auto-generated slug isn't reserved
+      while (isReservedSlug(urlPath)) {
+        existingSlugs.push(urlPath);
+        urlPath = generateUniqueSlug(title, existingSlugs);
+      }
+    } else {
+      // Keep existing slug if user didn't provide one
+      urlPath = existing.urlPath;
     }
 
     // Validate parentId if provided
@@ -181,7 +207,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       data: {
         title,
         blocks: blocks || existing.blocks,
-        urlPath: urlPath || null,
+        urlPath, // Always has a value now (either provided, existing, or auto-generated)
         featuredImageUrl: featuredImageUrl || null,
         parentId: parentId || null,
         sortOrder: sortOrder ?? existing.sortOrder,

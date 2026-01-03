@@ -9,6 +9,7 @@
 import type { Block, ImageBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
+import { getTextColors } from "@/lib/blocks/get-text-colors";
 
 interface ImageBlockPreviewProps {
   block: Block;
@@ -32,6 +33,7 @@ export function ImageBlockPreview({ block }: ImageBlockPreviewProps) {
   };
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
+  const textColors = getTextColors(background?.textTheme, background?.type);
   const advancedProps = getAdvancedProps(advanced);
   const combinedClassName = `block-preview py-8 px-6 flex flex-col relative ${alignmentClasses[data.alignment]} ${advancedProps.className || ""}`.trim();
 
@@ -54,14 +56,14 @@ export function ImageBlockPreview({ block }: ImageBlockPreviewProps) {
             className="w-full h-auto rounded-lg shadow-md"
           />
           {data.caption && (
-            <figcaption className="mt-3 text-sm text-gray-600 text-center">
+            <figcaption className="mt-3 text-sm text-center" style={{ color: textColors.subtext }}>
               {data.caption}
             </figcaption>
           )}
         </figure>
       ) : (
         <div className="relative z-10 w-full max-w-xl aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
-          <span className="text-gray-400">Add an image URL...</span>
+          <span style={{ color: textColors.subtext }}>Add an image URL...</span>
         </div>
       )}
     </div>

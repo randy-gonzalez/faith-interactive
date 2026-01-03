@@ -11,6 +11,7 @@
 import type { Block, HeroBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
+import { getTextColors } from "@/lib/blocks/get-text-colors";
 
 interface HeroBlockPreviewProps {
   block: Block;
@@ -27,6 +28,7 @@ export function HeroBlockPreview({ block }: HeroBlockPreviewProps) {
   };
 
   const { style: backgroundStyle, hasVideo, videoUrl, overlay } = useBackgroundStyles(background);
+  const textColors = getTextColors(background?.textTheme, background?.type);
   const advancedProps = getAdvancedProps(advanced);
   const combinedClassName = `block-preview relative py-16 px-6 flex flex-col ${alignmentClasses[data.alignment]} overflow-hidden ${advancedProps.className || ""}`.trim();
 
@@ -64,13 +66,21 @@ export function HeroBlockPreview({ block }: HeroBlockPreviewProps) {
       {/* Content */}
       <div className="relative max-w-4xl w-full z-10">
         {data.heading && (
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h1
+            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4"
+            style={{ color: textColors.heading }}
+          >
             {data.heading}
           </h1>
         )}
 
         {data.subheading && (
-          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl">
+          <p
+            className={`text-lg md:text-xl mb-8 max-w-2xl ${
+              data.alignment === "center" ? "mx-auto" : data.alignment === "right" ? "ml-auto" : ""
+            }`}
+            style={{ color: textColors.text }}
+          >
             {data.subheading}
           </p>
         )}
@@ -93,14 +103,14 @@ export function HeroBlockPreview({ block }: HeroBlockPreviewProps) {
                 style={
                   btn.variant === "primary"
                     ? {
-                        backgroundColor: "#ffffff",
-                        color: "#1f2937",
+                        backgroundColor: textColors.heading,
+                        color: background?.textTheme === "dark" ? "#ffffff" : "#1f2937",
                         borderRadius: "var(--btn-radius, 6px)",
                       }
                     : {
                         backgroundColor: "transparent",
-                        color: "#ffffff",
-                        border: "2px solid #ffffff",
+                        color: textColors.heading,
+                        border: `2px solid ${textColors.heading}`,
                         borderRadius: "var(--btn-radius, 6px)",
                       }
                 }
@@ -112,7 +122,7 @@ export function HeroBlockPreview({ block }: HeroBlockPreviewProps) {
         )}
 
         {!data.heading && !data.subheading && data.buttons.length === 0 && (
-          <p className="text-white/60 italic">
+          <p style={{ color: textColors.subtext, fontStyle: "italic" }}>
             Add content to see the preview
           </p>
         )}

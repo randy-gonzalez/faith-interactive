@@ -10,6 +10,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { PlatformRole } from "@prisma/client";
+import { buildSurfaceUrl } from "@/lib/hostname/parser";
 
 interface PlatformHeaderProps {
   userName: string | null;
@@ -57,7 +58,11 @@ export function PlatformHeader({
         {/* Link back to church dashboard if applicable */}
         {hasChurchAccess && (
           <button
-            onClick={() => router.push("/admin/dashboard")}
+            onClick={() => {
+              const isLocal = typeof window !== "undefined" && window.location.hostname.includes("localhost");
+              const adminUrl = buildSurfaceUrl("admin", "/dashboard", { isLocal, useLocalhost: isLocal });
+              window.location.href = adminUrl;
+            }}
             className="px-3 py-1.5 text-sm text-indigo-600 hover:text-indigo-800 border border-indigo-300 rounded-md hover:bg-indigo-100 transition-colors"
           >
             Church Dashboard

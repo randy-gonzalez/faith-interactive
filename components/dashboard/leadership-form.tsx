@@ -79,7 +79,7 @@ export function LeadershipForm({ initialData, canEdit }: LeadershipFormProps) {
         return;
       }
 
-      router.push("/admin/leadership");
+      router.push("/leadership");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -133,7 +133,7 @@ export function LeadershipForm({ initialData, canEdit }: LeadershipFormProps) {
         return;
       }
 
-      router.push("/admin/leadership");
+      router.push("/leadership");
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -243,7 +243,7 @@ export function LeadershipForm({ initialData, canEdit }: LeadershipFormProps) {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => router.push("/admin/leadership")}
+            onClick={() => router.push("/leadership")}
           >
             Cancel
           </Button>
