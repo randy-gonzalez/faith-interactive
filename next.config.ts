@@ -24,15 +24,15 @@ const nextConfig: NextConfig = {
       { key: "X-XSS-Protection", value: "1; mode=block" },
       // DNS prefetch control
       { key: "X-DNS-Prefetch-Control", value: "on" },
-      // CSP - allows YouTube, Vimeo, Google Maps embeds
+      // CSP - allows YouTube, Vimeo, Google Maps embeds, Google Fonts
       {
         key: "Content-Security-Policy",
         value: [
           "default-src 'self'",
           "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-          "style-src 'self' 'unsafe-inline'",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "img-src 'self' data: https:",
-          "font-src 'self' data:",
+          "font-src 'self' data: https://fonts.gstatic.com",
           "connect-src 'self'",
           "frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.google.com https://maps.google.com",
           "media-src 'self' https:",

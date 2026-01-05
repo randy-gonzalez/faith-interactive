@@ -1,204 +1,224 @@
 /**
  * Pricing Page
  *
- * Full pricing details for Faith Interactive services.
+ * Purpose: Be honest and clear about cost.
+ * Answer: "What will this cost my church?"
+ *
+ * Intentionally excluded:
+ * - Feature comparison tables
+ * - "Most Popular" badges
+ * - Feature checklists per tier
+ * - Pressure tactics
  */
 
 import type { Metadata } from "next";
-import { PricingTable } from "@/components/marketing/pricing-table";
-import { CTASectionDark } from "@/components/marketing/cta-section";
+import Link from "next/link";
+import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Transparent pricing for church website design. FREE for church plants, $500 for small churches, $1,500 for large churches. All include $25/mo hosting.",
+    "Honest pricing for church website design. Free for church plants. Simple monthly hosting. No surprises.",
 };
 
 export default function PricingPage() {
   return (
     <>
       {/* Hero */}
-      <section className="marketing-gradient-subtle py-16">
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#000646] mb-4">
-            Simple, Transparent Pricing
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            No hidden fees, no surprises. Choose the package that fits your church&apos;s
-            needs and budget.
-          </p>
+      <section className="hero">
+        <div className="container">
+          <ScrollReveal>
+            <p className="text-micro text-[#737373] mb-6">Pricing</p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <h1 className="text-display hero-headline mb-8">
+              Honest pricing.
+              <br />
+              No surprises.
+            </h1>
+          </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <p className="text-large text-[#525252] max-w-xl">
+              Every project is different, but here&apos;s what to expect.
+              We&apos;ll give you a real quote after we talk.
+            </p>
+          </ScrollReveal>
         </div>
       </section>
 
-      {/* Pricing Table */}
-      <section className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <PricingTable showUpdateOption={true} />
+      {/* Pricing Tiers */}
+      <section className="section">
+        <div className="container">
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl">
+            {/* Church Plants */}
+            <ScrollReveal delay={0.1}>
+              <div className="p-8 border border-[#e5e5e5] rounded-sm">
+                <p className="text-micro text-[#737373] mb-4">Church Plants</p>
+                <p className="text-4xl font-medium mb-2">Free</p>
+                <p className="text-[#737373] mb-6">+ $25/mo hosting</p>
+                <p className="text-[#525252]">
+                  New churches have enough to worry about.
+                  Your website shouldn&apos;t be one of them.
+                </p>
+              </div>
+            </ScrollReveal>
+
+            {/* Established Churches */}
+            <ScrollReveal delay={0.15}>
+              <div className="p-8 border border-[#e5e5e5] rounded-sm">
+                <p className="text-micro text-[#737373] mb-4">Established Churches</p>
+                <p className="text-4xl font-medium mb-2">$500–$1,500</p>
+                <p className="text-[#737373] mb-6">+ $25/mo hosting</p>
+                <p className="text-[#525252]">
+                  Depends on complexity. Most churches land
+                  somewhere in this range.
+                </p>
+              </div>
+            </ScrollReveal>
+
+            {/* Large / Multi-Site */}
+            <ScrollReveal delay={0.2}>
+              <div className="p-8 border border-[#e5e5e5] rounded-sm">
+                <p className="text-micro text-[#737373] mb-4">Large / Multi-Site</p>
+                <p className="text-4xl font-medium mb-2">Custom</p>
+                <p className="text-[#737373] mb-6">Let&apos;s talk</p>
+                <p className="text-[#525252]">
+                  Multiple campuses, complex needs, or major rebrand?
+                  We&apos;ll scope it together.
+                </p>
+              </div>
+            </ScrollReveal>
+          </div>
         </div>
       </section>
 
       {/* What's Included */}
-      <section className="py-16 marketing-gradient-subtle">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-[#000646] text-center mb-12">
-            What&apos;s Included in Every Package
-          </h2>
+      <section className="section bg-[#fafafa]">
+        <div className="container container-narrow">
+          <ScrollReveal>
+            <p className="text-micro text-[#737373] mb-8">What&apos;s included</p>
+          </ScrollReveal>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="marketing-card p-6">
-              <h3 className="font-bold text-[#000646] mb-4">Design & Development</h3>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#00d4aa] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">Custom design tailored to your church</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#00d4aa] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">Mobile-responsive on all devices</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#00d4aa] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">Easy-to-use content management</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#00d4aa] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">Sermon library management</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#00d4aa] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">Event calendar with registration</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="marketing-card p-6">
-              <h3 className="font-bold text-[#000646] mb-4">Hosting & Support</h3>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#00d4aa] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">VPS cloud hosting (99.9% uptime)</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#00d4aa] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">SSL certificate included</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#00d4aa] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">Daily automated backups</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#00d4aa] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">Security monitoring & updates</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#00d4aa] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-gray-700">Email support</span>
-                </li>
-              </ul>
-            </div>
+          <div className="services-list mb-12">
+            <ScrollReveal delay={0.1}>
+              <div className="services-item">
+                <span>Custom design</span>
+                <span className="text-[#737373]">Not a template</span>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal delay={0.12}>
+              <div className="services-item">
+                <span>Mobile-responsive</span>
+                <span className="text-[#737373]">Works on all devices</span>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal delay={0.14}>
+              <div className="services-item">
+                <span>Easy content updates</span>
+                <span className="text-[#737373]">You control it</span>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal delay={0.16}>
+              <div className="services-item">
+                <span>Sermons & events</span>
+                <span className="text-[#737373]">Built in</span>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal delay={0.18}>
+              <div className="services-item">
+                <span>Hosting & security</span>
+                <span className="text-[#737373]">We handle it</span>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal delay={0.2}>
+              <div className="services-item">
+                <span>Real support</span>
+                <span className="text-[#737373]">Actual humans</span>
+              </div>
+            </ScrollReveal>
           </div>
+
+          <ScrollReveal delay={0.25}>
+            <div className="p-6 bg-white border border-[#e5e5e5] rounded-sm">
+              <p className="text-[#525252]">
+                <span className="font-medium text-[#171717]">Need ongoing help?</span>
+                {" "}We offer a $100/month service where we handle content updates,
+                new pages, and keeping your site fresh.
+              </p>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="py-16 bg-white">
-        <div className="max-w-3xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-[#000646] text-center mb-12">
-            Frequently Asked Questions
-          </h2>
+      {/* Common Questions */}
+      <section className="section">
+        <div className="container container-narrow">
+          <ScrollReveal>
+            <p className="text-micro text-[#737373] mb-12">Common questions</p>
+          </ScrollReveal>
 
-          <div className="space-y-6">
-            <div className="marketing-card p-6">
-              <h3 className="font-bold text-[#000646] mb-2">
-                Why is it free for church plants?
-              </h3>
-              <p className="text-gray-600">
-                We believe every new church deserves a professional online presence.
-                Church plants have enough financial challenges - your website shouldn&apos;t
-                be one of them. You just pay the monthly hosting fee.
-              </p>
-            </div>
+          <div className="space-y-12">
+            <ScrollReveal delay={0.1}>
+              <div>
+                <h3 className="h3 mb-3">Why free for church plants?</h3>
+                <p className="text-[#525252]">
+                  We believe every new church deserves a solid digital presence.
+                  You have enough financial challenges — your website shouldn&apos;t
+                  be one of them. You just cover the hosting.
+                </p>
+              </div>
+            </ScrollReveal>
 
-            <div className="marketing-card p-6">
-              <h3 className="font-bold text-[#000646] mb-2">
-                What&apos;s the difference between packages?
-              </h3>
-              <p className="text-gray-600">
-                The main differences are the level of customization and features.
-                Church Plants get a beautiful, functional site. Small Churches get
-                more pages and SEO optimization. Large Churches get unlimited pages,
-                advanced features, and dedicated support.
-              </p>
-            </div>
+            <ScrollReveal delay={0.15}>
+              <div>
+                <h3 className="h3 mb-3">What determines the price?</h3>
+                <p className="text-[#525252]">
+                  Number of pages, level of customization, and any special features
+                  you need. We&apos;ll give you an honest quote after understanding
+                  your situation.
+                </p>
+              </div>
+            </ScrollReveal>
 
-            <div className="marketing-card p-6">
-              <h3 className="font-bold text-[#000646] mb-2">
-                What does the $100/month update service include?
-              </h3>
-              <p className="text-gray-600">
-                This optional service covers ongoing content updates, new page creation,
-                design tweaks, and keeping your site fresh. It&apos;s perfect for churches
-                that want a hands-off approach to website maintenance.
-              </p>
-            </div>
-
-            <div className="marketing-card p-6">
-              <h3 className="font-bold text-[#000646] mb-2">
-                How long does it take to build a website?
-              </h3>
-              <p className="text-gray-600">
-                Most church websites are completed within 2-4 weeks, depending on the
-                package and how quickly you provide content. We&apos;ll give you a more
-                specific timeline during your consultation.
-              </p>
-            </div>
-
-            <div className="marketing-card p-6">
-              <h3 className="font-bold text-[#000646] mb-2">
-                Can I cancel anytime?
-              </h3>
-              <p className="text-gray-600">
-                Yes. The hosting is month-to-month with no long-term contracts.
-                If you decide to leave, we&apos;ll help you export your content.
-              </p>
-            </div>
+            <ScrollReveal delay={0.2}>
+              <div>
+                <h3 className="h3 mb-3">Any long-term contracts?</h3>
+                <p className="text-[#525252]">
+                  No. Hosting is month-to-month. If you ever want to leave,
+                  we&apos;ll help you transition.
+                </p>
+              </div>
+            </ScrollReveal>
           </div>
 
-          <div className="text-center mt-8">
-            <a href="/faq" className="text-[#00d4aa] font-semibold hover:underline">
-              View all FAQs →
-            </a>
-          </div>
+          <ScrollReveal delay={0.25}>
+            <div className="mt-12">
+              <Link href="/faq" className="link-arrow">
+                More questions
+              </Link>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* CTA */}
-      <CTASectionDark
-        title="Ready to Get Started?"
-        description="Schedule a free consultation to discuss your church's needs and get a custom quote."
-        primaryCta={{ text: "Get Your Free Consultation", href: "/contact" }}
-        secondaryCta={{ text: "Call (833) 307-1917", href: "tel:+18333071917" }}
-      />
+      <section className="section-lg bg-[#fafafa]">
+        <div className="container text-center">
+          <ScrollReveal>
+            <h2 className="h2 mb-4">Let&apos;s talk about your church.</h2>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <p className="text-[#525252] mb-8">
+              We&apos;ll give you a real quote — no pressure, no sales pitch.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.15}>
+            <Link href="/contact" className="btn-primary">
+              Get in touch
+            </Link>
+          </ScrollReveal>
+        </div>
+      </section>
     </>
   );
 }

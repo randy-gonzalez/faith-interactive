@@ -1,218 +1,171 @@
 /**
- * Services Overview Page
+ * Services Page
  *
- * Overview of all Faith Interactive services.
+ * Purpose: Explain what we do simply and confidently.
+ * Answer: "What exactly does working with you look like?"
+ *
+ * Intentionally excluded:
+ * - Feature checklists
+ * - Comparison tables
+ * - Technical jargon
+ * - "Why choose us" sections
  */
 
 import type { Metadata } from "next";
-import { CTASection } from "@/components/marketing/cta-section";
+import Link from "next/link";
+import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "Church website design, SEO services, and VPS cloud hosting. Everything your church needs for a professional online presence.",
+    "Brand identity, website design, and ongoing support for churches. We handle the design so you can focus on ministry.",
 };
-
-const SERVICES = [
-  {
-    title: "Website Design & Development",
-    description:
-      "Custom-designed, mobile-responsive websites that showcase your church's unique identity and help visitors connect with your community.",
-    icon: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-      />
-    ),
-    href: "/services/website-design",
-    features: [
-      "Custom design tailored to your church",
-      "Mobile-responsive on all devices",
-      "Easy-to-use content management",
-      "Sermon library & event calendar",
-      "Contact forms & prayer requests",
-    ],
-  },
-  {
-    title: "SEO Services",
-    description:
-      "Help your community find you online with search engine optimization that puts your church at the top of local search results.",
-    icon: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-      />
-    ),
-    href: "/services/seo",
-    features: [
-      "Local SEO optimization",
-      "Google Business Profile setup",
-      "Keyword research & optimization",
-      "Meta tags & structured data",
-      "Performance optimization",
-    ],
-  },
-  {
-    title: "VPS Cloud Hosting & Support",
-    description:
-      "Fast, secure, and reliable hosting with SSL certificates, daily backups, and dedicated support when you need it.",
-    icon: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"
-      />
-    ),
-    href: "/services/hosting",
-    features: [
-      "99.9% uptime guarantee",
-      "SSL certificate included",
-      "Daily automated backups",
-      "Security monitoring & updates",
-      "Email & phone support",
-    ],
-  },
-];
 
 export default function ServicesPage() {
   return (
     <>
       {/* Hero */}
-      <section className="marketing-gradient-subtle py-16">
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#000646] mb-4">
-            Everything Your Church Needs Online
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            From beautiful design to reliable hosting, we provide complete solutions
-            so you can focus on what matters most — your ministry.
-          </p>
+      <section className="hero">
+        <div className="container">
+          <ScrollReveal>
+            <p className="text-micro text-[#737373] mb-6">Services</p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <h1 className="text-display hero-headline mb-8">
+              We handle the design.
+              <br />
+              You focus on ministry.
+            </h1>
+          </ScrollReveal>
         </div>
       </section>
 
-      {/* Services */}
-      <section className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="space-y-16">
-            {SERVICES.map((service, index) => (
-              <div
-                key={service.title}
-                className={`grid md:grid-cols-2 gap-12 items-center ${
-                  index % 2 === 1 ? "md:flex-row-reverse" : ""
-                }`}
-              >
-                <div className={index % 2 === 1 ? "md:order-2" : ""}>
-                  <div className="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br from-[#77f2a1] to-[#00ffce] flex items-center justify-center">
-                    <svg
-                      className="w-8 h-8 text-[#000646]"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      {service.icon}
-                    </svg>
-                  </div>
-                  <h2 className="text-3xl font-bold text-[#000646] mb-4">
-                    {service.title}
-                  </h2>
-                  <p className="text-lg text-gray-600 mb-6">{service.description}</p>
-                  <ul className="space-y-3 mb-8">
-                    {service.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3">
-                        <svg
-                          className="w-5 h-5 text-[#00d4aa] flex-shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        <span className="text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <a
-                    href={service.href}
-                    className="btn-marketing-primary inline-block"
-                  >
-                    Learn More →
-                  </a>
-                </div>
-                <div
-                  className={`aspect-video rounded-2xl bg-gradient-to-br from-[#77f2a1]/20 to-[#00ffce]/20 flex items-center justify-center ${
-                    index % 2 === 1 ? "md:order-1" : ""
-                  }`}
-                >
-                  <svg
-                    className="w-24 h-24 text-[#00d4aa]/50"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    {service.icon}
-                  </svg>
+      {/* Services List */}
+      <section className="section">
+        <div className="container">
+          <div className="max-w-4xl">
+            {/* Brand Identity */}
+            <ScrollReveal>
+              <div className="py-16 border-b border-[#e5e5e5]">
+                <p className="text-micro text-[#737373] mb-4">01</p>
+                <h2 className="h2 mb-6">Brand Identity</h2>
+                <p className="text-large text-[#525252] max-w-2xl mb-8">
+                  A clear visual identity helps people recognize and remember
+                  your church. We create logos, color systems, and typography
+                  that feel like you.
+                </p>
+                <div className="flex flex-wrap gap-6 text-[#737373]">
+                  <span>Logo design</span>
+                  <span>Color palette</span>
+                  <span>Typography</span>
+                  <span>Brand guidelines</span>
                 </div>
               </div>
-            ))}
+            </ScrollReveal>
+
+            {/* Website Design */}
+            <ScrollReveal>
+              <div className="py-16 border-b border-[#e5e5e5]">
+                <p className="text-micro text-[#737373] mb-4">02</p>
+                <h2 className="h2 mb-6">Website Design</h2>
+                <p className="text-large text-[#525252] max-w-2xl mb-8">
+                  Custom websites that invite people in and point them to Jesus.
+                  Not templates. Not themes. Designed specifically for your church
+                  and how people actually use it.
+                </p>
+                <div className="flex flex-wrap gap-6 text-[#737373]">
+                  <span>Custom design</span>
+                  <span>Content strategy</span>
+                  <span>Mobile-first</span>
+                  <span>Easy updates</span>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Ongoing Support */}
+            <ScrollReveal>
+              <div className="py-16">
+                <p className="text-micro text-[#737373] mb-4">03</p>
+                <h2 className="h2 mb-6">Ongoing Support</h2>
+                <p className="text-large text-[#525252] max-w-2xl mb-8">
+                  We don&apos;t disappear after launch. Hosting, updates, and a
+                  real person to call when you need help. We&apos;re here for the
+                  long haul.
+                </p>
+                <div className="flex flex-wrap gap-6 text-[#737373]">
+                  <span>Reliable hosting</span>
+                  <span>Security updates</span>
+                  <span>Content changes</span>
+                  <span>Real support</span>
+                </div>
+              </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="py-16 marketing-gradient-subtle">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-[#000646] text-center mb-12">
-            Why Churches Choose Faith Interactive
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white flex items-center justify-center shadow-lg">
-                <span className="text-2xl font-bold text-gradient">10+</span>
+      {/* Process */}
+      <section className="section bg-[#fafafa]">
+        <div className="container container-narrow">
+          <ScrollReveal>
+            <p className="text-micro text-[#737373] mb-8">How it works</p>
+          </ScrollReveal>
+
+          <div className="services-list">
+            <ScrollReveal delay={0.1}>
+              <div className="services-item">
+                <span>1. We talk</span>
+                <span className="text-[#737373] text-sm hidden sm:block">
+                  About your church, your people, your goals
+                </span>
               </div>
-              <h3 className="font-bold text-[#000646] mb-2">Years Experience</h3>
-              <p className="text-gray-600">
-                Helping churches build their online presence since 2014.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white flex items-center justify-center shadow-lg">
-                <span className="text-2xl font-bold text-gradient">100+</span>
+            </ScrollReveal>
+            <ScrollReveal delay={0.15}>
+              <div className="services-item">
+                <span>2. We design</span>
+                <span className="text-[#737373] text-sm hidden sm:block">
+                  A custom concept for your review
+                </span>
               </div>
-              <h3 className="font-bold text-[#000646] mb-2">Churches Served</h3>
-              <p className="text-gray-600">
-                From small church plants to megachurches.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white flex items-center justify-center shadow-lg">
-                <span className="text-2xl font-bold text-gradient">99.9%</span>
+            </ScrollReveal>
+            <ScrollReveal delay={0.2}>
+              <div className="services-item">
+                <span>3. We build</span>
+                <span className="text-[#737373] text-sm hidden sm:block">
+                  And test everything thoroughly
+                </span>
               </div>
-              <h3 className="font-bold text-[#000646] mb-2">Uptime</h3>
-              <p className="text-gray-600">
-                Reliable hosting you can count on.
-              </p>
-            </div>
+            </ScrollReveal>
+            <ScrollReveal delay={0.25}>
+              <div className="services-item">
+                <span>4. We launch</span>
+                <span className="text-[#737373] text-sm hidden sm:block">
+                  And stay available after
+                </span>
+              </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <CTASection
-        title="Ready to Get Started?"
-        description="Schedule a free consultation and let's discuss how we can help your church reach more people online."
-        primaryCta={{ text: "Get Your Free Consultation", href: "/contact" }}
-        secondaryCta={{ text: "View Pricing", href: "/pricing" }}
-      />
+      <section className="section-lg">
+        <div className="container text-center">
+          <ScrollReveal>
+            <h2 className="h2 mb-6">Ready to get started?</h2>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
+              <Link href="/contact" className="btn-primary">
+                Get in touch
+              </Link>
+              <Link href="/work" className="btn-ghost">
+                See the work
+              </Link>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
     </>
   );
 }

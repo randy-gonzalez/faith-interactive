@@ -10,6 +10,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Tabs, TabPanel } from "@/components/ui/tabs";
+import { PlatformMediaPicker, PlatformMultiMediaPicker } from "@/components/platform/platform-media-picker";
 
 interface CaseStudyEditorProps {
   caseStudy?: {
@@ -79,7 +80,6 @@ export function CaseStudyEditor({ caseStudy }: CaseStudyEditorProps) {
   // UI state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [newImageUrl, setNewImageUrl] = useState("");
 
   // Auto-generate slug from church name
   function handleChurchNameChange(newName: string) {
@@ -96,17 +96,6 @@ export function CaseStudyEditor({ caseStudy }: CaseStudyEditorProps) {
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-")
       .trim();
-  }
-
-  function addImage() {
-    if (newImageUrl.trim()) {
-      setImages([...images, newImageUrl.trim()]);
-      setNewImageUrl("");
-    }
-  }
-
-  function removeImage(index: number) {
-    setImages(images.filter((_, i) => i !== index));
   }
 
   function addMetric() {
@@ -257,19 +246,12 @@ export function CaseStudyEditor({ caseStudy }: CaseStudyEditorProps) {
             </div>
 
             {/* Logo */}
-            <div>
-              <label htmlFor="logo" className="block text-sm font-medium text-gray-700 mb-1">
-                Church Logo URL
-              </label>
-              <input
-                type="text"
-                id="logo"
-                value={logo}
-                onChange={(e) => setLogo(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="https://..."
-              />
-            </div>
+            <PlatformMediaPicker
+              label="Church Logo"
+              value={logo || null}
+              onChange={(url) => setLogo(url || "")}
+              placeholder="Select logo"
+            />
 
             {/* Description */}
             <div>
@@ -363,80 +345,28 @@ export function CaseStudyEditor({ caseStudy }: CaseStudyEditorProps) {
         <TabPanel id="media" activeTab={activeTab}>
           <div className="space-y-6">
             {/* Before/After Images */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="beforeImage" className="block text-sm font-medium text-gray-700 mb-1">
-                  Before Image URL
-                </label>
-                <input
-                  type="text"
-                  id="beforeImage"
-                  value={beforeImage}
-                  onChange={(e) => setBeforeImage(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="https://..."
-                />
-                {beforeImage && (
-                  <img src={beforeImage} alt="Before" className="mt-2 h-32 object-cover rounded" />
-                )}
-              </div>
-              <div>
-                <label htmlFor="afterImage" className="block text-sm font-medium text-gray-700 mb-1">
-                  After Image URL
-                </label>
-                <input
-                  type="text"
-                  id="afterImage"
-                  value={afterImage}
-                  onChange={(e) => setAfterImage(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="https://..."
-                />
-                {afterImage && (
-                  <img src={afterImage} alt="After" className="mt-2 h-32 object-cover rounded" />
-                )}
-              </div>
+            <div className="grid grid-cols-2 gap-6">
+              <PlatformMediaPicker
+                label="Before Image"
+                value={beforeImage || null}
+                onChange={(url) => setBeforeImage(url || "")}
+                placeholder="Select before image"
+              />
+              <PlatformMediaPicker
+                label="After Image"
+                value={afterImage || null}
+                onChange={(url) => setAfterImage(url || "")}
+                placeholder="Select after image"
+              />
             </div>
 
             {/* Gallery Images */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Gallery Images</label>
-              <div className="space-y-2">
-                {images.map((img, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={img}
-                      readOnly
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-gray-50"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="px-3 py-2 text-red-600 hover:text-red-800"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    placeholder="https://... (add image URL)"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={addImage}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                  >
-                    Add
-                  </button>
-                </div>
-              </div>
-            </div>
+            <PlatformMultiMediaPicker
+              label="Gallery Images"
+              value={images}
+              onChange={setImages}
+              maxImages={20}
+            />
           </div>
         </TabPanel>
 

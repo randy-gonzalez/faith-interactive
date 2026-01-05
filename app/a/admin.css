@@ -10,11 +10,16 @@
 
 /* Admin color scheme */
 :root {
+  /* Faith Interactive brand colors */
+  --fi-dark: #1a1f36;
+  --fi-gradient-start: #77f2a1;
+  --fi-gradient-end: #4f76f6;
+
   /* Admin brand colors - professional, trustworthy */
-  --admin-primary: #2563eb;
-  --admin-primary-hover: #1d4ed8;
-  --admin-secondary: #8b5cf6;
-  --admin-accent: #10b981;
+  --admin-primary: #4f76f6;
+  --admin-primary-hover: #3b5fd9;
+  --admin-secondary: #77f2a1;
+  --admin-accent: #4f76f6;
 
   /* Neutrals */
   --admin-foreground: #1f2937;
@@ -29,13 +34,13 @@
   --admin-warning: #d97706;
   --admin-info: #0284c7;
 
-  /* Sidebar */
-  --admin-sidebar-bg: #ffffff;
-  --admin-sidebar-text: #374151;
-  --admin-sidebar-hover: #f3f4f6;
-  --admin-sidebar-active: #eff6ff;
-  --admin-sidebar-active-text: #2563eb;
-  --admin-sidebar-border: #e5e7eb;
+  /* Sidebar - Fi brand navy */
+  --admin-sidebar-bg: #1a1f36;
+  --admin-sidebar-text: #e2e8f0;
+  --admin-sidebar-hover: #2d3454;
+  --admin-sidebar-active: #4f76f6;
+  --admin-sidebar-active-text: #ffffff;
+  --admin-sidebar-border: #2d3454;
 }
 
 /* Base styles for admin */
@@ -142,7 +147,7 @@ body {
 .admin-input:focus {
   border-color: var(--admin-primary);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(79, 118, 246, 0.1);
 }
 
 .admin-label {

@@ -10,11 +10,16 @@
 
 /* Platform color scheme - distinct from other surfaces */
 :root {
-  /* Platform brand colors - darker, more "internal tool" feel */
-  --platform-primary: #4f46e5;
-  --platform-primary-hover: #4338ca;
-  --platform-secondary: #0891b2;
-  --platform-accent: #f59e0b;
+  /* Faith Interactive brand colors */
+  --fi-dark: #1a1f36;
+  --fi-gradient-start: #77f2a1;
+  --fi-gradient-end: #4f76f6;
+
+  /* Platform brand colors - Fi branded internal tool */
+  --platform-primary: #4f76f6;
+  --platform-primary-hover: #3b5fd9;
+  --platform-secondary: #77f2a1;
+  --platform-accent: #4f76f6;
 
   /* Neutrals */
   --platform-foreground: #1e293b;
@@ -29,11 +34,11 @@
   --platform-warning: #d97706;
   --platform-info: #0284c7;
 
-  /* Sidebar */
-  --platform-sidebar-bg: #1e293b;
+  /* Sidebar - Fi brand navy (slightly darker than admin) */
+  --platform-sidebar-bg: #141729;
   --platform-sidebar-text: #e2e8f0;
-  --platform-sidebar-hover: #334155;
-  --platform-sidebar-active: #4f46e5;
+  --platform-sidebar-hover: #1a1f36;
+  --platform-sidebar-active: #4f76f6;
 }
 
 /* Base styles for platform */

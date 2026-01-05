@@ -196,6 +196,9 @@ model User {
   // Marketing site consultation assignments
   assignedConsultations ConsultationRequest[] @relation("ConsultationAssignee")
 
+  // Platform media uploads (marketing site assets)
+  uploadedPlatformMedia PlatformMedia[]
+
   // Index for efficient lookups
   @@index([email])
   @@index([platformRole])
@@ -1709,6 +1712,10 @@ model CaseStudy {
   slug             String              @unique
   logo             String?
   description      String              @db.Text
+  // Challenge faced by the client
+  challenge        String?             @db.Text
+  // Solution provided by Faith Interactive
+  solution         String?             @db.Text
   // Gallery images as JSON array of URLs
   images           Json                @default("[]")
   // Before/after comparison images
@@ -1765,6 +1772,44 @@ model Testimonial {
   @@index([sortOrder])
   @@index([isActive, featured])
   @@index([isActive, sortOrder])
+}
+
+// ==============================================================================
+// PLATFORM MEDIA
+// ==============================================================================
+// Media files for the marketing site (case studies, blog posts, etc.)
+// Not tenant-scoped - managed by platform admins only.
+// ==============================================================================
+
+model PlatformMedia {
+  id           String   @id @default(cuid())
+
+  // Upload tracking
+  uploadedById String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  // File metadata
+  filename     String   // Original filename for display
+  mimeType     String   // e.g., "image/jpeg", "application/pdf"
+  size         Int      // File size in bytes
+
+  // Storage paths (relative to storage root)
+  storagePath  String
+  // For images: JSON with resized versions { "small": "path", "medium": "path" }
+  variants     Json?
+
+  // Display info
+  alt          String?  // Alt text for images
+
+  // Soft delete support
+  deletedAt    DateTime?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([mimeType])
+  @@index([deletedAt])
+  @@index([createdAt])
 }
 
 // ==============================================================================

@@ -1,163 +1,465 @@
 /**
- * Marketing Surface Styles
+ * Faith Interactive Marketing
  *
- * Styles specific to the marketing website (faith-interactive.com).
- * Completely isolated from tenant, admin, and platform surfaces.
+ * Design agency website. Not a church site.
+ * Bold. Confident. Portfolio-led.
  */
 
 @import "tailwindcss";
 
-/* Marketing site color scheme */
+/* ==========================================================================
+   Color System — High Contrast, Brand-Forward
+   ========================================================================== */
+
 :root {
-  /* Faith Interactive brand colors */
-  --fi-gradient-start: #77f2a1;
-  --fi-gradient-end: #00ffce;
-  --fi-dark: #000646;
-  --fi-primary: #00d4aa;
-  --fi-primary-hover: #00b896;
-  --fi-secondary: #77f2a1;
-  --fi-accent: #00ffce;
+  /* Core */
+  --fi-black: #0a0a0a;
+  --fi-white: #ffffff;
+  --fi-off-white: #fafafa;
+
+  /* Brand accent — pulled from logo gradient */
+  --fi-blue: #4f76f6;
+  --fi-mint: #77f2a1;
 
   /* Neutrals */
-  --fi-foreground: #000646;
-  --fi-background: #ffffff;
-  --fi-muted: #64748b;
-  --fi-border: #e2e8f0;
+  --fi-gray-900: #171717;
+  --fi-gray-700: #404040;
+  --fi-gray-500: #737373;
+  --fi-gray-300: #d4d4d4;
+  --fi-gray-100: #f5f5f5;
 
-  /* Status colors */
-  --fi-error: #dc2626;
-  --fi-success: #16a34a;
-  --fi-warning: #d97706;
+  /* Semantic */
+  --fi-foreground: var(--fi-black);
+  --fi-background: var(--fi-white);
+  --fi-muted: var(--fi-gray-500);
+  --fi-border: var(--fi-gray-300);
 }
 
-/* Base styles for marketing */
+/* ==========================================================================
+   Typography — Bold, Modern, Agency
+   ========================================================================== */
+
 html {
-  color-scheme: light;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
 }
 
 body {
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
   color: var(--fi-foreground);
   background: var(--fi-background);
-  font-family:
-    "Inter",
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
 }
 
-/* Focus styles for accessibility */
-*:focus-visible {
-  outline: 2px solid var(--fi-primary);
-  outline-offset: 2px;
+/* Display — Hero headlines */
+.text-display {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
 }
 
-/* Marketing-specific typography */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: 600;
-  letter-spacing: -0.025em;
+/* Heading levels */
+h1, .h1 {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
-/* Marketing button styles */
-.btn-marketing-primary {
+h2, .h2 {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+h3, .h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+/* Body sizes */
+.text-large {
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.text-small {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.text-micro {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Links & Buttons — Direct, Confident
+   ========================================================================== */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Primary button — Logo gradient */
+.btn-primary {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, var(--fi-gradient-start) 0%, var(--fi-gradient-end) 100%);
-  color: var(--fi-dark);
-  border-radius: 0.5rem;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, var(--fi-blue) 0%, var(--fi-mint) 100%);
+  color: var(--fi-white);
+  font-size: 0.9375rem;
   font-weight: 600;
-  transition: all 0.15s ease;
-  box-shadow: 0 2px 8px rgba(0, 212, 170, 0.3);
+  border-radius: 0;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(79, 118, 246, 0.25);
 }
 
-.btn-marketing-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 212, 170, 0.4);
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(79, 118, 246, 0.35);
 }
 
-.btn-marketing-secondary {
+/* Ghost button */
+.btn-ghost {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  background-color: transparent;
-  color: var(--fi-dark);
-  border: 2px solid var(--fi-dark);
-  border-radius: 0.5rem;
-  font-weight: 600;
-  transition: all 0.15s ease;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  background: transparent;
+  color: var(--fi-black);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  position: relative;
 }
 
-.btn-marketing-secondary:hover {
-  background-color: var(--fi-dark);
-  color: white;
+.btn-ghost::after {
+  content: '';
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--fi-black);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s ease;
 }
 
-.btn-marketing-white {
+.btn-ghost:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Link with arrow */
+.link-arrow {
   display: inline-flex;
   align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  transition: gap 0.2s ease;
+}
+
+.link-arrow:hover {
+  gap: 0.75rem;
+}
+
+.link-arrow::after {
+  content: '→';
+  transition: transform 0.2s ease;
+}
+
+.link-arrow:hover::after {
+  transform: translateX(2px);
+}
+
+/* ==========================================================================
+   Navigation
+   ========================================================================== */
+
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--fi-gray-100);
+}
+
+.nav-link {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--fi-gray-700);
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+  color: var(--fi-black);
+}
+
+/* ==========================================================================
+   Footer — Dark, Minimal
+   ========================================================================== */
+
+.site-footer {
+  background: var(--fi-black);
+  color: var(--fi-white);
+  padding: 4rem 0 3rem;
+}
+
+.footer-link {
+  font-size: 0.9375rem;
+  color: var(--fi-gray-500);
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: var(--fi-white);
+}
+
+/* ==========================================================================
+   Hero Section
+   ========================================================================== */
+
+.hero {
+  padding-top: 10rem;
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 768px) {
+  .hero {
+    padding-top: 12rem;
+    padding-bottom: 6rem;
+  }
+}
+
+/* Full-height hero (homepage only) */
+.hero-full {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  padding: 0.75rem 1.5rem;
-  background-color: white;
-  color: var(--fi-dark);
-  border-radius: 0.5rem;
-  font-weight: 600;
-  transition: all 0.15s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding-top: 5rem;
+  padding-bottom: 0;
 }
 
-.btn-marketing-white:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.hero-headline {
+  max-width: 14ch;
 }
 
-/* Gradient backgrounds for marketing */
-.marketing-gradient {
-  background: linear-gradient(135deg, var(--fi-gradient-start) 0%, var(--fi-gradient-end) 100%);
+/* ==========================================================================
+   Work Grid — Portfolio-First
+   ========================================================================== */
+
+.work-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: var(--fi-gray-300);
 }
 
-.marketing-gradient-dark {
-  background: var(--fi-dark);
+@media (min-width: 768px) {
+  .work-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.marketing-gradient-subtle {
-  background: linear-gradient(180deg, #f0fdf9 0%, #ffffff 100%);
+.work-item {
+  position: relative;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  background: var(--fi-gray-100);
 }
 
-/* Gradient text */
+.work-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.work-item:hover img {
+  transform: scale(1.03);
+}
+
+.work-item-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 2rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.work-item:hover .work-item-overlay {
+  opacity: 1;
+}
+
+.work-item-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--fi-white);
+  transform: translateY(10px);
+  transition: transform 0.3s ease;
+}
+
+.work-item:hover .work-item-title {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Sections — Generous Spacing
+   ========================================================================== */
+
+.section {
+  padding: 6rem 0;
+}
+
+.section-lg {
+  padding: 8rem 0;
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding: 8rem 0;
+  }
+  .section-lg {
+    padding: 12rem 0;
+  }
+}
+
+/* ==========================================================================
+   Manifesto Block
+   ========================================================================== */
+
+.manifesto {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.4;
+  max-width: 36ch;
+}
+
+/* ==========================================================================
+   Services List — Minimal
+   ========================================================================== */
+
+.services-list {
+  border-top: 1px solid var(--fi-gray-300);
+}
+
+.services-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--fi-gray-300);
+  font-size: 1.125rem;
+  font-weight: 500;
+  transition: padding-left 0.2s ease;
+}
+
+.services-item:hover {
+  padding-left: 1rem;
+}
+
+/* ==========================================================================
+   Animations — Subtle Scroll Reveals
+   ========================================================================== */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.6s ease forwards;
+}
+
+.animate-delay-1 { animation-delay: 0.1s; }
+.animate-delay-2 { animation-delay: 0.2s; }
+.animate-delay-3 { animation-delay: 0.3s; }
+
+/* Scroll-triggered (requires JS intersection observer) */
+[data-animate] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+[data-animate].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Accent Gradient — Logo Colors
+   ========================================================================== */
+
 .text-gradient {
-  background: linear-gradient(135deg, var(--fi-gradient-start) 0%, var(--fi-gradient-end) 100%);
+  background: linear-gradient(135deg, var(--fi-blue) 0%, var(--fi-mint) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Card styles */
-.marketing-card {
-  background: white;
-  border-radius: 1rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s ease;
+.bg-gradient {
+  background: linear-gradient(135deg, var(--fi-blue) 0%, var(--fi-mint) 100%);
 }
 
-.marketing-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }
 
-/* Pricing card highlight */
-.pricing-card-popular {
-  border: 2px solid transparent;
-  background: linear-gradient(white, white) padding-box,
-              linear-gradient(135deg, var(--fi-gradient-start), var(--fi-gradient-end)) border-box;
+@media (min-width: 768px) {
+  .container {
+    padding: 0 3rem;
+  }
+}
+
+.container-narrow {
+  max-width: 900px;
+}
+
+/* Focus states */
+*:focus-visible {
+  outline: 2px solid var(--fi-blue);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: var(--fi-blue);
+  color: var(--fi-white);
 }

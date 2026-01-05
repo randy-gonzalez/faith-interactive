@@ -10,6 +10,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { PlatformRole } from "@prisma/client";
+import { FiLogo } from "@/components/ui/fi-logo";
 
 interface NavItem {
   label: string;
@@ -102,13 +103,11 @@ export function PlatformNav({ platformRole, userName }: PlatformNavProps) {
     .filter((section) => section.items.length > 0);
 
   return (
-    <nav className="w-64 bg-indigo-950 min-h-screen p-4">
-      {/* Platform branding */}
+    <nav className="w-64 bg-[#141729] min-h-screen p-4">
+      {/* Platform branding with Fi Logo */}
       <div className="mb-8">
-        <h1 className="text-lg font-semibold text-white">
-          Faith Interactive
-        </h1>
-        <p className="text-sm text-indigo-300">Staff Admin</p>
+        <FiLogo variant="horizontal" colorMode="light" size={36} />
+        <p className="text-sm text-slate-400 mt-2">Staff Platform</p>
       </div>
 
       {/* Navigation sections */}
@@ -116,7 +115,7 @@ export function PlatformNav({ platformRole, userName }: PlatformNavProps) {
         {visibleSections.map((section, sectionIndex) => (
           <div key={section.title || sectionIndex}>
             {section.title && (
-              <h2 className="px-3 mb-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider">
+              <h2 className="px-3 mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 {section.title}
               </h2>
             )}
@@ -135,8 +134,8 @@ export function PlatformNav({ platformRole, userName }: PlatformNavProps) {
                         block px-3 py-2 rounded-md text-sm font-medium transition-colors
                         ${
                           isActive
-                            ? "bg-indigo-800 text-white"
-                            : "text-indigo-200 hover:bg-indigo-900 hover:text-white"
+                            ? "bg-[#4f76f6] text-white"
+                            : "text-slate-300 hover:bg-[#1a1f36] hover:text-white"
                         }
                       `}
                     >
@@ -152,9 +151,9 @@ export function PlatformNav({ platformRole, userName }: PlatformNavProps) {
 
       {/* User info at bottom */}
       <div className="absolute bottom-4 left-4 right-4">
-        <div className="px-3 py-2 text-sm text-indigo-300">
+        <div className="px-3 py-2 text-sm text-slate-300">
           <p className="truncate">{userName || "Staff User"}</p>
-          <p className="text-xs text-indigo-400">
+          <p className="text-xs text-slate-400">
             {getRoleLabel(platformRole)}
           </p>
         </div>

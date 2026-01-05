@@ -12,6 +12,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import type { UserRole } from "@prisma/client";
+import { FiIcon } from "@/components/ui/fi-logo";
 
 interface NavItem {
   label: string;
@@ -153,13 +154,17 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
   };
 
   return (
-    <nav className="w-64 bg-blue-950 min-h-screen p-4">
-      {/* Church name */}
+    <nav className="w-64 bg-[#1a1f36] min-h-screen p-4">
+      {/* Fi Logo and Church name */}
       <div className="mb-8">
+        <div className="flex items-center gap-2 mb-2">
+          <FiIcon size={28} />
+          <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Powered by Fi</span>
+        </div>
         <h1 className="text-lg font-semibold text-white truncate">
           {churchName}
         </h1>
-        <p className="text-sm text-blue-300">Dashboard</p>
+        <p className="text-sm text-slate-400">Dashboard</p>
       </div>
 
       {/* Navigation sections */}
@@ -167,7 +172,7 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
         {visibleSections.map((section, sectionIndex) => (
           <div key={section.title || sectionIndex}>
             {section.title && (
-              <h2 className="px-3 mb-2 text-xs font-semibold text-blue-400 uppercase tracking-wider">
+              <h2 className="px-3 mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 {section.title}
               </h2>
             )}
@@ -199,8 +204,8 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
                             flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors
                             ${
                               isActive || hasActiveChild
-                                ? "bg-blue-800 text-white"
-                                : "text-blue-200 hover:bg-blue-900 hover:text-white"
+                                ? "bg-[#4f76f6] text-white"
+                                : "text-slate-300 hover:bg-[#2d3454] hover:text-white"
                             }
                           `}
                         >
@@ -208,7 +213,7 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
                         </Link>
                         <button
                           onClick={() => toggleExpanded(item.href)}
-                          className="p-2 text-blue-300 hover:text-white"
+                          className="p-2 text-slate-400 hover:text-white"
                           aria-label={isExpanded ? "Collapse" : "Expand"}
                         >
                           <ChevronIcon expanded={isExpanded} />
@@ -233,8 +238,8 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
                                     block px-3 py-2 rounded-md text-sm font-medium transition-colors
                                     ${
                                       isChildActive
-                                        ? "bg-blue-800 text-white"
-                                        : "text-blue-200 hover:bg-blue-900 hover:text-white"
+                                        ? "bg-[#4f76f6] text-white"
+                                        : "text-slate-300 hover:bg-[#2d3454] hover:text-white"
                                     }
                                   `}
                                 >
@@ -258,8 +263,8 @@ export function DashboardNav({ userRole, churchName }: DashboardNavProps) {
                         block px-3 py-2 rounded-md text-sm font-medium transition-colors
                         ${
                           isActive
-                            ? "bg-blue-800 text-white"
-                            : "text-blue-200 hover:bg-blue-900 hover:text-white"
+                            ? "bg-[#4f76f6] text-white"
+                            : "text-slate-300 hover:bg-[#2d3454] hover:text-white"
                         }
                       `}
                     >

@@ -67,9 +67,8 @@ export default async function CaseStudiesPage() {
         ) : (
           <div className="divide-y divide-gray-200">
             {caseStudies.map((caseStudy) => (
-              <Link
+              <div
                 key={caseStudy.id}
-                href={`/marketing/case-studies/${caseStudy.id}`}
                 className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
               >
                 {/* Logo */}
@@ -90,9 +89,12 @@ export default async function CaseStudiesPage() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-gray-900 truncate">
+                    <Link
+                      href={`/marketing/case-studies/${caseStudy.id}`}
+                      className="font-medium text-gray-900 truncate hover:text-indigo-600"
+                    >
                       {caseStudy.churchName}
-                    </h3>
+                    </Link>
                     {caseStudy.featured && (
                       <span className="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded-full">
                         Featured
@@ -121,13 +123,20 @@ export default async function CaseStudiesPage() {
                     href={caseStudy.liveSiteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
                     className="text-sm text-indigo-600 hover:text-indigo-800"
                   >
                     View Site ↗
                   </a>
                 )}
-              </Link>
+
+                {/* Edit Link */}
+                <Link
+                  href={`/marketing/case-studies/${caseStudy.id}`}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Edit →
+                </Link>
+              </div>
             ))}
           </div>
         )}

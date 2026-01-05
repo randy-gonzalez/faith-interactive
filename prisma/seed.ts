@@ -993,83 +993,230 @@ async function main() {
   console.log(`✓ Blog post: ${blogPost3.title}`);
 
   // ============================================
-  // CASE STUDIES
+  // CASE STUDIES (Real projects from Faith Interactive portfolio)
   // ============================================
   console.log("\n--- Creating case studies ---");
 
-  const caseStudy1 = await prisma.caseStudy.upsert({
-    where: { slug: "grace-community-church" },
+  // 1. The Sanctuary - New Castle, Indiana
+  const caseStudySanctuary = await prisma.caseStudy.upsert({
+    where: { slug: "the-sanctuary" },
     update: {},
     create: {
-      churchName: "Grace Community Church",
-      slug: "grace-community-church",
-      description: "How Grace Community Church increased online engagement by 200% with a modern website redesign.",
+      churchName: "The Sanctuary",
+      slug: "the-sanctuary",
+      description:
+        "The Sanctuary, located in New Castle, Indiana, is a vibrant faith community committed to discipleship, worship, and service. With a strong focus on nurturing spiritual growth, they sought a website makeover to strengthen their digital presence, engage their congregation, and extend their outreach online.",
       images: [],
-      testimonialQuote: "Faith Interactive transformed our online presence. We've seen a significant increase in first-time visitors who found us through our new website.",
-      testimonialName: "Pastor David Williams",
-      testimonialTitle: "Senior Pastor",
-      metrics: {
-        traffic: "+200%",
-        engagement: "+150%",
-        conversions: "+85%",
-      },
-      liveSiteUrl: "https://gracecommunity.example.com",
+      challenge:
+        "The Sanctuary in New Castle, Indiana, is a thriving, faith-driven community deeply committed to fostering spiritual growth through discipleship, worship, and service. However, their online presence did not fully reflect the vibrancy of their congregation. Their existing website was functional but lacked the dynamic features needed to engage new visitors and support current members effectively. Navigation was difficult, making it challenging for users to find critical information like service times, ministries, and events. The site also struggled to rank well in search engine results, limiting their outreach efforts.",
+      solution:
+        "We implemented a complete website redesign with a streamlined interface where visitors can easily access vital information, from service schedules to ministry opportunities. The website was optimized for mobile devices, ensuring it works seamlessly across all platforms. Our SEO strategy integrated keywords like 'church in New Castle' and 'Christian community' with a local SEO focus. We developed a content strategy with refined messaging, weekly blog posts, sermon archives, and other resources. Social media integration linked the website to their accounts with live streaming services and easy-to-use event registration. We also provided content management training and ongoing technical support.",
       featured: true,
       sortOrder: 1,
       status: "PUBLISHED",
-      publishedAt: new Date("2024-10-15"),
+      publishedAt: new Date("2024-06-15"),
     },
   });
-  console.log(`✓ Case study: ${caseStudy1.churchName}`);
+  console.log(`✓ Case study: ${caseStudySanctuary.churchName}`);
 
-  const caseStudy2 = await prisma.caseStudy.upsert({
-    where: { slug: "hope-fellowship" },
+  // 2. The Recovery Lifestyle Podcast
+  const caseStudyRecovery = await prisma.caseStudy.upsert({
+    where: { slug: "the-recovery-lifestyle-podcast" },
     update: {},
     create: {
-      churchName: "Hope Fellowship",
-      slug: "hope-fellowship",
-      description: "A church plant that launched with a professional website from day one, helping them build momentum before their first service.",
+      churchName: "The Recovery Lifestyle Podcast",
+      slug: "the-recovery-lifestyle-podcast",
+      description:
+        "The Recovery Lifestyle Podcast is a faith-driven platform supporting individuals in addiction recovery. The podcast combines personal transformation with spiritual growth, delivering messages guiding listeners toward sobriety and a Christ-centered life. Hosted by recovery professionals, it explores addiction recovery, spiritual development, and community involvement. Selected as the Fifth Revive Ministry Winner in April, the website revamp aimed to enhance accessibility and provide resources including episodes and practical recovery tools.",
       images: [],
-      testimonialQuote: "Having a professional website from the start gave us credibility and helped us build our launch team. The free church plant program was a blessing.",
-      testimonialName: "Pastor James Rodriguez",
-      testimonialTitle: "Lead Pastor",
-      metrics: {
-        launchTeam: "75 members",
-        emailSignups: "200+",
-        firstService: "150 attendees",
-      },
-      featured: true,
+      challenge:
+        "Prior to the redesign, the podcast faced three main obstacles. First, users struggled with navigation, limiting access to episodes and recovery resources. Second, the site lacked visual appeal reflecting their compassionate mission. Third, poor search engine optimization meant their content wasn't reaching people seeking faith-based recovery support.",
+      solution:
+        "Faith Interactive implemented a custom website tailored specifically for The Recovery Lifestyle podcast with modern, intuitive design. The site was optimized for effortless navigation, ensuring that users of all ages and technical abilities can explore and listen to episodes with ease. We integrated enhanced SEO to boost online presence for Christian recovery seekers, created shareable visuals tailored for social platforms, set up advanced analytics for understanding listener behavior, and improved interactive elements for stronger audience connection.",
+      featured: false,
       sortOrder: 2,
       status: "PUBLISHED",
-      publishedAt: new Date("2024-09-01"),
+      publishedAt: new Date("2024-05-01"),
     },
   });
-  console.log(`✓ Case study: ${caseStudy2.churchName}`);
+  console.log(`✓ Case study: ${caseStudyRecovery.churchName}`);
 
-  const caseStudy3 = await prisma.caseStudy.upsert({
-    where: { slug: "first-baptist-springfield" },
+  // 3. The Sending Church - Wilmington, NC
+  const caseStudySending = await prisma.caseStudy.upsert({
+    where: { slug: "the-sending-church" },
     update: {},
     create: {
-      churchName: "First Baptist Springfield",
-      slug: "first-baptist-springfield",
-      description: "An established church modernized their 10-year-old website, resulting in better mobile experience and increased sermon engagement.",
+      churchName: "The Sending Church",
+      slug: "the-sending-church",
+      description:
+        "The Sending Church, a Christ-centered community in Wilmington, North Carolina, received Faith Interactive's Revive ministry to revitalize their online presence. Pastor Edwrin Sutton envisioned a website reflecting their welcoming spirit with seamless user experience.",
       images: [],
-      testimonialQuote: "Our old website was embarrassing. Now members are proud to share links to our sermons and events.",
-      testimonialName: "Linda Thompson",
-      testimonialTitle: "Church Administrator",
-      metrics: {
-        sermonViews: "+300%",
-        mobileTraffic: "+180%",
-        eventRegistrations: "+120%",
-      },
-      liveSiteUrl: "https://fbcspringfield.example.com",
-      featured: false,
+      challenge:
+        "The key challenges with the previous website included limited functionality and an outdated design that didn't effectively communicate the church's identity, community and service information. The website had static content with missing updates on events and activities. Service times, ministries, and contact info were not readily available. The existing platform presented maintenance and update challenges.",
+      solution:
+        "Faith Interactive created a unique, visually striking website embodying the church's vibrant spirit with clear, intuitive user experience for effortless information discovery. We implemented strategic, location-based SEO to enhance online presence for greater discovery by potential visitors. Our team developed a compelling content strategy and provided a user-friendly CMS for easy updates and dynamic presence maintenance.",
+      testimonialQuote:
+        "We are extremely satisfied with the quality of the website design and functionality delivered by Faith Interactive. The new website not only meets but exceeds our expectations. It effectively captures the essence of our community and facilitates engagement seamlessly.",
+      testimonialName: "Pastor Edwrin Sutton",
+      testimonialTitle: "Lead Pastor",
+      liveSiteUrl: "https://www.sendingchurchwilm.com/",
+      featured: true,
       sortOrder: 3,
       status: "PUBLISHED",
-      publishedAt: new Date("2024-08-15"),
+      publishedAt: new Date("2024-04-15"),
     },
   });
-  console.log(`✓ Case study: ${caseStudy3.churchName}`);
+  console.log(`✓ Case study: ${caseStudySending.churchName}`);
+
+  // 4. Redeemer City Church - Washington D.C.
+  const caseStudyRedeemer = await prisma.caseStudy.upsert({
+    where: { slug: "redeemer-city-church" },
+    update: {},
+    create: {
+      churchName: "Redeemer City Church",
+      slug: "redeemer-city-church",
+      description:
+        "Redeemer City Church, established in Washington D.C. for nine years, engaged Faith Interactive to modernize their online presence and create a dynamic platform to showcase their message, strengthen congregational connections, and expand community reach.",
+      images: [],
+      challenge:
+        "Our previous website was dated. It hadn't been updated in a while. People interact with websites differently now. The site had static website content with missing updates on current events and activities. Essential details like service times, location, and contact information were difficult to find. Managing website functionalities and updates required ongoing technical support.",
+      solution:
+        "The team created a modern, visually appealing design reflecting the church's character with improved user experience. We collaborated with leadership to develop engaging content and provided update solutions. We enhanced search engine ranking through SEO strategies and enabled church leadership to manage and update content effectively. Technical foundation and ongoing support ensured smooth operation.",
+      testimonialQuote:
+        "Working with the Faith Interactive team was great. They had good advice on getting traffic to your site and developed great designs using our existing branding. I would encourage others to consider Faith Interactive. Randy and his team did a great job with the design. Web design requires professional help to do it right.",
+      testimonialName: "Pastor Stuart Saulters",
+      testimonialTitle: "Lead Pastor",
+      liveSiteUrl: "https://redeemerdc.org/",
+      featured: true,
+      sortOrder: 4,
+      status: "PUBLISHED",
+      publishedAt: new Date("2024-03-01"),
+    },
+  });
+  console.log(`✓ Case study: ${caseStudyRedeemer.churchName}`);
+
+  // 5. MBA Inventory
+  const caseStudyMBA = await prisma.caseStudy.upsert({
+    where: { slug: "mba-inventory" },
+    update: {},
+    create: {
+      churchName: "MBA Inventory",
+      slug: "mba-inventory",
+      description:
+        "Faith Interactive developed a comprehensive solution for MBA Inventory, an online platform based on 'The 5 Languages of Appreciation in the Workplace' that offers comprehensive assessment tools designed to enhance workplace relationships and employee engagement.",
+      images: [],
+      challenge:
+        "The client faced three primary obstacles. Their existing site needed modernization to meet current web design and UX standards. The platform required infrastructure capable of handling growth and traffic fluctuations without performance degradation. They sought a first-class experience to maximize the value of their assessment tool.",
+      solution:
+        "Faith Interactive deployed a three-part strategy. WordPress Development delivered a modern, responsive website aligned with MBA Inventory's mission and branding, emphasizing intuitive navigation. Digital Ocean VPS Hosting provided a scalable Virtual Private Server with load balancing and auto-scaling capabilities to manage traffic spikes and platform growth. UX Enhancement streamlined assessment processes with responsive design ensuring accessibility across devices.",
+      metrics: {
+        userEngagement: "+24%",
+        platformCapacity: "+100%",
+        userSatisfaction: "+17%",
+      },
+      featured: false,
+      sortOrder: 5,
+      status: "PUBLISHED",
+      publishedAt: new Date("2024-02-15"),
+    },
+  });
+  console.log(`✓ Case study: ${caseStudyMBA.churchName}`);
+
+  // 6. Calvary Boulder Valley - Boulder, Colorado
+  const caseStudyBoulder = await prisma.caseStudy.upsert({
+    where: { slug: "calvary-boulder-valley" },
+    update: {},
+    create: {
+      churchName: "Calvary Boulder Valley",
+      slug: "calvary-boulder-valley",
+      description:
+        "Calvary Boulder Valley is a thriving community church in Boulder, Colorado that sought to enhance their online presence, engage their congregation and community, and reach wider audiences through digital channels.",
+      images: [],
+      challenge:
+        "The church had an outdated website that was difficult to navigate and didn't represent the church's vibrant community and events. They had limited online engagement and needed improvement in social media and email communication to connect with congregation and attract newcomers.",
+      solution:
+        "Faith Interactive implemented a SubSplash website redesign with modern, user-friendly, mobile-responsive design. We developed social media campaigns with a content calendar and strategic planning, plus paid advertising for increased brand visibility. We launched a weekly eBulletin with church updates, events, and inspirational content. The strategy included redesigning the site for better content organization, developing social media campaigns highlighting community events and sermon stories, and encouraging content sharing across platforms.",
+      metrics: {
+        websiteTraffic: "+74.6%",
+        socialMediaTraffic: "+55%",
+        searchTraffic: "+15%",
+      },
+      featured: true,
+      sortOrder: 6,
+      status: "PUBLISHED",
+      publishedAt: new Date("2024-01-15"),
+    },
+  });
+  console.log(`✓ Case study: ${caseStudyBoulder.churchName}`);
+
+  // 7. El Roi Foster Ministries
+  const caseStudyElRoi = await prisma.caseStudy.upsert({
+    where: { slug: "el-roi-foster-ministries" },
+    update: {},
+    create: {
+      churchName: "El Roi Foster Ministries",
+      slug: "el-roi-foster-ministries",
+      description:
+        "El Roi Foster Ministries is a nonprofit organization dedicated to providing support, resources, and advocacy for foster children and families. They approached us with the need for a new website that would be responsive, deliver a clean user experience, and facilitate seamless online donations to further their mission.",
+      images: [],
+      challenge:
+        "The existing website lacked responsiveness and did not effectively convey the organization's mission and activities. El Roi Foster Ministries required a website that offered a clean and intuitive user experience to engage visitors, donors, and potential partners effectively. The client needed guidance on selecting and integrating a donation platform that would meet their specific needs and offer a secure and straightforward donation process.",
+      solution:
+        "We designed and developed a new website that featured responsive design to ensure an optimal user experience on all devices. The site's content and structure was organized for clarity, making information easily accessible. We focused on creating a clean and intuitive user interface to facilitate navigation and encourage visitor engagement, incorporating visually appealing elements and a user-friendly layout. We collaborated with the client to understand their specific donation requirements and advised on the selection and integration of a donation platform that aligned with their mission and provided a seamless and secure donation process.",
+      liveSiteUrl: "https://elroifosterministries.org/",
+      featured: false,
+      sortOrder: 7,
+      status: "PUBLISHED",
+      publishedAt: new Date("2023-11-01"),
+    },
+  });
+  console.log(`✓ Case study: ${caseStudyElRoi.churchName}`);
+
+  // 8. Cornerstone DPC
+  const caseStudyCornerstone = await prisma.caseStudy.upsert({
+    where: { slug: "cornerstone-dpc" },
+    update: {},
+    create: {
+      churchName: "Cornerstone DPC",
+      slug: "cornerstone-dpc",
+      description:
+        "Cornerstone DPC is a faith-based Direct Primary Care (DPC) clinic located near Sandpoint, Idaho. As a new healthcare provider, they sought to establish a robust online presence by developing a website that informed visitors about their services, enabled registration and appointment booking, and showcased their unique approach to healthcare.",
+      images: [],
+      challenge:
+        "As a new DPC clinic, Cornerstone DPC needed to quickly establish an online presence to attract potential patients and inform them about the services they offer. The client required a website with clear and easy-to-use features for registration and appointment scheduling to streamline patient onboarding. Cornerstone DPC aimed to provide a first-class user experience to reflect their commitment to patient care.",
+      solution:
+        "We designed and developed a new WordPress website with focus on user-friendly navigation and responsiveness. We created detailed pages outlining the DPC plans offered, including information about costs and benefits, and integrated features for registration and appointment booking. We generated search engine optimized (SEO) content to improve website visibility on search engines, making it more discoverable to potential patients in the Sandpoint area. We implemented scalable Virtual Private Server (VPS) hosting on Digital Ocean to ensure optimal performance during high traffic periods, utilizing load balancing and auto-scaling to maintain site responsiveness.",
+      liveSiteUrl: "https://hopehealthclinic.org/",
+      featured: false,
+      sortOrder: 8,
+      status: "PUBLISHED",
+      publishedAt: new Date("2023-09-15"),
+    },
+  });
+  console.log(`✓ Case study: ${caseStudyCornerstone.churchName}`);
+
+  // 9. Calvary Chapel Ascend - Whittier, California
+  const caseStudyAscend = await prisma.caseStudy.upsert({
+    where: { slug: "calvary-chapel-ascend" },
+    update: {},
+    create: {
+      churchName: "Calvary Chapel Ascend",
+      slug: "calvary-chapel-ascend",
+      description:
+        "Calvary Chapel Ascend is a newly established church plant located in Whittier, California. With a vision to serve the community and provide a welcoming space for worship, they sought assistance in developing their online presence and creating a user-friendly website to connect with potential attendees and convey their mission.",
+      images: [],
+      challenge:
+        "As a new church plant, Calvary Chapel Ascend needed a website to introduce themselves to the community and provide essential information about services and events. They required a user-friendly website that would be easy for visitors to navigate, encouraging them to explore the church's offerings and get involved.",
+      solution:
+        "Our approach for Calvary Chapel Ascend centered around building a functional and welcoming website. We designed a modern, clean, and mobile-responsive website using the Squarespace platform to showcase the church's mission, services, and events. We ensured the website included intuitive navigation, making it easy for visitors to find relevant information. The website successfully introduced Calvary Chapel Ascend to the community with a user-friendly design that encourages visitors to explore the church's services, events, and mission.",
+      liveSiteUrl: "https://www.calvaryascend.com/",
+      featured: false,
+      sortOrder: 9,
+      status: "PUBLISHED",
+      publishedAt: new Date("2023-08-01"),
+    },
+  });
+  console.log(`✓ Case study: ${caseStudyAscend.churchName}`);
 
   // ============================================
   // TESTIMONIALS
