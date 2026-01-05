@@ -18,7 +18,7 @@ import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 export const metadata: Metadata = {
   title: "Fi Platform",
   description:
-    "The Fi Platform gives churches a simple, powerful way to manage sermons, events, and content — all in one place. Works with every donation platform.",
+    "The Fi Platform gives churches a simple, powerful way to manage sermons, events, and content, all in one place. Works with every donation platform.",
 };
 
 export default function PlatformPage() {
@@ -39,7 +39,7 @@ export default function PlatformPage() {
           </ScrollReveal>
           <ScrollReveal delay={0.2}>
             <p className="text-large text-[#525252] max-w-2xl">
-              The Fi Platform is a simple admin built for churches — not developers.
+              The Fi Platform is a simple admin built for churches, not developers.
               Manage sermons, events, and content without calling us every time.
             </p>
           </ScrollReveal>
@@ -88,7 +88,7 @@ export default function PlatformPage() {
                 <p className="text-micro text-[#737373] mb-4">02</p>
                 <h2 className="h2 mb-6">Event Organization</h2>
                 <p className="text-large text-[#525252] max-w-2xl mb-8">
-                  From weekly gatherings to special events — create, schedule, and
+                  From weekly gatherings to special events, you can create, schedule, and
                   promote everything in one place. Visitors see what&apos;s happening
                   and how to join.
                 </p>

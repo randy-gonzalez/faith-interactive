@@ -1,7 +1,7 @@
 /**
  * Marketing Homepage
  *
- * Faith Interactive — Design agency for churches.
+ * Faith Interactive: Design agency for churches.
  * Portfolio-led. Minimal copy. Maximum impact.
  */
 
@@ -31,7 +31,7 @@ export default async function MarketingHomePage() {
 
   return (
     <>
-      {/* Hero — Full viewport, typographic statement */}
+      {/* Hero: Full viewport, typographic statement */}
       <section className="hero-full">
         <div className="container">
           <ScrollReveal>
@@ -52,7 +52,7 @@ export default async function MarketingHomePage() {
         </div>
       </section>
 
-      {/* Work Grid — Portfolio-first, full bleed */}
+      {/* Work Grid: Portfolio-first, full bleed */}
       <section>
         <div className="work-grid">
           {workItems.map((item, index) => (
@@ -84,7 +84,7 @@ export default async function MarketingHomePage() {
         </div>
       </section>
 
-      {/* Manifesto — Short, confident positioning */}
+      {/* Manifesto: Short, confident positioning */}
       <section className="section-lg">
         <div className="container">
           <ScrollReveal>
@@ -101,7 +101,7 @@ export default async function MarketingHomePage() {
         </div>
       </section>
 
-      {/* Services — Minimal list */}
+      {/* Services: Minimal list */}
       <section className="section bg-[#fafafa]">
         <div className="container container-narrow">
           <ScrollReveal>
@@ -110,13 +110,13 @@ export default async function MarketingHomePage() {
           <div className="services-list">
             <ScrollReveal delay={0.1}>
               <div className="services-item">
-                <span>Brand Identity</span>
+                <span>Church Identity</span>
                 <span className="text-[#737373]">&rarr;</span>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.15}>
               <div className="services-item">
-                <span>Website Design</span>
+                <span>Church Website Design</span>
                 <span className="text-[#737373]">&rarr;</span>
               </div>
             </ScrollReveal>
@@ -130,7 +130,7 @@ export default async function MarketingHomePage() {
         </div>
       </section>
 
-      {/* CTA — Direct ask */}
+      {/* CTA: Direct ask */}
       <section className="section-lg">
         <div className="container text-center">
           <ScrollReveal>

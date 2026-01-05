@@ -1,7 +1,7 @@
 /**
  * Marketing Layout
  *
- * Faith Interactive — Design agency for churches.
+ * Faith Interactive: Design agency for churches.
  * Bold. Portfolio-led. Agency aesthetic.
  */
 
@@ -13,7 +13,7 @@ import "./marketing.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Faith Interactive — Church Website Design",
+    default: "Faith Interactive | Church Website Design",
     template: "%s | Faith Interactive",
   },
   description:
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Faith Interactive",
-    title: "Faith Interactive — Church Website Design",
+    title: "Faith Interactive | Church Website Design",
     description: "A design studio for churches.",
     images: [
       {
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Faith Interactive — Church Website Design",
+    title: "Faith Interactive | Church Website Design",
     description: "A design studio for churches.",
     images: ["/og-image.jpg"],
   },
@@ -48,6 +48,7 @@ export const metadata: Metadata = {
 
 const NAV_LINKS = [
   { href: "/work", label: "Work" },
+  { href: "/services", label: "Services" },
   { href: "/about", label: "About" },
   { href: "/pricing", label: "Pricing" },
   { href: "/trends", label: "Trends" },
@@ -127,6 +128,9 @@ export default function MarketingLayout({
                 <ul className="space-y-3">
                   <li>
                     <a href="/work" className="footer-link">Work</a>
+                  </li>
+                  <li>
+                    <a href="/services" className="footer-link">Services</a>
                   </li>
                   <li>
                     <a href="/about" className="footer-link">About</a>

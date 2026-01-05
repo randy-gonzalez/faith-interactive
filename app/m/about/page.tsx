@@ -31,7 +31,7 @@ export default function AboutPage() {
           </ScrollReveal>
           <ScrollReveal delay={0.2}>
             <p className="text-large text-[#525252] max-w-2xl">
-              So we build websites that reflect that — clear, thoughtful,
+              So we build websites that reflect that: clear, thoughtful,
               and designed to help people take the next step toward Jesus.
             </p>
           </ScrollReveal>

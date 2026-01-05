@@ -44,11 +44,11 @@ export default function ServicesPage() {
       <section className="section">
         <div className="container">
           <div className="max-w-4xl">
-            {/* Brand Identity */}
+            {/* Church Identity */}
             <ScrollReveal>
               <div className="py-16 border-b border-[#e5e5e5]">
                 <p className="text-micro text-[#737373] mb-4">01</p>
-                <h2 className="h2 mb-6">Brand Identity</h2>
+                <h2 className="h2 mb-6">Church Identity</h2>
                 <p className="text-large text-[#525252] max-w-2xl mb-8">
                   A clear visual identity helps people recognize and remember
                   your church. We create logos, color systems, and typography
@@ -114,7 +114,7 @@ export default function ServicesPage() {
           <div className="services-list">
             <ScrollReveal delay={0.1}>
               <div className="services-item">
-                <span>1. We talk</span>
+                <span>1. We meet</span>
                 <span className="text-[#737373] text-sm hidden sm:block">
                   About your church, your people, your goals
                 </span>

@@ -25,12 +25,12 @@ const FAQ_ITEMS = [
   {
     question: "Why is it free for church plants?",
     answer:
-      "We believe every new church deserves a solid online presence. You have enough financial challenges — your website shouldn't be one of them. You just cover the monthly hosting.",
+      "We believe every new church deserves a solid online presence. You have enough financial challenges, and your website shouldn't be one of them. You just cover the monthly hosting.",
   },
   {
     question: "How long does a project take?",
     answer:
-      "Most church websites are ready in 2–4 weeks. It depends on how quickly you can provide content and feedback. We'll give you a real timeline after we talk.",
+      "Most church websites are ready in 2-4 weeks. It depends on how quickly you can provide content and feedback. We'll give you a real timeline after we talk.",
   },
   {
     question: "Can I update the site myself?",

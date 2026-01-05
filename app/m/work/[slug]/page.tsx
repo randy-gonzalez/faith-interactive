@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: caseStudy.churchName,
-    description: caseStudy.description || `${caseStudy.churchName} — a Faith Interactive project.`,
+    description: caseStudy.description || `${caseStudy.churchName}: a Faith Interactive project.`,
   };
 }
 

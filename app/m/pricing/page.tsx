@@ -163,7 +163,7 @@ export default function PricingPage() {
                 <h3 className="h3 mb-3">Why free for church plants?</h3>
                 <p className="text-[#525252]">
                   We believe every new church deserves a solid digital presence.
-                  You have enough financial challenges — your website shouldn&apos;t
+                  You have enough financial challenges, and your website shouldn&apos;t
                   be one of them. You just cover the hosting.
                 </p>
               </div>
@@ -209,7 +209,7 @@ export default function PricingPage() {
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <p className="text-[#525252] mb-8">
-              We&apos;ll give you a real quote — no pressure, no sales pitch.
+              We&apos;ll give you a real quote. No pressure, no sales pitch.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={0.15}>
