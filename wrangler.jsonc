@@ -4,14 +4,8 @@
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],
 
-  // Worker entry point
-  "main": ".open-next/worker.js",
-
-  // Static assets directory
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  },
+  // Pages build output directory (for Cloudflare Pages with Git integration)
+  "pages_build_output_dir": ".open-next",
 
   // KV Namespace for Rate Limiting
   "kv_namespaces": [
@@ -22,7 +16,6 @@
   ],
 
   // Environment Variables (non-secrets)
-  // Secrets should be set via Cloudflare Dashboard under Pages > Settings > Environment variables
   "vars": {
     "NODE_ENV": "production",
     "LOG_LEVEL": "info",
