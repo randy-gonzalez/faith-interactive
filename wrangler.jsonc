@@ -5,6 +5,9 @@
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],
 
+  // Pages build output directory (required for Cloudflare Pages)
+  "pages_build_output_dir": ".open-next",
+
   // Static assets configuration
   "assets": {
     "directory": ".open-next/assets",
