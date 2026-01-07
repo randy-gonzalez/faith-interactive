@@ -4,8 +4,14 @@
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],
 
-  // Pages build output directory (for Cloudflare Pages with Git integration)
-  "pages_build_output_dir": ".open-next",
+  // Worker entry point (for Workers deployment)
+  "main": ".open-next/worker.js",
+
+  // Static assets
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
 
   // KV Namespace for Rate Limiting
   "kv_namespaces": [
