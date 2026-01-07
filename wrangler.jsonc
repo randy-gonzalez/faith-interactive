@@ -1,26 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "fi-platform",
-  "main": ".open-next/worker.js",
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],
 
   // Pages build output directory (required for Cloudflare Pages)
   "pages_build_output_dir": ".open-next",
 
-  // Static assets configuration
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  },
-
-  // Cloudflare Images binding for image processing
-  // Used to resize/transform images at upload time
-  "images": {
-    "binding": "IMAGES"
-  },
-
   // KV Namespace for Rate Limiting
+  // Note: Must also be configured in Cloudflare Dashboard under Pages > Settings > Bindings
   "kv_namespaces": [
     {
       "binding": "RATE_LIMIT_KV",
@@ -29,7 +17,7 @@
   ],
 
   // Environment Variables (non-secrets)
-  // Secrets should be set via `wrangler secret put` or Cloudflare Dashboard
+  // Secrets should be set via Cloudflare Dashboard under Pages > Settings > Environment variables
   "vars": {
     "NODE_ENV": "production",
     "LOG_LEVEL": "info",
@@ -39,4 +27,8 @@
     "RATE_LIMIT_WINDOW_SECONDS": "60",
     "S3_REGION": "auto"
   }
+
+  // Note: Cloudflare Images binding must be configured in Cloudflare Dashboard
+  // Pages > Settings > Bindings > Add binding > Images
+  // The binding will be available as env.IMAGES in the worker
 }
