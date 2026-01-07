@@ -6,6 +6,11 @@ node_modules/
 .next/
 out/
 
+# OpenNext (Cloudflare deployment)
+.open-next/
+.vercel/
+.dev.vars
+
 # Production build
 build/
 dist/
