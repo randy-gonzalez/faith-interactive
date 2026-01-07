@@ -11,6 +11,12 @@
     "binding": "ASSETS"
   },
 
+  // Cloudflare Images binding for image processing
+  // Used to resize/transform images at upload time
+  "images": {
+    "binding": "IMAGES"
+  },
+
   // KV Namespace for Rate Limiting
   "kv_namespaces": [
     {

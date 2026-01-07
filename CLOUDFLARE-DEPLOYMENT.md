@@ -239,6 +239,24 @@ Set these in Cloudflare Pages > Settings > Environment Variables:
 | `RATE_LIMIT_MAX` | Max requests per window | `100` |
 | `RATE_LIMIT_WINDOW_SECONDS` | Rate limit window | `60` |
 | `LOG_LEVEL` | Logging verbosity | `info` |
+| `IMAGE_PROCESSING_ENABLED` | Enable Sharp for local development | `true` |
+
+### Image Processing
+
+The application uses **Cloudflare Images** for image processing in production:
+
+- **Production (Cloudflare Workers):** Uses the [Cloudflare Images binding](https://developers.cloudflare.com/images/transform-images/bindings/) to resize and convert images to WebP format. This is configured automatically via `wrangler.jsonc`.
+
+- **Local Development:** Uses Sharp (native Node.js library) when `IMAGE_PROCESSING_ENABLED=true` in `.env`.
+
+**Pricing:** Cloudflare Images costs $0.50 per 1,000 unique transformations. Each uploaded image creates ~7 variants, so expect ~$0.0035 per image upload. Transformations are cached for 30 days.
+
+The Images binding is already configured in `wrangler.jsonc`:
+```jsonc
+"images": {
+  "binding": "IMAGES"
+}
+```
 
 ### Setting Variables in Cloudflare
 

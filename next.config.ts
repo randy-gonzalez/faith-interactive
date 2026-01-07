@@ -10,6 +10,15 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
 
+  // Disable Sharp-based image optimization for Cloudflare Workers compatibility
+  // Images will be served unoptimized or via Cloudflare Image Resizing
+  images: {
+    unoptimized: true,
+  },
+
+  // Exclude sharp from serverless functions (not compatible with Cloudflare Workers)
+  serverExternalPackages: ["sharp"],
+
   // Security headers - these work alongside Cloudflare's security features
   async headers() {
     // Common security headers applied to all routes

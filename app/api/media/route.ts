@@ -10,7 +10,7 @@ import { requireAuthContext, requireContentEditor, AuthError } from "@/lib/auth/
 import { getTenantPrisma } from "@/lib/db/tenant-prisma";
 import { logger } from "@/lib/logging/logger";
 import { storage } from "@/lib/storage";
-import { processAndUploadImage } from "@/lib/storage/image";
+import { processAndUploadImage, CloudflareEnv } from "@/lib/storage/image";
 import {
   ALLOWED_IMAGE_TYPES,
   ALLOWED_PDF_TYPE,
@@ -19,6 +19,22 @@ import {
 } from "@/lib/storage/types";
 import type { ApiResponse } from "@/types";
 import type { ImageVariants, MediaMetadata } from "@/types/media";
+
+/**
+ * Get Cloudflare environment bindings if available
+ * Returns null when running locally (not on Cloudflare Workers)
+ */
+async function getCloudflareEnv(): Promise<CloudflareEnv | undefined> {
+  try {
+    // Dynamic import to avoid bundling issues in local dev
+    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
+    const context = getCloudflareContext();
+    return context?.env as CloudflareEnv | undefined;
+  } catch {
+    // Not running on Cloudflare Workers
+    return undefined;
+  }
+}
 
 /**
  * GET /api/media
@@ -189,8 +205,11 @@ export async function POST(request: NextRequest) {
     let metadata: MediaMetadata | null = null;
 
     if (isImage) {
+      // Get Cloudflare environment for image processing (if available)
+      const cfEnv = await getCloudflareEnv();
+
       // Process image: create variants and upload all
-      const result = await processAndUploadImage(buffer, file.name, mimeType, folder);
+      const result = await processAndUploadImage(buffer, file.name, mimeType, folder, cfEnv);
       storagePath = result.original.path;
       url = result.original.url;
 
