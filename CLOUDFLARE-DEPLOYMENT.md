@@ -1,551 +1,409 @@
 # Cloudflare Deployment Guide
 
-This guide walks through deploying the Faith Interactive application to Cloudflare Pages with Workers.
+Complete guide to deploying Faith Interactive to Cloudflare Pages.
 
 ---
 
-## Table of Contents
+## Overview
 
-1. [Prerequisites](#prerequisites)
-2. [Database Setup](#step-1-database-setup)
-3. [Cloudflare R2 Storage](#step-2-cloudflare-r2-storage)
-4. [Cloudflare KV for Rate Limiting](#step-3-cloudflare-kv-for-rate-limiting)
-5. [Project Configuration](#step-4-project-configuration)
-6. [Environment Variables](#step-5-environment-variables)
-7. [Run Database Migrations](#step-6-run-database-migrations)
-8. [Deploy to Cloudflare Pages](#step-7-deploy-to-cloudflare-pages)
-9. [Custom Domain Setup](#step-8-custom-domain-setup)
-10. [Post-Deployment Verification](#step-9-post-deployment-verification)
-11. [Troubleshooting](#troubleshooting)
+This deployment uses:
+- **Cloudflare Pages** - Hosts the Next.js application
+- **Cloudflare R2** - S3-compatible storage for media uploads
+- **Cloudflare KV** - Rate limiting storage
+- **External PostgreSQL** - Database (Neon recommended)
+
+**Estimated setup time:** 30-45 minutes
 
 ---
 
 ## Prerequisites
 
-Before starting, ensure you have:
-
-- [ ] A Cloudflare account (free tier works for testing)
-- [ ] Node.js 18+ installed locally
-- [ ] Git repository with the project code
-- [ ] Access to a PostgreSQL database (Neon, Supabase, or similar)
+- Cloudflare account (free tier works)
+- GitHub repository with this codebase
+- PostgreSQL database (Neon, Supabase, or similar)
 
 ---
 
-## Step 1: Database Setup
+## Step 1: Create PostgreSQL Database
 
-The application uses PostgreSQL with Prisma ORM. For Cloudflare deployment, use a serverless-compatible PostgreSQL provider.
+### Using Neon (Recommended)
 
-### Option A: Neon (Recommended)
-
-1. **Create a Neon account** at [neon.tech](https://neon.tech)
-
-2. **Create a new project**
-   - Choose a region close to your users
-   - Note the connection string provided
-
-3. **Enable connection pooling**
-   - Go to your project dashboard
-   - Navigate to "Connection Details"
-   - Copy the "Pooled connection string" (uses `-pooler` suffix)
-
-4. **Format your DATABASE_URL**
+1. Go to [neon.tech](https://neon.tech) and create an account
+2. Click **New Project**
+3. Choose a name and region (pick one close to your users)
+4. After creation, go to **Dashboard** → **Connection Details**
+5. Copy the **Pooled connection string** - it looks like:
    ```
-   postgresql://user:password@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require
+   postgresql://user:password@ep-xxx-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require
    ```
 
-### Option B: Supabase
-
-1. **Create a Supabase project** at [supabase.com](https://supabase.com)
-
-2. **Get the connection string**
-   - Go to Settings > Database
-   - Copy the "Connection string" (URI format)
-   - Use the "Session mode" pooler for Prisma
+**Important:** Use the pooled connection (has `-pooler` in the hostname). This is required for serverless environments.
 
 ---
 
-## Step 2: Cloudflare R2 Storage
+## Step 2: Create R2 Storage Bucket
 
-R2 provides S3-compatible object storage for media uploads.
+### In Cloudflare Dashboard:
 
-### Create R2 Bucket
+1. Go to **R2 Object Storage** in the left sidebar
+2. Click **Create bucket**
+   - Name: `fi-platform` (or your preferred name)
+   - Location: Leave as default
+3. Click **Create bucket**
 
-1. **Log into Cloudflare Dashboard**
+### Enable Public Access:
 
-2. **Navigate to R2 Object Storage**
-   - Click "Create bucket"
-   - Name: `fi-media` (or your preferred name)
-   - Location: Auto (or choose specific region)
+1. Click on your new bucket
+2. Go to **Settings** tab
+3. Under **Public access**, click **Allow Access**
+4. Copy the **Public bucket URL** (looks like `https://pub-xxxx.r2.dev`)
 
-3. **Enable Public Access**
-   - Go to bucket Settings > Public Access
-   - Enable "Allow Access"
-   - Note the public URL: `https://pub-xxx.r2.dev`
+### Create API Credentials:
 
-4. **Create API Token**
-   - Go to R2 > Manage R2 API Tokens
-   - Click "Create API token"
-   - Permissions: Object Read & Write
-   - Specify bucket: `fi-platform`
-   - Save the Access Key ID and Secret Access Key
+1. Go back to **R2 Object Storage** main page
+2. Click **Manage R2 API Tokens** (right side)
+3. Click **Create API token**
+4. Configure:
+   - **Token name:** `fi-platform-access`
+   - **Permissions:** Object Read & Write
+   - **Specify bucket:** Select your bucket
+5. Click **Create API Token**
+6. **SAVE THESE VALUES** (shown only once):
+   - Access Key ID
+   - Secret Access Key
 
-5. **Get R2 Endpoint**
-   - Format: `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`
-   - Find your Account ID in the Cloudflare dashboard URL or Overview page
+### Find Your Account ID:
 
-### Environment Variables for R2
-
-```
-S3_BUCKET=fi-platform
-S3_REGION=auto
-S3_ENDPOINT=https://<ACCOUNT_ID>.r2.cloudflarestorage.com
-S3_ACCESS_KEY_ID=<your-access-key>
-S3_SECRET_ACCESS_KEY=<your-secret-key>
-S3_PUBLIC_URL=https://assets.fi-platform.com
-```
+1. Go to any page in Cloudflare Dashboard
+2. Look at the URL: `https://dash.cloudflare.com/XXXXXXXXX/...`
+3. The string after `cloudflare.com/` is your Account ID
+4. Your R2 endpoint is: `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`
 
 ---
 
-## Step 3: Cloudflare KV for Rate Limiting
+## Step 3: Create KV Namespace
 
-The application includes rate limiting that needs persistent storage in a serverless environment.
-
-### Create KV Namespace
-
-1. **In Cloudflare Dashboard**, go to Workers & Pages > KV
-
-2. **Create a namespace**
-   - Click "Create a namespace"
-   - Name: `fi-rate-limit`
-   - Note the Namespace ID
-
-### Update Middleware (Optional Enhancement)
-
-The current in-memory rate limiter works but resets on cold starts. For production, consider implementing KV-based rate limiting:
-
-```typescript
-// This is optional - the current implementation works for most use cases
-// KV-based rate limiting provides persistence across worker instances
-```
+1. Go to **Workers & Pages** → **KV** in the left sidebar
+2. Click **Create a namespace**
+3. Name: `fi-rate-limit`
+4. Click **Add**
+5. Note the **Namespace ID** (you'll need this later)
 
 ---
 
-## Step 4: Project Configuration
+## Step 4: Connect GitHub Repository
 
-### Install Dependencies
+1. Go to **Workers & Pages** in the left sidebar
+2. Click **Create** → **Pages** → **Connect to Git**
+3. Select **GitHub** and authorize Cloudflare
+4. Select your repository
+5. Configure build settings:
+
+| Setting | Value |
+|---------|-------|
+| **Project name** | `fi-platform` |
+| **Production branch** | `main` |
+| **Build command** | `npm run build && npx opennextjs-cloudflare build` |
+| **Build output directory** | `.open-next` |
+
+6. **Don't deploy yet** - click **Save** without deploying (we need to add environment variables first)
+
+---
+
+## Step 5: Configure Environment Variables
+
+Go to your Pages project → **Settings** → **Environment variables**
+
+### Required Variables (Add All)
+
+Click **Add variable** for each:
+
+| Variable | Value | Encrypt? |
+|----------|-------|----------|
+| `DATABASE_URL` | Your Neon pooled connection string | Yes |
+| `JWT_SECRET` | Random 32+ character string (generate one) | Yes |
+| `NEXT_PUBLIC_APP_URL` | `https://your-domain.com` | No |
+| `NEXT_PUBLIC_BASE_URL` | `https://your-domain.com` | No |
+| `NEXT_PUBLIC_MAIN_DOMAIN` | `your-domain.com` (no https) | No |
+| `S3_BUCKET` | Your R2 bucket name | No |
+| `S3_REGION` | `auto` | No |
+| `S3_ENDPOINT` | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` | No |
+| `S3_ACCESS_KEY_ID` | Your R2 access key | Yes |
+| `S3_SECRET_ACCESS_KEY` | Your R2 secret key | Yes |
+| `S3_PUBLIC_URL` | Your R2 public URL (`https://pub-xxx.r2.dev`) | No |
+| `SESSION_DURATION_DAYS` | `7` | No |
+| `PASSWORD_RESET_EXPIRATION_HOURS` | `1` | No |
+| `FORM_TIMESTAMP_SECRET` | Random 32+ character string | Yes |
+
+**To generate random secrets:**
+```bash
+openssl rand -base64 32
+```
+
+### Set for Both Environments
+
+Make sure each variable is set for:
+- ✅ Production
+- ✅ Preview
+
+---
+
+## Step 6: Add Bindings
+
+Go to your Pages project → **Settings** → **Bindings**
+
+### Add KV Namespace:
+
+1. Click **+ Add**
+2. Select **KV namespace**
+3. Configure:
+   - **Variable name:** `RATE_LIMIT_KV`
+   - **KV namespace:** Select `fi-rate-limit`
+4. Click **Save**
+
+### Add Images Binding (Optional):
+
+1. Click **+ Add**
+2. Select **Images**
+3. Configure:
+   - **Variable name:** `IMAGES`
+4. Click **Save**
+
+> **Note:** If the Images binding doesn't save, that's okay. The app will work without it - images just won't be resized on upload.
+
+---
+
+## Step 7: Run Database Migrations
+
+Before deploying, set up your database schema.
+
+**On your local machine:**
 
 ```bash
-npm install -D @opennextjs/cloudflare wrangler
-```
+# Set your production database URL temporarily
+export DATABASE_URL="postgresql://user:password@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require"
 
-> **Note:** We use OpenNext instead of the deprecated `@cloudflare/next-on-pages`. OpenNext supports the Node.js runtime which is required for Prisma and other Node.js features.
-
-### Create wrangler.jsonc
-
-Create `wrangler.jsonc` in the project root (OpenNext uses JSONC format):
-
-```jsonc
-{
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "fi-platform",
-  "main": ".open-next/worker.js",
-  "compatibility_date": "2025-01-01",
-  "compatibility_flags": ["nodejs_compat"],
-
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  },
-
-  "kv_namespaces": [
-    {
-      "binding": "RATE_LIMIT_KV",
-      "id": "<your-kv-namespace-id>"
-    }
-  ],
-
-  "vars": {
-    "NODE_ENV": "production",
-    "LOG_LEVEL": "info",
-    "S3_REGION": "auto"
-  }
-}
-```
-
-### Create open-next.config.ts
-
-Create `open-next.config.ts` in the project root:
-
-```typescript
-import { defineCloudflareConfig } from "@opennextjs/cloudflare";
-
-export default defineCloudflareConfig({});
-```
-
-### package.json Scripts
-
-The following scripts are already configured:
-
-```json
-{
-  "scripts": {
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
-  }
-}
-```
-
-### Create .dev.vars for Local Development
-
-Create `.dev.vars` (gitignored) for local Wrangler development:
-
-```
-DATABASE_URL=postgresql://...
-JWT_SECRET=your-jwt-secret-min-32-chars
-S3_BUCKET=fi-platform
-S3_REGION=auto
-S3_ENDPOINT=https://xxx.r2.cloudflarestorage.com
-S3_ACCESS_KEY_ID=xxx
-S3_SECRET_ACCESS_KEY=xxx
-S3_PUBLIC_URL=https://pub-xxx.r2.dev
-```
-
----
-
-## Step 5: Environment Variables
-
-### Required Variables
-
-Set these in Cloudflare Pages > Settings > Environment Variables:
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string (pooled) | `postgresql://user:pass@host/db` |
-| `JWT_SECRET` | Min 32 character secret for auth tokens | `your-secure-random-string-here` |
-| `SESSION_DURATION_DAYS` | How long sessions last | `7` |
-| `NEXT_PUBLIC_APP_URL` | Your production URL | `https://faith-interactive.com` |
-| `S3_BUCKET` | R2 bucket name | `fi-media` |
-| `S3_REGION` | Always "auto" for R2 | `auto` |
-| `S3_ENDPOINT` | R2 endpoint URL | `https://xxx.r2.cloudflarestorage.com` |
-| `S3_ACCESS_KEY_ID` | R2 access key | `xxx` |
-| `S3_SECRET_ACCESS_KEY` | R2 secret key | `xxx` |
-| `S3_PUBLIC_URL` | Public URL for uploaded files | `https://pub-xxx.r2.dev` |
-
-### Optional Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PASSWORD_RESET_EXPIRATION_HOURS` | Password reset token lifetime | `1` |
-| `RATE_LIMIT_MAX` | Max requests per window | `100` |
-| `RATE_LIMIT_WINDOW_SECONDS` | Rate limit window | `60` |
-| `LOG_LEVEL` | Logging verbosity | `info` |
-| `IMAGE_PROCESSING_ENABLED` | Enable Sharp for local development | `true` |
-
-### Image Processing
-
-The application uses **Cloudflare Images** for image processing in production:
-
-- **Production (Cloudflare Workers):** Uses the [Cloudflare Images binding](https://developers.cloudflare.com/images/transform-images/bindings/) to resize and convert images to WebP format. This is configured automatically via `wrangler.jsonc`.
-
-- **Local Development:** Uses Sharp (native Node.js library) when `IMAGE_PROCESSING_ENABLED=true` in `.env`.
-
-**Pricing:** Cloudflare Images costs $0.50 per 1,000 unique transformations. Each uploaded image creates ~7 variants, so expect ~$0.0035 per image upload. Transformations are cached for 30 days.
-
-The Images binding is already configured in `wrangler.jsonc`:
-```jsonc
-"images": {
-  "binding": "IMAGES"
-}
-```
-
-### Setting Variables in Cloudflare
-
-1. Go to **Workers & Pages** > Your project > **Settings**
-2. Click **Environment Variables**
-3. Add each variable
-4. Mark sensitive values as **Encrypted** (DATABASE_URL, JWT_SECRET, S3 credentials)
-5. Set for both **Production** and **Preview** environments
-
----
-
-## Step 6: Run Database Migrations
-
-Before deploying, run migrations against your production database.
-
-```bash
-# Option 1: Set temporarily in your shell
-export DATABASE_URL="postgresql://user:pass@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require"
+# Run migrations
 npx prisma migrate deploy
 
-# Option 2: Inline (doesn't persist)
-DATABASE_URL="your-connection-string" npx prisma migrate deploy
+# Seed initial data (creates platform admin user)
+npm run db:seed
 ```
 
-If this is a fresh database, also seed the initial data:
+**Default login credentials after seeding:**
+- Email: `randy@shiftagency.com`
+- Password: `password123`
 
-```bash
-DATABASE_URL="your-connection-string" npm run db:seed
-```
-
-> **Note:** You only need to run migrations when there are schema changes. The Prisma client is generated during the build process automatically.
+> ⚠️ **Change this password immediately after first login!**
 
 ---
 
-## Step 7: Deploy to Cloudflare Pages
+## Step 8: Deploy
 
-### Option A: CLI Deploy (Recommended)
+### Option A: Trigger from Dashboard
 
-Deploy using the OpenNext CLI:
+1. Go to your Pages project
+2. Click **Deployments** tab
+3. Click **Retry deployment** or push a commit to trigger
 
-```bash
-# Login to Cloudflare (first time only)
-wrangler login
-
-# Build and deploy
-npm run deploy
-```
-
-This runs `opennextjs-cloudflare build && opennextjs-cloudflare deploy` which:
-1. Builds your Next.js app with `prisma generate && next build`
-2. Transforms the output for Cloudflare Workers
-3. Deploys to Cloudflare
-
-### Option B: GitHub Integration
-
-1. **Connect Repository**
-   - Go to Workers & Pages > Create application > Workers
-   - Connect to Git > Select your repository
-   - Authorize Cloudflare access
-
-2. **Configure Build Settings**
-   ```
-   Build command: npm run build && npx opennextjs-cloudflare build
-   Build output directory: .open-next
-   Root directory: / (or your app directory)
-   ```
-
-3. **Set Environment Variables**
-   - Add all required variables before first deploy
-   - Mark sensitive values as encrypted
-
-4. **Deploy**
-   - Click "Save and Deploy"
-   - Wait for build to complete
-
-### Local Preview
-
-Test your deployment locally before pushing:
+### Option B: Push to GitHub
 
 ```bash
-npm run preview
+git add .
+git commit -m "Deploy to production"
+git push origin main
 ```
 
-This builds and runs the app in a local Cloudflare Workers environment.
+The deployment will:
+1. Clone your repository
+2. Install dependencies
+3. Run `npm run build` (includes Prisma generate)
+4. Run `opennextjs-cloudflare build`
+5. Deploy to Cloudflare's edge network
+
+**First deployment takes ~3-5 minutes.** Watch the build logs for any errors.
 
 ---
 
-## Step 8: Custom Domain Setup
+## Step 9: Configure Custom Domain
 
-### Add Custom Domain
+### Add Your Domain:
 
-1. **In Pages Project Settings**, go to Custom domains
+1. Go to your Pages project → **Custom domains**
+2. Click **Set up a custom domain**
+3. Enter your domain (e.g., `faith-interactive.com`)
+4. Follow the DNS verification steps
 
-2. **Add domain**
-   - Enter: `faith-interactive.com`
-   - Cloudflare will verify DNS
+### For Multi-Tenant (Wildcard Subdomains):
 
-3. **Configure DNS** (if domain is on Cloudflare)
-   - Automatic: Cloudflare adds the CNAME record
-   - Manual: Add CNAME pointing to `<project>.pages.dev`
+If you want tenant sites on subdomains like `demo.faith-interactive.com`:
 
-### Multi-Tenant Subdomains
+1. Go to your domain's **DNS settings** in Cloudflare
+2. Add a wildcard record:
+   - **Type:** CNAME
+   - **Name:** `*`
+   - **Target:** `your-project.pages.dev`
+   - **Proxy status:** Proxied (orange cloud)
 
-For the multi-tenant architecture, configure:
-
-```
-faith-interactive.com        → Marketing site
-admin.faith-interactive.com  → Admin dashboard
-platform.faith-interactive.com → Platform admin
-*.faith-interactive.com      → Tenant sites (wildcard)
-```
-
-**Wildcard DNS:**
-1. Go to DNS settings for your domain
-2. Add: `* CNAME <project>.pages.dev` (proxied)
-
-**SSL/TLS:**
-1. Go to SSL/TLS > Edge Certificates
-2. Ensure "Full (strict)" mode is enabled
-3. Order Advanced Certificate for wildcard coverage if needed
+3. Go to **SSL/TLS** → **Edge Certificates**
+4. Ensure you have a certificate covering `*.your-domain.com`
+   - Free Universal SSL covers the apex and `www`
+   - For wildcards, you may need Advanced Certificate Manager ($10/month)
 
 ---
 
-## Step 9: Post-Deployment Verification
+## Step 10: Post-Deployment Setup
 
-### Verify Core Functionality
+### First Login:
 
-Run through this checklist after deployment:
+1. Visit `https://your-domain.com/p/login` (platform admin)
+2. Login with the seeded credentials
+3. **Immediately change your password**
 
-- [ ] **Homepage loads** - Visit your domain
-- [ ] **Auth works** - Try logging in
-- [ ] **Database connected** - Create/edit content
-- [ ] **File uploads work** - Upload an image in media library
-- [ ] **Multi-tenant routing** - Test subdomain access
-- [ ] **Custom domains** - Test any configured tenant domains
+### Create Your First Church:
 
-### Test API Endpoints
+1. Go to Platform Admin → Churches
+2. Click **New Church**
+3. Enter church name and slug
+4. The church will be accessible at `https://slug.your-domain.com`
 
-```bash
-# Health check (if implemented)
-curl https://faith-interactive.com/api/health
+### Invite Church Admins:
 
-# Check auth endpoint responds
-curl -X POST https://faith-interactive.com/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com","password":"test"}'
-```
+1. Go to the church admin panel (`/a/settings/team`)
+2. Click **Invite Team Member**
+3. Enter their email and select role
+4. They'll receive an invitation email
 
-### Monitor Logs
+---
 
-1. Go to Workers & Pages > Your project > **Logs**
-2. Enable Real-time Logs for debugging
-3. Check for errors in the console
+## Verification Checklist
+
+After deployment, verify these work:
+
+- [ ] Homepage loads at your domain
+- [ ] Platform admin login works (`/p/login`)
+- [ ] Can create a new church
+- [ ] Church admin panel works (`/a/dashboard`)
+- [ ] Can upload images in media library
+- [ ] Tenant subdomain routing works
+- [ ] Email sending works (invite flow)
 
 ---
 
 ## Troubleshooting
 
-### Common Issues
+### Build Fails
 
-#### Build Fails: "Can't resolve '.prisma/client/index-browser'"
+**Check the build logs** in Cloudflare Pages → Deployments → Click failed deployment
 
-**Cause:** Prisma client not generated before build.
+Common issues:
+- **Missing environment variables** - Add all required vars
+- **pnpm lockfile outdated** - Run `pnpm install` locally and push
+- **TypeScript errors** - Fix locally before pushing
 
-**Solution:** The `npm run build` script already includes `prisma generate`. Ensure you're using the correct build command:
-```bash
-npm run build && npx opennextjs-cloudflare build
-```
+### Database Connection Errors
 
-#### Worker Size Limit Exceeded
+- Verify `DATABASE_URL` is the **pooled** connection string
+- Check the password doesn't have special characters that need URL encoding
+- Ensure the database is accessible (not IP-restricted)
 
-**Cause:** Cloudflare Workers have size limits (3 MiB free, 10 MiB paid).
+### File Uploads Failing
 
-**Solution:**
-- Only the compressed (gzip) size counts toward the limit
-- Review and remove unused dependencies
-- Consider code splitting for large pages
+- Verify all S3_* environment variables are set
+- Check R2 bucket has public access enabled
+- Verify the API token has read/write permissions
 
-#### Database Connection Timeouts
+### Rate Limiting Errors
 
-**Cause:** Connection pool exhaustion or missing pooler.
+- Ensure KV binding is configured with variable name `RATE_LIMIT_KV`
+- Check the KV namespace exists
 
-**Solution:**
-- Use pooled connection string (with `-pooler` suffix for Neon)
-- Add `?connection_limit=1` to DATABASE_URL for serverless
+### Pages Shows "No Functions"
 
-#### File Uploads Failing
-
-**Cause:** R2 credentials or CORS issues.
-
-**Solution:**
-1. Verify R2 credentials are correct
-2. Check bucket permissions allow public read
-3. Verify S3_ENDPOINT format is correct
-
-#### Rate Limiting Not Working
-
-**Cause:** In-memory rate limiter resets on cold starts.
-
-**Solution:** This is expected behavior. For strict rate limiting, implement KV-based storage.
-
-#### Middleware Routing Issues
-
-**Cause:** Hostname matching not working correctly.
-
-**Solution:**
-1. Check `NEXT_PUBLIC_APP_URL` is set correctly
-2. Verify DNS is properly configured
-3. Check middleware logs for hostname detection
-
-### Debug Mode
-
-Enable verbose logging temporarily:
-
-```
-LOG_LEVEL=debug
-```
-
-Then check Pages logs for detailed output.
-
-### Getting Help
-
-- [OpenNext Cloudflare Docs](https://opennext.js.org/cloudflare)
-- [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
-- [Prisma Edge Deployment](https://www.prisma.io/docs/guides/deployment/edge)
-
----
-
-## Deployment Checklist Summary
-
-```
-[ ] Database provisioned and migrated
-[ ] R2 bucket created with public access
-[ ] KV namespace created (optional)
-[ ] wrangler.jsonc configured
-[ ] open-next.config.ts created
-[ ] Environment variables set in Cloudflare
-[ ] CLI deploy completed (or GitHub integration)
-[ ] Custom domain configured
-[ ] SSL certificate active
-[ ] Wildcard DNS for multi-tenant (if needed)
-[ ] Post-deployment verification complete
-```
+- This is normal for OpenNext - it bundles everything into a single worker
+- The app should still work
 
 ---
 
 ## Updating the Application
 
-### Automatic Deploys (GitHub Integration)
+### Automatic (Recommended)
 
-Push to your main branch triggers automatic deployment:
+Push to `main` branch triggers automatic deployment:
 
 ```bash
-git add .
-git commit -m "Update application"
 git push origin main
 ```
 
-### Manual Deploy
+### Database Schema Changes
+
+When you have Prisma schema changes:
 
 ```bash
-npm run build
-npm run pages:build
-npm run pages:deploy
-```
+# Generate migration locally
+npx prisma migrate dev --name description_of_change
 
-### Database Migrations
+# Deploy to production
+DATABASE_URL="your-prod-url" npx prisma migrate deploy
 
-Run migrations before deploying code that depends on schema changes:
-
-```bash
-DATABASE_URL="your-production-url" npx prisma migrate deploy
+# Then push code
+git push origin main
 ```
 
 ---
 
-## Cost Considerations
+## Cost Summary
 
-### Cloudflare Free Tier Includes:
-- 100,000 requests/day on Workers
+### Free Tier Includes:
+- 100,000 worker requests/day
 - 10 GB R2 storage
-- 1 GB R2 egress/month (then $0.015/GB)
-- Unlimited KV reads, 1,000 writes/day
+- 10 million KV reads/month
+- 1 million KV writes/month
+- Unlimited static asset bandwidth
 
-### When to Upgrade:
-- High traffic: Workers Paid ($5/month) for 10M requests
-- Large media library: R2 pricing is very competitive
-- Custom SSL for wildcards: May need Advanced Certificate Manager
+### Paid Features You Might Need:
+- **Wildcard SSL certificate** - $10/month (Advanced Certificate Manager)
+- **More worker requests** - $5/month for 10M requests
+- **Image transformations** - $0.50/1000 unique transformations
 
 ---
 
-*Last updated: January 2025*
+## Architecture Summary
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Cloudflare Edge                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐  │
+│  │   Pages      │    │     R2       │    │     KV       │  │
+│  │  (Next.js)   │───▶│   Storage    │    │ Rate Limit   │  │
+│  │              │    │              │    │              │  │
+│  └──────┬───────┘    └──────────────┘    └──────────────┘  │
+│         │                                                   │
+└─────────┼───────────────────────────────────────────────────┘
+          │
+          ▼
+    ┌──────────────┐
+    │   Neon       │
+    │  PostgreSQL  │
+    │   (Pooled)   │
+    └──────────────┘
+```
+
+---
+
+## Quick Reference
+
+| Resource | URL |
+|----------|-----|
+| Cloudflare Dashboard | https://dash.cloudflare.com |
+| Pages Project | Workers & Pages → Your Project |
+| Build Logs | Deployments → Click deployment |
+| Environment Variables | Settings → Environment variables |
+| Bindings | Settings → Bindings |
+| Custom Domains | Custom domains tab |
+
+---
+
+*Last updated: January 2026*
