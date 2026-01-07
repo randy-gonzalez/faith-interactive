@@ -50,7 +50,7 @@ export default async function MarketingHomePage() {
           <ScrollReveal delay={0.1}>
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
               <a href="/work" className="btn-primary">
-                See the work
+                See our work
               </a>
               <a href="/contact" className="btn-ghost">
                 Get in touch
