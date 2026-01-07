@@ -10,9 +10,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logging/logger";
 import { consultationFormSchema, formatZodError } from "@/lib/validation/schemas";
-import { sendConsultationNotificationEmail } from "@/lib/email/send";
 
-// Simple in-memory rate limiting (use Redis in production for multi-instance)
+// Simple in-memory rate limiting
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_MAX = 5; // Max submissions per hour
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour in milliseconds
@@ -97,40 +96,6 @@ export async function POST(request: NextRequest) {
         userAgent: userAgent || null,
       },
     });
-
-    // Get platform admin emails for notification
-    const platformAdmins = await prisma.user.findMany({
-      where: {
-        platformRole: "PLATFORM_ADMIN",
-        isActive: true,
-      },
-      select: {
-        email: true,
-      },
-    });
-
-    const adminEmails = platformAdmins.map((u) => u.email);
-
-    // Send email notification
-    if (adminEmails.length > 0) {
-      try {
-        await sendConsultationNotificationEmail(
-          adminEmails,
-          {
-            name,
-            email,
-            phone: phone || null,
-            churchName: churchName || null,
-            packageInterest: packageInterest || null,
-            message: message || null,
-          },
-          consultation.id
-        );
-      } catch (emailError) {
-        // Log but don't fail the request
-        logger.error("Failed to send consultation notification email", emailError as Error);
-      }
-    }
 
     logger.info("Consultation request submitted", {
       consultationId: consultation.id,

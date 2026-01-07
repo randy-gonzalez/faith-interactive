@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 /**
- * Next.js Configuration for Faith Interactive
+ * Next.js Configuration for Faith Interactive Marketing Site
  *
  * Security headers are configured here to work with Cloudflare CDN.
  * SSL/HTTPS is handled by Cloudflare, so we don't configure it here.
@@ -11,7 +11,6 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 
   // Disable Sharp-based image optimization for Cloudflare Workers compatibility
-  // Images will be served unoptimized or via Cloudflare Image Resizing
   images: {
     unoptimized: true,
   },
@@ -19,21 +18,14 @@ const nextConfig: NextConfig = {
   // Exclude sharp from serverless functions (not compatible with Cloudflare Workers)
   serverExternalPackages: ["sharp"],
 
-  // Security headers - these work alongside Cloudflare's security features
+  // Security headers
   async headers() {
-    // Common security headers applied to all routes
     const securityHeaders = [
-      // Prevent clickjacking attacks
       { key: "X-Frame-Options", value: "SAMEORIGIN" },
-      // Prevent MIME type sniffing
       { key: "X-Content-Type-Options", value: "nosniff" },
-      // Control referrer information
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-      // XSS protection (legacy, but still useful for older browsers)
       { key: "X-XSS-Protection", value: "1; mode=block" },
-      // DNS prefetch control
       { key: "X-DNS-Prefetch-Control", value: "on" },
-      // CSP - allows YouTube, Vimeo, Google Maps embeds, Google Fonts
       {
         key: "Content-Security-Policy",
         value: [
@@ -49,44 +41,52 @@ const nextConfig: NextConfig = {
       },
     ];
 
-    // Cache headers for public pages
     const publicCacheHeaders = [
       ...securityHeaders,
       { key: "Cache-Control", value: "public, max-age=60, stale-while-revalidate=300" },
     ];
 
-    // Cache headers for private/admin pages
     const privateCacheHeaders = [
       ...securityHeaders,
       { key: "Cache-Control", value: "private, no-cache, no-store, must-revalidate" },
     ];
 
     return [
-      // ============================================
-      // Public church website routes - cacheable
-      // ============================================
+      // Marketing pages - cacheable
       {
         source: "/",
         headers: publicCacheHeaders,
       },
       {
-        source: "/sermons",
+        source: "/about",
         headers: publicCacheHeaders,
       },
       {
-        source: "/sermons/:id",
+        source: "/pricing",
         headers: publicCacheHeaders,
       },
       {
-        source: "/events",
+        source: "/services",
         headers: publicCacheHeaders,
       },
       {
-        source: "/events/:id",
+        source: "/services/:slug",
         headers: publicCacheHeaders,
       },
       {
-        source: "/staff",
+        source: "/work",
+        headers: publicCacheHeaders,
+      },
+      {
+        source: "/work/:slug",
+        headers: publicCacheHeaders,
+      },
+      {
+        source: "/trends",
+        headers: publicCacheHeaders,
+      },
+      {
+        source: "/trends/:slug",
         headers: publicCacheHeaders,
       },
       {
@@ -94,53 +94,17 @@ const nextConfig: NextConfig = {
         headers: publicCacheHeaders,
       },
       {
-        source: "/:slug",
+        source: "/faq",
         headers: publicCacheHeaders,
       },
 
-      // ============================================
-      // Admin routes - no caching
-      // ============================================
-      {
-        source: "/admin",
-        headers: privateCacheHeaders,
-      },
-      {
-        source: "/admin/:path*",
-        headers: privateCacheHeaders,
-      },
-
-      // ============================================
-      // Auth routes - no caching
-      // ============================================
-      {
-        source: "/login",
-        headers: privateCacheHeaders,
-      },
-      {
-        source: "/forgot-password",
-        headers: privateCacheHeaders,
-      },
-      {
-        source: "/reset-password",
-        headers: privateCacheHeaders,
-      },
-      {
-        source: "/accept-invite",
-        headers: privateCacheHeaders,
-      },
-
-      // ============================================
       // API routes - no caching
-      // ============================================
       {
         source: "/api/:path*",
         headers: privateCacheHeaders,
       },
 
-      // ============================================
-      // All other routes - apply security headers only
-      // ============================================
+      // All other routes - apply security headers
       {
         source: "/:path*",
         headers: securityHeaders,
@@ -150,12 +114,6 @@ const nextConfig: NextConfig = {
 
   // Disable x-powered-by header for security
   poweredByHeader: false,
-
-  // Configure for CDN caching compatibility
-  // Static assets are cached, dynamic routes are not
-  experimental: {
-    // Enable server actions for form handling
-  },
 };
 
 export default nextConfig;

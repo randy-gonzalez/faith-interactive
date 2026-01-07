@@ -6,7 +6,6 @@
  */
 
 import type { Metadata } from "next";
-import { buildSurfaceUrl } from "@/lib/hostname/parser";
 import { OrganizationSchema } from "@/components/marketing/structured-data";
 import { MarketingNav } from "@/components/marketing/nav";
 import { FiLogo } from "@/components/ui/fi-logo";
@@ -52,9 +51,6 @@ export default function MarketingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const isLocal = process.env.NODE_ENV !== "production";
-  const loginUrl = buildSurfaceUrl("admin", "/login", { isLocal, useLocalhost: isLocal });
-
   return (
     <html lang="en">
       <head>
@@ -67,7 +63,7 @@ export default function MarketingLayout({
         <OrganizationSchema />
       </head>
       <body className="antialiased">
-        <MarketingNav loginUrl={loginUrl} />
+        <MarketingNav />
 
         {/* Main Content */}
         <main>{children}</main>
@@ -132,9 +128,6 @@ export default function MarketingLayout({
               <p className="text-[#525252] text-sm">
                 &copy; {new Date().getFullYear()} Faith Interactive
               </p>
-              <a href={loginUrl} className="footer-link text-sm">
-                Client Login
-              </a>
             </div>
           </div>
         </footer>

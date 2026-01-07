@@ -12,11 +12,7 @@ const NAV_LINKS = [
   { href: "/trends", label: "Trends" },
 ];
 
-interface MarketingNavProps {
-  loginUrl: string;
-}
-
-export function MarketingNav({ loginUrl }: MarketingNavProps) {
+export function MarketingNav() {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
@@ -48,9 +44,6 @@ export function MarketingNav({ loginUrl }: MarketingNavProps) {
 
           {/* CTA */}
           <div className="flex items-center gap-6">
-            <Link href={loginUrl} className="nav-link hidden sm:block">
-              Sign In
-            </Link>
             <Link href="/contact" className="btn-primary">
               Get in touch
             </Link>
