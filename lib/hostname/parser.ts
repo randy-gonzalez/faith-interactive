@@ -38,16 +38,26 @@ export interface HostnameConfig {
 }
 
 /**
- * Default configuration - can be overridden for testing
+ * Get configuration from environment variables with fallbacks
  */
-export const DEFAULT_HOSTNAME_CONFIG: HostnameConfig = {
-  productionDomain: "faith-interactive.com",
-  localDomain: "faith-interactive.local",
-  reservedSubdomains: {
-    platform: "platform",
-    admin: "admin",
-  },
-};
+function getConfigFromEnv(): HostnameConfig {
+  // Read from environment or use defaults
+  const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN || "faith-interactive.com";
+
+  return {
+    productionDomain: mainDomain,
+    localDomain: mainDomain.replace(".com", ".local"),
+    reservedSubdomains: {
+      platform: "platform",
+      admin: "admin",
+    },
+  };
+}
+
+/**
+ * Default configuration - reads from environment variables
+ */
+export const DEFAULT_HOSTNAME_CONFIG: HostnameConfig = getConfigFromEnv();
 
 /**
  * Check if a hostname is localhost-based (for simple local dev)
@@ -55,6 +65,15 @@ export const DEFAULT_HOSTNAME_CONFIG: HostnameConfig = {
 export function isLocalhostHostname(hostname: string): boolean {
   const normalized = normalizeHostname(hostname);
   return normalized === "localhost" || normalized.endsWith(".localhost");
+}
+
+/**
+ * Check if a hostname is a Cloudflare Pages dev domain (*.pages.dev)
+ * These should be treated as the marketing site for testing
+ */
+export function isPagesDevHostname(hostname: string): boolean {
+  const normalized = normalizeHostname(hostname);
+  return normalized.endsWith(".pages.dev");
 }
 
 /**
@@ -121,7 +140,8 @@ export function isCustomDomain(
   return (
     !isLocalHostname(hostname, config) &&
     !isProductionHostname(hostname, config) &&
-    !isLocalhostHostname(hostname)
+    !isLocalhostHostname(hostname) &&
+    !isPagesDevHostname(hostname)
   );
 }
 
@@ -209,6 +229,17 @@ export function parseHostname(
     return {
       surface: "tenant",
       churchSlug: null, // Must be resolved via database lookup
+      isLocal: false,
+      originalHost: hostname,
+    };
+  }
+
+  // Handle Cloudflare Pages dev domains (*.pages.dev)
+  // These are used for testing deployments before custom domain setup
+  if (isPagesDevHostname(hostname)) {
+    return {
+      surface: "marketing",
+      churchSlug: null,
       isLocal: false,
       originalHost: hostname,
     };
