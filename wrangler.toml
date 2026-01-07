@@ -2,7 +2,7 @@
 # See: https://developers.cloudflare.com/pages/functions/wrangler-configuration/
 
 name = "fi-platform"
-compatibility_date = "2024-12-01"
+compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
 # Pages build output directory
@@ -18,8 +18,8 @@ pages_build_output_dir = ".vercel/output/static"
 # Then copy the namespace ID here
 #
 # [[kv_namespaces]]
-# binding = "RATE_LIMIT_KV"
-# id = "<your-kv-namespace-id>"
+binding = "RATE_LIMIT_KV"
+id = "e01a66684d2347cb90a990a076039149"
 
 # ============================================
 # R2 Bucket Binding (Optional)
@@ -30,8 +30,8 @@ pages_build_output_dir = ".vercel/output/static"
 #
 # Uncomment to use direct R2 binding instead:
 # [[r2_buckets]]
-# binding = "MEDIA_BUCKET"
-# bucket_name = "fi-media"
+binding = "MEDIA_BUCKET"
+bucket_name = "fi-platform"
 
 # ============================================
 # Environment Variables (Non-Secrets)
