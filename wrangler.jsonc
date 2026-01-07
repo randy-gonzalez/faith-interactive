@@ -4,11 +4,16 @@
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],
 
-  // Pages build output directory (required for Cloudflare Pages)
-  "pages_build_output_dir": ".open-next",
+  // Worker entry point
+  "main": ".open-next/worker.js",
+
+  // Static assets directory
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
 
   // KV Namespace for Rate Limiting
-  // Note: Must also be configured in Cloudflare Dashboard under Pages > Settings > Bindings
   "kv_namespaces": [
     {
       "binding": "RATE_LIMIT_KV",
@@ -27,8 +32,4 @@
     "RATE_LIMIT_WINDOW_SECONDS": "60",
     "S3_REGION": "auto"
   }
-
-  // Note: Cloudflare Images binding must be configured in Cloudflare Dashboard
-  // Pages > Settings > Bindings > Add binding > Images
-  // The binding will be available as env.IMAGES in the worker
 }
