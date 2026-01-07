@@ -46,10 +46,95 @@ export function createBrandColorReference(name: BrandColorName): string {
 // Text theme options for block backgrounds
 export type TextTheme = "light" | "dark" | "auto";
 
+/**
+ * Background role names for semantic color selection.
+ * These map to CSS variables: --color-primary, --color-secondary, etc.
+ */
+export type BackgroundRole = "primary" | "secondary" | "accent" | "surface" | "muted";
+
+/**
+ * Array of valid background roles for validation and UI display.
+ */
+export const BACKGROUND_ROLES: BackgroundRole[] = ["primary", "secondary", "accent", "surface", "muted"];
+
+/**
+ * Labels for background roles in the UI.
+ */
+export const BACKGROUND_ROLE_LABELS: Record<BackgroundRole, string> = {
+  primary: "Primary",
+  secondary: "Secondary",
+  accent: "Accent",
+  surface: "Surface",
+  muted: "Muted",
+};
+
+/**
+ * CSS variable mapping for background roles.
+ */
+export const BACKGROUND_ROLE_CSS_VAR: Record<BackgroundRole, string> = {
+  primary: "var(--color-primary)",
+  secondary: "var(--color-secondary)",
+  accent: "var(--color-accent)",
+  surface: "var(--color-surface)",
+  muted: "var(--color-surface-muted)",
+};
+
+/**
+ * Check if a value is a valid background role.
+ */
+export function isBackgroundRole(value: unknown): value is BackgroundRole {
+  return typeof value === "string" && BACKGROUND_ROLES.includes(value as BackgroundRole);
+}
+
+/**
+ * Migrate legacy color values (hex or brand references) to the nearest background role.
+ * Uses simple heuristics to guess the best role match.
+ */
+export function migrateColorToRole(color: ColorValue | undefined): BackgroundRole {
+  if (!color) return "primary";
+
+  // Handle brand references - map to corresponding role
+  if (isBrandColorReference(color)) {
+    const brandName = getBrandColorName(color);
+    switch (brandName) {
+      case "primary":
+        return "primary";
+      case "secondary":
+        return "secondary";
+      case "accent":
+        return "accent";
+      case "background":
+        return "surface";
+      case "text":
+        return "muted";
+      default:
+        return "primary";
+    }
+  }
+
+  // For hex colors, use luminance to guess if it's light (surface/muted) or dark (primary/secondary/accent)
+  const hex = color.replace(/^#/, "");
+  if (hex.length >= 6) {
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    // Light colors -> surface/muted, dark colors -> primary
+    if (luminance > 0.8) return "surface";
+    if (luminance > 0.6) return "muted";
+    if (luminance < 0.3) return "primary";
+  }
+
+  // Default to primary for unknown colors
+  return "primary";
+}
+
 // Shared background configuration for all blocks
 export interface BlockBackground {
   type: "color" | "gradient" | "image" | "video";
-  color?: ColorValue; // Hex string or "brand:primary", "brand:secondary", etc.
+  role?: BackgroundRole; // Semantic color role (preferred)
+  color?: ColorValue; // @deprecated - Legacy hex string or "brand:*" reference, use role instead
   gradient?: string; // CSS gradient string
   imageUrl?: string;
   videoUrl?: string;
@@ -74,6 +159,11 @@ export interface BaseBlock {
   advanced?: BlockAdvanced; // Advanced settings (CSS classes, ID, etc.)
 }
 
+// Hero block layout settings
+export type HeroHeightMode = "content" | "large" | "screen";
+export type HeroVerticalAlign = "top" | "center" | "bottom";
+export type HeroPaddingPreset = "tight" | "standard" | "roomy";
+
 // Hero block - full-width banner with heading, CTA buttons
 export interface HeroBlock extends BaseBlock {
   type: "hero";
@@ -87,6 +177,10 @@ export interface HeroBlock extends BaseBlock {
       url: string;
       variant: "primary" | "secondary";
     }>;
+    // Layout settings (optional for backward compatibility)
+    heightMode?: HeroHeightMode;
+    verticalAlign?: HeroVerticalAlign;
+    paddingPreset?: HeroPaddingPreset;
   };
 }
 
@@ -418,11 +512,11 @@ export function isWatchLiveBlock(block: Block): block is WatchLiveBlock {
   return block.type === "watch-live";
 }
 
-// Default background - uses brand primary color
+// Default background - uses primary role
 export function createDefaultBackground(): BlockBackground {
   return {
     type: "color",
-    color: "brand:primary",
+    role: "primary",
   };
 }
 

@@ -5,6 +5,8 @@
  * The Fi mark is a stylized "F" made of diagonal stripes with a gradient.
  */
 
+import { useId } from "react";
+
 interface FiLogoProps {
   /** Logo variant */
   variant?: "icon" | "horizontal" | "stacked";
@@ -16,16 +18,14 @@ interface FiLogoProps {
   className?: string;
 }
 
-// Unique gradient ID to avoid conflicts when multiple logos are rendered
-let gradientIdCounter = 0;
-
 export function FiLogo({
   variant = "icon",
   colorMode = "dark",
   size = 40,
   className = "",
 }: FiLogoProps) {
-  const idPrefix = `fi-${++gradientIdCounter}`;
+  // Use React's useId hook for stable IDs across server/client
+  const idPrefix = useId().replace(/:/g, "-");
 
   // Text colors based on color mode
   const textColor = colorMode === "light" ? "#ffffff" : "#1a1f36";

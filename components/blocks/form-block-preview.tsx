@@ -5,6 +5,12 @@
  *
  * Preview rendering of form block. Shows the actual form or a placeholder in editor.
  * On public pages, the form is fully interactive.
+ *
+ * DESIGN SYSTEM COMPLIANCE:
+ * - All colors via CSS variables (--color-*, --btn-*)
+ * - Spacing via CSS variables (--space-*)
+ * - Typography via CSS variables (--font-*)
+ * - Radius via CSS variables (--radius)
  */
 
 import { useState, useEffect } from "react";
@@ -13,6 +19,7 @@ import { DynamicForm } from "@/components/public/dynamic-form";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 import { getTextColors, resolveTextTheme } from "@/lib/blocks/get-text-colors";
+import { SECTION_PADDING, getCardClasses } from "@/lib/blocks/block-styles";
 import type { FormField, FormSettings } from "@/types/forms";
 
 interface FormBlockPreviewProps {
@@ -37,8 +44,9 @@ export function FormBlockPreview({ block, isEditor = false }: FormBlockPreviewPr
   const [error, setError] = useState<string | null>(null);
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
-  const textColors = getTextColors(background?.textTheme, background?.type);
+  const textColors = getTextColors(background?.textTheme, background?.type, background?.color);
   const useLightTheme = resolveTextTheme(background?.textTheme, background?.type);
+  const cardClasses = getCardClasses(useLightTheme);
   const advancedProps = getAdvancedProps(advanced);
 
   // Fetch form data
@@ -92,7 +100,7 @@ export function FormBlockPreview({ block, isEditor = false }: FormBlockPreviewPr
   }[data.alignment];
 
   const combinedClassName =
-    `block-preview py-12 px-6 relative ${advancedProps.className || ""}`.trim();
+    `block-preview ${SECTION_PADDING} relative ${advancedProps.className || ""}`.trim();
 
   // Editor placeholder when no form is selected
   if (!data.formId) {
@@ -102,9 +110,10 @@ export function FormBlockPreview({ block, isEditor = false }: FormBlockPreviewPr
           <div className="absolute inset-0" style={overlay} />
         )}
         <div className={`${maxWidthClass} ${alignmentClass} relative z-10`}>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+          <div className="border-2 border-dashed rounded-[var(--radius)] p-[var(--space-6)] text-center" style={{ borderColor: "var(--color-border)" }}>
             <svg
-              className="w-12 h-12 mx-auto text-gray-400 mb-4"
+              className="w-12 h-12 mx-auto mb-[var(--space-4)]"
+              style={{ color: "var(--color-text-muted)" }}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -116,7 +125,7 @@ export function FormBlockPreview({ block, isEditor = false }: FormBlockPreviewPr
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            <p className="text-gray-500">Select a form to display</p>
+            <p style={{ color: "var(--color-text-muted)" }}>Select a form to display</p>
           </div>
         </div>
       </div>
@@ -131,7 +140,7 @@ export function FormBlockPreview({ block, isEditor = false }: FormBlockPreviewPr
           <div className="absolute inset-0" style={overlay} />
         )}
         <div className={`${maxWidthClass} ${alignmentClass} relative z-10`}>
-          <div className="text-center text-gray-500">Loading form...</div>
+          <div className="text-center" style={{ color: "var(--color-text-muted)" }}>Loading form...</div>
         </div>
       </div>
     );
@@ -145,10 +154,10 @@ export function FormBlockPreview({ block, isEditor = false }: FormBlockPreviewPr
           <div className="absolute inset-0" style={overlay} />
         )}
         <div className={`${maxWidthClass} ${alignmentClass} relative z-10`}>
-          <div className="text-center text-gray-500">
+          <div className="text-center" style={{ color: "var(--color-text-muted)" }}>
             {error || "Form not found"}
             {data.cachedFormName && (
-              <p className="mt-1 text-sm">Previously: {data.cachedFormName}</p>
+              <p className="mt-[var(--space-1)] text-sm">Previously: {data.cachedFormName}</p>
             )}
           </div>
         </div>
@@ -164,9 +173,9 @@ export function FormBlockPreview({ block, isEditor = false }: FormBlockPreviewPr
           <div className="absolute inset-0" style={overlay} />
         )}
         <div className={`${maxWidthClass} ${alignmentClass} relative z-10`}>
-          <div className="border border-amber-300 bg-amber-50 rounded-lg p-6 text-center">
+          <div className="border border-amber-300 bg-amber-50 rounded-[var(--radius)] p-[var(--space-5)] text-center">
             <p className="text-amber-700 font-medium">{formData.name}</p>
-            <p className="text-amber-600 text-sm mt-1">
+            <p className="text-amber-600 text-sm mt-[var(--space-1)]">
               This form is inactive and won't be displayed on the public page.
             </p>
           </div>
@@ -191,31 +200,31 @@ export function FormBlockPreview({ block, isEditor = false }: FormBlockPreviewPr
       )}
       <div className={`${maxWidthClass} ${alignmentClass} relative z-10`}>
         {heading && (
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-4" style={{ color: textColors.heading }}>
+          <h2 className="text-[length:var(--font-size-h2)] font-bold text-center mb-[var(--space-4)]" style={{ color: textColors.heading, fontFamily: "var(--font-heading)" }}>
             {heading}
           </h2>
         )}
         {description && (
-          <p className="text-center mb-8" style={{ color: textColors.subtext }}>{description}</p>
+          <p className="text-center mb-[var(--space-6)]" style={{ color: textColors.subtext }}>{description}</p>
         )}
 
         {isEditor ? (
           // In editor mode, show a preview placeholder
-          <div className={`${useLightTheme ? "bg-white/10 backdrop-blur-sm border border-white/20" : "bg-gray-50 border border-gray-200"} rounded-lg p-6`}>
-            <p className="text-sm text-center mb-4" style={{ color: textColors.subtext }}>
+          <div className={`${cardClasses} rounded-[var(--radius)] p-[var(--space-5)]`}>
+            <p className="text-sm text-center mb-[var(--space-4)]" style={{ color: textColors.subtext }}>
               Form Preview: {formData.name}
             </p>
-            <div className="space-y-4 opacity-60 pointer-events-none">
+            <div className="space-y-[var(--space-4)] opacity-60 pointer-events-none">
               {formData.fields.slice(0, 3).map((field) => (
                 <div key={field.id}>
-                  <label className="block text-sm font-medium mb-1" style={{ color: textColors.text }}>
+                  <label className="block text-sm font-medium mb-[var(--space-1)]" style={{ color: textColors.text }}>
                     {field.label}
                     {field.required && " *"}
                   </label>
                   {field.type === "textarea" ? (
-                    <div className={`w-full h-20 rounded-lg ${useLightTheme ? "bg-white/20 border border-white/30" : "bg-white border border-gray-300"}`} />
+                    <div className={`w-full h-20 rounded-[var(--radius)] ${useLightTheme ? "bg-white/20 border border-white/30" : "bg-[var(--color-surface)] border"}`} style={{ borderColor: useLightTheme ? undefined : "var(--color-border)" }} />
                   ) : (
-                    <div className={`w-full h-10 rounded-lg ${useLightTheme ? "bg-white/20 border border-white/30" : "bg-white border border-gray-300"}`} />
+                    <div className={`w-full h-10 rounded-[var(--radius)] ${useLightTheme ? "bg-white/20 border border-white/30" : "bg-[var(--color-surface)] border"}`} style={{ borderColor: useLightTheme ? undefined : "var(--color-border)" }} />
                   )}
                 </div>
               ))}
@@ -224,12 +233,12 @@ export function FormBlockPreview({ block, isEditor = false }: FormBlockPreviewPr
                   + {formData.fields.length - 3} more fields
                 </p>
               )}
-              <div className="h-10 rounded-lg" style={{ backgroundColor: useLightTheme ? "#ffffff" : "var(--btn-primary-bg, #2563eb)" }} />
+              <div className="h-10 rounded-[var(--radius)]" style={{ backgroundColor: useLightTheme ? "var(--on-dark-btn-bg)" : "var(--btn-primary-bg)" }} />
             </div>
           </div>
         ) : (
           // On public pages, render the actual interactive form
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-[var(--color-surface)] rounded-[var(--radius)] shadow-sm p-[var(--space-5)]">
             <DynamicForm
               formId={formData.id}
               fields={formData.fields}

@@ -3,6 +3,11 @@
  *
  * Renders the Custom HTML block with sanitized content.
  * Used in both the editor preview and public site rendering.
+ *
+ * DESIGN SYSTEM COMPLIANCE:
+ * - All colors via CSS variables (--color-*)
+ * - Spacing via CSS variables (--space-*)
+ * - Radius via CSS variables (--radius)
  */
 
 "use client";
@@ -26,7 +31,7 @@ export function CustomHtmlBlockPreview({ block }: CustomHtmlBlockPreviewProps) {
   const advancedProps = getAdvancedProps(advanced);
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
-  const textColors = getTextColors(background?.textTheme, background?.type);
+  const textColors = getTextColors(background?.textTheme, background?.type, background?.color);
 
   const maxWidthClasses = {
     narrow: "max-w-2xl",
@@ -42,16 +47,16 @@ export function CustomHtmlBlockPreview({ block }: CustomHtmlBlockPreviewProps) {
 
   const paddingTopClasses = {
     none: "pt-0",
-    small: "pt-4",
-    medium: "pt-8",
-    large: "pt-16",
+    small: "pt-[var(--space-4)]",
+    medium: "pt-[var(--space-6)]",
+    large: "pt-[var(--space-8)]",
   };
 
   const paddingBottomClasses = {
     none: "pb-0",
-    small: "pb-4",
-    medium: "pb-8",
-    large: "pb-16",
+    small: "pb-[var(--space-4)]",
+    medium: "pb-[var(--space-6)]",
+    large: "pb-[var(--space-8)]",
   };
 
   // If no content, show placeholder in editor context
@@ -59,7 +64,7 @@ export function CustomHtmlBlockPreview({ block }: CustomHtmlBlockPreviewProps) {
     return (
       <div
         {...advancedProps}
-        className={`block-preview px-6 relative ${paddingTopClasses[data.paddingTop]} ${paddingBottomClasses[data.paddingBottom]} ${advancedProps.className || ""}`.trim()}
+        className={`block-preview px-[var(--space-5)] relative ${paddingTopClasses[data.paddingTop]} ${paddingBottomClasses[data.paddingBottom]} ${advancedProps.className || ""}`.trim()}
         style={backgroundStyle}
       >
         {/* Image overlay (for image backgrounds) */}
@@ -67,8 +72,8 @@ export function CustomHtmlBlockPreview({ block }: CustomHtmlBlockPreviewProps) {
           <div className="absolute inset-0" style={overlay} />
         )}
         <div
-          className={`${maxWidthClasses[data.maxWidth]} ${alignmentClasses[data.alignment]} text-center py-8 border-2 border-dashed border-gray-200 rounded-lg relative z-10`}
-          style={{ color: textColors.subtext }}
+          className={`${maxWidthClasses[data.maxWidth]} ${alignmentClasses[data.alignment]} text-center py-[var(--space-6)] border-2 border-dashed rounded-[var(--radius)] relative z-10`}
+          style={{ color: textColors.subtext, borderColor: "var(--color-border)" }}
         >
           Custom HTML block - No content
         </div>
@@ -79,7 +84,7 @@ export function CustomHtmlBlockPreview({ block }: CustomHtmlBlockPreviewProps) {
   return (
     <div
       {...advancedProps}
-      className={`block-preview px-6 relative ${paddingTopClasses[data.paddingTop]} ${paddingBottomClasses[data.paddingBottom]} ${advancedProps.className || ""}`.trim()}
+      className={`block-preview px-[var(--space-5)] relative ${paddingTopClasses[data.paddingTop]} ${paddingBottomClasses[data.paddingBottom]} ${advancedProps.className || ""}`.trim()}
       style={backgroundStyle}
     >
       {/* Image overlay (for image backgrounds) */}

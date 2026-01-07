@@ -338,7 +338,7 @@ export function PublicHeader({
             className="absolute left-0 right-0 top-16 border-b border-gray-200 shadow-lg z-40"
             style={{ backgroundColor: menuBg }}
           >
-            <div className="max-w-6xl mx-auto px-4 py-4 space-y-2">
+            <div className="w-full max-w-(--container-max) mx-auto px-4 py-4 space-y-2">
               {navigation.map((link) => (
                 <MobileNavItem
                   key={link.id}
@@ -411,7 +411,7 @@ export function PublicHeader({
           : undefined
       }
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <div className="w-full max-w-(--container-max) mx-auto px-4 sm:px-6">
         {renderDesktopHeader()}
         {renderMobileHeader()}
       </div>

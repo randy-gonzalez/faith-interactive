@@ -18,7 +18,7 @@ import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Honest pricing for church website design. Free for church plants. Simple monthly hosting. No surprises.",
+    "Honest pricing for church website design. Free for church plants. Simple monthly platform fee. No surprises.",
 };
 
 export default function PricingPage() {
@@ -55,7 +55,7 @@ export default function PricingPage() {
               <div className="p-8 border border-[#e5e5e5] rounded-sm">
                 <p className="text-micro text-[#737373] mb-4">Church Plants</p>
                 <p className="text-4xl font-medium mb-2">Free</p>
-                <p className="text-[#737373] mb-6">+ $25/mo hosting</p>
+                <p className="text-[#737373] mb-6">+ $25/mo platform</p>
                 <p className="text-[#525252]">
                   New churches have enough to worry about.
                   Your website shouldn&apos;t be one of them.
@@ -68,7 +68,7 @@ export default function PricingPage() {
               <div className="p-8 border border-[#e5e5e5] rounded-sm">
                 <p className="text-micro text-[#737373] mb-4">Established Churches</p>
                 <p className="text-4xl font-medium mb-2">$500–$1,500</p>
-                <p className="text-[#737373] mb-6">+ $25/mo hosting</p>
+                <p className="text-[#737373] mb-6">+ $25/mo platform</p>
                 <p className="text-[#525252]">
                   Depends on complexity. Most churches land
                   somewhere in this range.
@@ -126,8 +126,8 @@ export default function PricingPage() {
             </ScrollReveal>
             <ScrollReveal delay={0.18}>
               <div className="services-item">
-                <span>Hosting & security</span>
-                <span className="text-[#737373]">We handle it</span>
+                <span>Fi Platform</span>
+                <span className="text-[#737373]">Secure & backed up</span>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.2}>
@@ -164,7 +164,7 @@ export default function PricingPage() {
                 <p className="text-[#525252]">
                   We believe every new church deserves a solid digital presence.
                   You have enough financial challenges, and your website shouldn&apos;t
-                  be one of them. You just cover the hosting.
+                  be one of them. You just cover the platform fee.
                 </p>
               </div>
             </ScrollReveal>
@@ -184,7 +184,7 @@ export default function PricingPage() {
               <div>
                 <h3 className="h3 mb-3">Any long-term contracts?</h3>
                 <p className="text-[#525252]">
-                  No. Hosting is month-to-month. If you ever want to leave,
+                  No. The Fi Platform is month-to-month. If you ever want to leave,
                   we&apos;ll help you transition.
                 </p>
               </div>

@@ -1,8 +1,11 @@
 /**
  * Color Resolution Utility
  *
- * Resolves brand color references (e.g., "brand:primary") to actual hex values.
+ * Resolves background roles and legacy brand color references to actual values.
  * Used by block previews and public rendering to support dynamic brand colors.
+ *
+ * NEW: Prefers role-based resolution (primary, secondary, accent, surface, muted)
+ * LEGACY: Still supports brand:* references for backwards compatibility
  */
 
 import {
@@ -10,6 +13,8 @@ import {
   getBrandColorName,
   type BrandColorName,
   type ColorValue,
+  type BackgroundRole,
+  BACKGROUND_ROLE_CSS_VAR,
 } from "@/types/blocks";
 
 /**
@@ -156,3 +161,40 @@ export const BRAND_COLOR_LABELS: Record<BrandColorName, string> = {
   background: "Background",
   text: "Text",
 };
+
+/**
+ * Resolve a background role to actual hex color using brand colors.
+ * Used in admin dashboard for preview rendering.
+ */
+export function resolveRoleToHex(
+  role: BackgroundRole | undefined,
+  brandColors: BrandColors = DEFAULT_BRAND_COLORS
+): string {
+  if (!role) return brandColors.primary;
+
+  switch (role) {
+    case "primary":
+      return brandColors.primary;
+    case "secondary":
+      return brandColors.secondary;
+    case "accent":
+      return brandColors.accent;
+    case "surface":
+      return brandColors.background;
+    case "muted":
+      // Muted is a lighter shade - create a simple approximation
+      // In practice, this should come from the theme
+      return "#f3f4f6";
+    default:
+      return brandColors.primary;
+  }
+}
+
+/**
+ * Resolve a background role to CSS variable.
+ * Used on public site where colors are defined via CSS custom properties.
+ */
+export function resolveRoleToCssVar(role: BackgroundRole | undefined): string {
+  if (!role) return "var(--color-primary)";
+  return BACKGROUND_ROLE_CSS_VAR[role] || "var(--color-primary)";
+}

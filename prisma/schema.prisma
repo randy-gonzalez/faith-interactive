@@ -1095,6 +1095,12 @@ model ChurchBranding {
   buttonAccentBg       String?  // Accent button background
   buttonAccentText     String?  // Accent button text color
 
+  // SPACING
+  // Global spacing density ("compact" | "comfortable" | "spacious")
+  spacingDensity    String? @default("comfortable")
+  // Global content width ("narrow" | "normal" | "wide")
+  contentWidth      String? @default("normal")
+
   // ADDITIONAL STYLES
   // Global border radius preference in pixels
   borderRadius      Int?    @default(8)

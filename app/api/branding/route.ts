@@ -58,6 +58,10 @@ const brandingSchema = z.object({
   buttonAccentBg: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable().or(z.literal("")),
   buttonAccentText: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable().or(z.literal("")),
 
+  // Spacing
+  spacingDensity: z.enum(["compact", "comfortable", "spacious"]).optional().nullable(),
+  contentWidth: z.enum(["narrow", "normal", "wide"]).optional().nullable(),
+
   // Additional styles
   borderRadius: z.number().int().min(0).max(50).optional().nullable(),
   linkColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable().or(z.literal("")),
@@ -168,6 +172,10 @@ export async function PUT(request: NextRequest) {
     if (wasProvided("buttonStyle")) updateData.buttonStyle = data.buttonStyle ?? "rounded";
     if (wasProvided("buttonRadius")) updateData.buttonRadius = data.buttonRadius ?? 6;
     if (wasProvided("borderRadius")) updateData.borderRadius = data.borderRadius ?? 8;
+
+    // Spacing
+    if (wasProvided("spacingDensity")) updateData.spacingDensity = data.spacingDensity ?? "comfortable";
+    if (wasProvided("contentWidth")) updateData.contentWidth = data.contentWidth ?? "normal";
 
     // Button colors
     if (wasProvided("buttonPrimaryBg")) updateData.buttonPrimaryBg = data.buttonPrimaryBg || null;

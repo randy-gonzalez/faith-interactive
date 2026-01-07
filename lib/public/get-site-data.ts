@@ -50,6 +50,9 @@ export interface BrandingData {
   buttonOutlineText: string | null;
   buttonAccentBg: string | null;
   buttonAccentText: string | null;
+  // Spacing
+  spacingDensity: string | null;
+  contentWidth: string | null;
   // Other styles
   borderRadius: number | null;
   linkColor: string | null;
@@ -182,6 +185,9 @@ export const getSiteData = cache(async (): Promise<SiteData | null> => {
         buttonOutlineText: church.branding.buttonOutlineText,
         buttonAccentBg: church.branding.buttonAccentBg,
         buttonAccentText: church.branding.buttonAccentText,
+        // Spacing
+        spacingDensity: church.branding.spacingDensity,
+        contentWidth: church.branding.contentWidth,
         // Other styles
         borderRadius: church.branding.borderRadius,
         linkColor: church.branding.linkColor,

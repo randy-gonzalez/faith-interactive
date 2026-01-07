@@ -5,12 +5,19 @@
  *
  * Live preview rendering of sermon feature block.
  * Accepts real sermon data for public pages, falls back to placeholder in editor.
+ *
+ * DESIGN SYSTEM COMPLIANCE:
+ * - All colors via CSS variables (--color-*, --btn-*)
+ * - Spacing via CSS variables (--space-*)
+ * - Typography via CSS variables (--font-*)
+ * - Radius via CSS variables (--radius, --btn-radius)
  */
 
 import type { Block, SermonFeatureBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 import { getTextColors, resolveTextTheme } from "@/lib/blocks/get-text-colors";
+import { SECTION_PADDING, GAP, getCardClasses, CONTAINER } from "@/lib/blocks/block-styles";
 
 /**
  * Sermon data shape for the block
@@ -59,11 +66,11 @@ export function SermonFeatureBlockPreview({ block, sermons, isPreview = false }:
   const { data, background, advanced } = sermonFeatureBlock;
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
-  const textColors = getTextColors(background?.textTheme, background?.type);
+  const textColors = getTextColors(background?.textTheme, background?.type, background?.color);
   const useLightTheme = resolveTextTheme(background?.textTheme, background?.type);
-  const cardBg = useLightTheme ? "bg-white/10 backdrop-blur-sm" : "bg-white shadow-md";
+  const cardClasses = getCardClasses(useLightTheme);
   const advancedProps = getAdvancedProps(advanced);
-  const combinedClassName = `block-preview py-12 px-6 relative ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview ${SECTION_PADDING} relative ${advancedProps.className || ""}`.trim();
 
   // Use real sermons if provided, otherwise fall back to placeholder
   const sourceSermons = sermons && sermons.length > 0 ? sermons : PLACEHOLDER_SERMONS;
@@ -77,22 +84,22 @@ export function SermonFeatureBlockPreview({ block, sermons, isPreview = false }:
         <div className="absolute inset-0" style={overlay} />
       )}
 
-      <div className="max-w-6xl mx-auto relative z-10">
-        <div className="flex items-center justify-between mb-8">
+      <div className={`${CONTAINER} relative z-10`}>
+        <div className="flex items-center justify-between mb-[var(--space-6)]">
           <h2
-            className="text-2xl md:text-3xl font-bold"
-            style={{ color: textColors.heading }}
+            className="text-[length:var(--font-size-h2)] font-bold"
+            style={{ color: textColors.heading, fontFamily: "var(--font-heading)" }}
           >
             {data.heading}
           </h2>
           {data.buttonText && data.buttonUrl && (
             <a
               href={data.buttonUrl}
-              className="hidden sm:inline-block px-4 py-2 font-medium transition-opacity hover:opacity-90"
+              className="hidden sm:inline-block px-[var(--space-4)] py-[var(--space-2)] font-medium transition-opacity hover:opacity-90"
               style={{
-                backgroundColor: useLightTheme ? textColors.heading : "var(--btn-primary-bg, #2563eb)",
-                color: useLightTheme ? "#1f2937" : "var(--btn-primary-text, #ffffff)",
-                borderRadius: "var(--btn-radius, 6px)",
+                backgroundColor: useLightTheme ? textColors.heading : "var(--btn-primary-bg)",
+                color: useLightTheme ? "var(--color-text)" : "var(--btn-primary-text)",
+                borderRadius: "var(--btn-radius)",
               }}
             >
               {data.buttonText}
@@ -100,19 +107,19 @@ export function SermonFeatureBlockPreview({ block, sermons, isPreview = false }:
           )}
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className={`grid md:grid-cols-2 lg:grid-cols-3 ${GAP["xl"]}`}>
           {displayedSermons.map((sermon) => (
             <div
               key={sermon.id}
-              className={`p-6 rounded-lg ${cardBg}`}
+              className={`p-[var(--space-5)] rounded-[var(--radius)] ${cardClasses}`}
             >
-              <div className="text-sm mb-2" style={{ color: textColors.subtext }}>
+              <div className="text-sm mb-[var(--space-2)]" style={{ color: textColors.subtext }}>
                 {sermon.date}
               </div>
-              <h3 className="text-lg font-semibold mb-1" style={{ color: textColors.heading }}>
+              <h3 className="text-lg font-semibold mb-[var(--space-1)]" style={{ color: textColors.heading, fontFamily: "var(--font-heading)" }}>
                 {sermon.title}
               </h3>
-              <div className="text-sm mb-3" style={{ color: textColors.subtext }}>
+              <div className="text-sm mb-[var(--space-3)]" style={{ color: textColors.subtext }}>
                 {sermon.speaker}
               </div>
               {data.showDescription && (
@@ -125,14 +132,14 @@ export function SermonFeatureBlockPreview({ block, sermons, isPreview = false }:
         </div>
 
         {data.buttonText && data.buttonUrl && (
-          <div className="mt-8 text-center sm:hidden">
+          <div className="mt-[var(--space-6)] text-center sm:hidden">
             <a
               href={data.buttonUrl}
-              className="inline-block px-6 py-3 font-medium transition-opacity hover:opacity-90"
+              className="inline-block px-[var(--space-5)] py-[var(--space-3)] font-medium transition-opacity hover:opacity-90"
               style={{
-                backgroundColor: useLightTheme ? textColors.heading : "var(--btn-primary-bg, #2563eb)",
-                color: useLightTheme ? "#1f2937" : "var(--btn-primary-text, #ffffff)",
-                borderRadius: "var(--btn-radius, 6px)",
+                backgroundColor: useLightTheme ? textColors.heading : "var(--btn-primary-bg)",
+                color: useLightTheme ? "var(--color-text)" : "var(--btn-primary-text)",
+                borderRadius: "var(--btn-radius)",
               }}
             >
               {data.buttonText}
@@ -141,7 +148,7 @@ export function SermonFeatureBlockPreview({ block, sermons, isPreview = false }:
         )}
 
         {showPlaceholderMessage && (
-          <p className="text-xs text-center mt-6 italic" style={{ color: textColors.subtext }}>
+          <p className="text-xs text-center mt-[var(--space-5)] italic" style={{ color: textColors.subtext }}>
             Preview showing placeholder data. Actual sermons will be displayed on the live page.
           </p>
         )}

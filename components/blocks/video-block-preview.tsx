@@ -4,12 +4,18 @@
  * Video Block Preview Component
  *
  * Live preview rendering of video block with YouTube/Vimeo embed.
+ *
+ * DESIGN SYSTEM COMPLIANCE:
+ * - All colors via CSS variables (--color-*, --on-*)
+ * - Spacing via CSS variables (--space-*)
+ * - Radius via CSS variables (--radius)
  */
 
 import type { Block, VideoBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 import { getTextColors } from "@/lib/blocks/get-text-colors";
+import { SECTION_PADDING_COMPACT } from "@/lib/blocks/block-styles";
 
 interface VideoBlockPreviewProps {
   block: Block;
@@ -49,10 +55,10 @@ export function VideoBlockPreview({ block }: VideoBlockPreviewProps) {
   };
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
-  const textColors = getTextColors(background?.textTheme, background?.type);
+  const textColors = getTextColors(background?.textTheme, background?.type, background?.color);
   const embedUrl = getEmbedUrl(data.videoUrl, data.autoplay);
   const advancedProps = getAdvancedProps(advanced);
-  const combinedClassName = `block-preview py-8 px-6 relative ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview ${SECTION_PADDING_COMPACT} relative ${advancedProps.className || ""}`.trim();
 
   return (
     <div {...advancedProps} className={combinedClassName} style={backgroundStyle}>
@@ -63,7 +69,7 @@ export function VideoBlockPreview({ block }: VideoBlockPreviewProps) {
 
       <div className="max-w-4xl mx-auto relative z-10">
         {embedUrl ? (
-          <div className={`${aspectRatioClasses[data.aspectRatio]} rounded-lg overflow-hidden shadow-lg`}>
+          <div className={`${aspectRatioClasses[data.aspectRatio]} rounded-[var(--radius)] overflow-hidden shadow-lg`}>
             <iframe
               src={embedUrl}
               className="w-full h-full"
@@ -72,8 +78,8 @@ export function VideoBlockPreview({ block }: VideoBlockPreviewProps) {
             />
           </div>
         ) : (
-          <div className={`${aspectRatioClasses[data.aspectRatio]} bg-gray-200 rounded-lg flex items-center justify-center`}>
-            <span style={{ color: textColors.subtext }}>
+          <div className={`${aspectRatioClasses[data.aspectRatio]} bg-[var(--color-surface-muted)] rounded-[var(--radius)] flex items-center justify-center`}>
+            <span className="text-[var(--color-text-muted)]">
               {data.videoUrl ? "Invalid video URL" : "Add a video URL..."}
             </span>
           </div>

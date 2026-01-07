@@ -5,11 +5,21 @@
  *
  * Edit form for hero block with tabbed interface:
  * - Content tab: Heading, subheading, alignment, CTA buttons
+ * - Layout tab: Height mode, vertical alignment, padding preset
  * - Background tab: Shared background editor (color/gradient/image/video)
+ * - Advanced tab: CSS classes, IDs, accessibility
  */
 
 import { useState } from "react";
-import type { Block, HeroBlock, BlockBackground, BlockAdvanced } from "@/types/blocks";
+import type {
+  Block,
+  HeroBlock,
+  BlockBackground,
+  BlockAdvanced,
+  HeroHeightMode,
+  HeroVerticalAlign,
+  HeroPaddingPreset,
+} from "@/types/blocks";
 import { createDefaultBackground } from "@/types/blocks";
 import { BlockBackgroundEditor } from "./block-background-editor";
 import { BlockAdvancedEditor } from "./block-advanced-editor";
@@ -22,9 +32,29 @@ interface HeroBlockEditorProps {
 
 const TABS = [
   { id: "content", label: "Content" },
+  { id: "layout", label: "Layout" },
   { id: "background", label: "Background" },
   { id: "advanced", label: "Advanced" },
 ] as const;
+
+// Layout option definitions for the UI
+const HEIGHT_MODE_OPTIONS: { value: HeroHeightMode; label: string; description: string }[] = [
+  { value: "content", label: "Content", description: "Height fits content" },
+  { value: "large", label: "Tall", description: "~70% of screen height" },
+  { value: "screen", label: "Full Screen", description: "100% viewport height" },
+];
+
+const VERTICAL_ALIGN_OPTIONS: { value: HeroVerticalAlign; label: string }[] = [
+  { value: "top", label: "Top" },
+  { value: "center", label: "Center" },
+  { value: "bottom", label: "Bottom" },
+];
+
+const PADDING_PRESET_OPTIONS: { value: HeroPaddingPreset; label: string; description: string }[] = [
+  { value: "tight", label: "Tight", description: "Minimal padding" },
+  { value: "standard", label: "Standard", description: "Balanced (default)" },
+  { value: "roomy", label: "Roomy", description: "Extra breathing room" },
+];
 
 function generateButtonId(): string {
   return `btn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -37,7 +67,7 @@ export function HeroBlockEditor({
 }: HeroBlockEditorProps) {
   const heroBlock = block as HeroBlock;
   const { data } = heroBlock;
-  const [activeTab, setActiveTab] = useState<"content" | "background" | "advanced">(
+  const [activeTab, setActiveTab] = useState<"content" | "layout" | "background" | "advanced">(
     "content"
   );
 
@@ -270,6 +300,105 @@ export function HeroBlockEditor({
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Layout Tab */}
+      {activeTab === "layout" && (
+        <div className="space-y-6">
+          {/* Height Mode */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Hero Height
+            </label>
+            <p className="text-xs text-gray-500 mb-3">
+              Controls how tall the hero section appears
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {HEIGHT_MODE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => updateData({ heightMode: option.value })}
+                  disabled={disabled}
+                  className={`p-3 border-2 rounded-lg transition-colors text-center ${
+                    (data.heightMode || "content") === option.value
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+                >
+                  <div className="text-sm font-medium text-gray-900">{option.label}</div>
+                  <div className="text-xs text-gray-500 mt-1">{option.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Vertical Alignment - Only show when height mode is not "content" */}
+          {(data.heightMode === "large" || data.heightMode === "screen") && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Vertical Alignment
+              </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Position content within the hero height
+              </p>
+              <div className="flex gap-1">
+                {VERTICAL_ALIGN_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateData({ verticalAlign: option.value })}
+                    disabled={disabled}
+                    className={`flex-1 px-3 py-2 text-sm rounded-md border transition-colors ${
+                      (data.verticalAlign || "center") === option.value
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                    } disabled:opacity-50`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Padding Preset */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Padding
+            </label>
+            <p className="text-xs text-gray-500 mb-3">
+              Amount of space around the hero content (responsive)
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {PADDING_PRESET_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => updateData({ paddingPreset: option.value })}
+                  disabled={disabled}
+                  className={`p-3 border-2 rounded-lg transition-colors text-center ${
+                    (data.paddingPreset || "standard") === option.value
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+                >
+                  <div className="text-sm font-medium text-gray-900">{option.label}</div>
+                  <div className="text-xs text-gray-500 mt-1">{option.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Info box */}
+          <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <p className="text-xs text-gray-600">
+              <strong>Tip:</strong> Use "Full Screen" height with "Center" alignment for
+              immersive landing pages. Padding automatically scales with your global spacing
+              density setting.
+            </p>
           </div>
         </div>
       )}

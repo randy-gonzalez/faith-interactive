@@ -2,14 +2,25 @@
  * Background Styles Hook
  *
  * Shared utility for generating background styles from BlockBackground config.
- * Resolves brand color references to actual hex values using the branding context,
- * or to CSS variables when used outside the branding context (public site).
+ * Supports both:
+ * - NEW: Role-based colors (primary, secondary, accent, surface, muted)
+ * - LEGACY: Brand color references (brand:primary, etc.) and hex values
+ *
+ * For admin preview, resolves to hex values using branding context.
+ * For public site, resolves to CSS variables.
  */
 
 import { useMemo } from "react";
 import type { BlockBackground } from "@/types/blocks";
+import { migrateColorToRole } from "@/types/blocks";
 import { useBranding } from "@/contexts/branding-context";
-import { resolveColor, resolveColorToCssVar, type BrandColors } from "./resolve-colors";
+import {
+  resolveColor,
+  resolveColorToCssVar,
+  resolveRoleToHex,
+  resolveRoleToCssVar,
+  type BrandColors,
+} from "./resolve-colors";
 
 export interface BackgroundStyleResult {
   style: React.CSSProperties;
@@ -48,6 +59,29 @@ export function useBackgroundStyles(
 }
 
 /**
+ * Get background color from BlockBackground config.
+ * Prefers role if set, otherwise falls back to legacy color field.
+ */
+function getBackgroundColor(
+  background: BlockBackground,
+  brandColors: BrandColors,
+  defaultColor: string
+): string {
+  // Prefer role-based color (new approach)
+  if (background.role) {
+    return resolveRoleToHex(background.role, brandColors);
+  }
+
+  // Fall back to legacy color field (deprecated)
+  if (background.color) {
+    return resolveColor(background.color, brandColors, defaultColor);
+  }
+
+  // Use default
+  return resolveColor(defaultColor, brandColors);
+}
+
+/**
  * Pure function to generate background styles.
  * Use this when you need to call it outside of React components.
  */
@@ -67,7 +101,7 @@ export function getBackgroundStyles(
     case "color":
       return {
         style: {
-          backgroundColor: resolveColor(background.color, brandColors, defaultColor),
+          backgroundColor: getBackgroundColor(background, brandColors, defaultColor),
         },
         hasVideo: false,
       };
@@ -113,6 +147,28 @@ export function getBackgroundStyles(
 }
 
 /**
+ * Get background color CSS value from BlockBackground config.
+ * Prefers role if set, otherwise falls back to legacy color field.
+ */
+function getBackgroundColorCssVar(
+  background: BlockBackground,
+  defaultColor: string
+): string {
+  // Prefer role-based color (new approach)
+  if (background.role) {
+    return resolveRoleToCssVar(background.role);
+  }
+
+  // Fall back to legacy color field (deprecated)
+  if (background.color) {
+    return resolveColorToCssVar(background.color, resolveColorToCssVar(defaultColor));
+  }
+
+  // Use default
+  return resolveColorToCssVar(defaultColor);
+}
+
+/**
  * Generate background styles using CSS variables.
  * Used on public site where branding is set via CSS custom properties.
  */
@@ -131,7 +187,7 @@ export function getBackgroundStylesWithCssVars(
     case "color":
       return {
         style: {
-          backgroundColor: resolveColorToCssVar(background.color, resolveColorToCssVar(defaultColor)),
+          backgroundColor: getBackgroundColorCssVar(background, defaultColor),
         },
         hasVideo: false,
       };
@@ -188,7 +244,13 @@ export function shouldUseLightText(
 
   switch (background.type) {
     case "color": {
-      const color = resolveColor(background.color, brandColors, "#1e40af");
+      // Get the resolved color (prefer role, fall back to legacy color)
+      let color: string;
+      if (background.role) {
+        color = resolveRoleToHex(background.role, brandColors);
+      } else {
+        color = resolveColor(background.color, brandColors, "#1e40af");
+      }
       return isColorDark(color);
     }
     case "gradient":

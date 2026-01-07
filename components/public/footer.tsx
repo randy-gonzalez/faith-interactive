@@ -515,7 +515,7 @@ export function PublicFooter({
 
   return (
     <footer className="text-gray-300" style={getBackgroundStyle()}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">{renderContent()}</div>
+      <div className="w-full max-w-(--container-max) mx-auto px-4 sm:px-6">{renderContent()}</div>
     </footer>
   );
 }

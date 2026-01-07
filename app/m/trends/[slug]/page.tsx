@@ -10,8 +10,7 @@ import { prisma } from "@/lib/db/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { BlogPostSchema } from "@/components/marketing/structured-data";
-import { BlockRenderer } from "@/components/blocks/block-renderer";
-import type { Block } from "@/types/blocks";
+import type { TextBlock } from "@/types/blocks";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -57,7 +56,12 @@ export default async function TrendsPostPage({ params }: PageProps) {
     notFound();
   }
 
-  const blocks = Array.isArray(post.blocks) ? (post.blocks as unknown as Block[]) : [];
+  // Extract text content from blocks for article rendering
+  const blocks = Array.isArray(post.blocks) ? (post.blocks as unknown as TextBlock[]) : [];
+  const articleContent = blocks
+    .filter((block) => block.type === "text" && block.data?.content)
+    .map((block) => block.data.content)
+    .join("");
 
   return (
     <>
@@ -121,14 +125,16 @@ export default async function TrendsPostPage({ params }: PageProps) {
         <div className="container">
           <div className="max-w-3xl">
             {post.excerpt && (
-              <p className="text-large text-[#525252] mb-12 leading-relaxed">
+              <p className="text-large text-[var(--fi-gray-700)] mb-12 leading-relaxed">
                 {post.excerpt}
               </p>
             )}
 
-            <div className="prose prose-lg max-w-none">
-              <BlockRenderer blocks={blocks} />
-            </div>
+            {/* Article content with marketing typography */}
+            <div
+              className="prose-article"
+              dangerouslySetInnerHTML={{ __html: articleContent }}
+            />
 
             {/* Tags */}
             {post.tags.length > 0 && (

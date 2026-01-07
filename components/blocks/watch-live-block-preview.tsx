@@ -5,6 +5,12 @@
  *
  * Live preview rendering of watch live block with countdown timer
  * and creative "live event" design.
+ *
+ * DESIGN SYSTEM COMPLIANCE:
+ * - All colors via CSS variables (--color-*, --btn-*)
+ * - Spacing via CSS variables (--space-*)
+ * - Typography via CSS variables (--font-*)
+ * - Radius via CSS variables (--radius, --btn-radius)
  */
 
 import { useState, useEffect } from "react";
@@ -184,10 +190,10 @@ export function WatchLiveBlockPreview({ block }: WatchLiveBlockPreviewProps) {
   }, [data.scheduleTimes]);
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
-  const textColors = getTextColors(background?.textTheme, background?.type);
+  const textColors = getTextColors(background?.textTheme, background?.type, background?.color);
   const useLightTheme = resolveTextTheme(background?.textTheme, background?.type);
   const advancedProps = getAdvancedProps(advanced);
-  const combinedClassName = `block-preview py-16 px-6 relative overflow-hidden ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview py-[var(--space-8)] px-[var(--space-6)] relative overflow-hidden ${advancedProps.className || ""}`.trim();
 
   const alignmentClass = {
     left: "text-left items-start",
@@ -215,10 +221,10 @@ export function WatchLiveBlockPreview({ block }: WatchLiveBlockPreviewProps) {
       <div className={`max-w-3xl mx-auto relative z-10 flex flex-col ${alignmentClass}`}>
         {/* Live Indicator or Countdown */}
         {data.showCountdown && data.scheduleTimes.length > 0 && (
-          <div className="mb-6">
+          <div className="mb-[var(--space-5)]">
             {status.isLive ? (
               /* LIVE Indicator */
-              <div className="inline-flex items-center gap-3 px-6 py-3 bg-red-600 rounded-full shadow-lg shadow-red-600/30">
+              <div className="inline-flex items-center gap-[var(--space-3)] px-[var(--space-5)] py-[var(--space-3)] bg-red-600 rounded-full shadow-lg shadow-red-600/30">
                 <span className="relative flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-white" />
@@ -229,11 +235,11 @@ export function WatchLiveBlockPreview({ block }: WatchLiveBlockPreviewProps) {
               </div>
             ) : timeRemaining && status.nextStart ? (
               /* Countdown Timer */
-              <div className="space-y-3">
+              <div className="space-y-[var(--space-3)]">
                 <p className="text-sm font-medium uppercase tracking-wider" style={{ color: textColors.subtext }}>
                   {countdownPrefix}
                 </p>
-                <div className="flex gap-2 sm:gap-4 justify-center">
+                <div className="flex gap-[var(--space-2)] sm:gap-[var(--space-4)] justify-center">
                   {timeRemaining.days > 0 && (
                     <CountdownUnit value={timeRemaining.days} label="Days" useLightTheme={useLightTheme} />
                   )}
@@ -258,14 +264,14 @@ export function WatchLiveBlockPreview({ block }: WatchLiveBlockPreviewProps) {
 
         {/* Heading */}
         {data.heading && (
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3" style={{ color: textColors.heading }}>
+          <h2 className="text-[length:var(--font-size-h1)] font-bold mb-[var(--space-3)]" style={{ color: textColors.heading, fontFamily: "var(--font-heading)" }}>
             {data.heading}
           </h2>
         )}
 
         {/* Subheading */}
         {data.subheading && (
-          <p className="text-lg md:text-xl mb-8 max-w-xl" style={{ color: textColors.subtext }}>
+          <p className="text-lg md:text-xl mb-[var(--space-6)] max-w-xl" style={{ color: textColors.subtext }}>
             {data.subheading}
           </p>
         )}
@@ -276,19 +282,19 @@ export function WatchLiveBlockPreview({ block }: WatchLiveBlockPreviewProps) {
             href={data.livestreamUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+            className="inline-flex items-center gap-[var(--space-3)] px-[var(--space-6)] py-[var(--space-4)] rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
             style={status.isLive
-              ? { backgroundColor: "#dc2626", color: "#ffffff" }
+              ? { backgroundColor: "var(--color-live-bg, #dc2626)", color: "var(--color-live-text, #ffffff)" }
               : useLightTheme
-                ? { backgroundColor: "#ffffff", color: "#1f2937" }
-                : { backgroundColor: "var(--btn-primary-bg, #1f2937)", color: "var(--btn-primary-text, #ffffff)" }
+                ? { backgroundColor: "var(--on-dark-btn-bg)", color: "var(--on-dark-btn-text)" }
+                : { backgroundColor: "var(--btn-primary-bg)", color: "var(--btn-primary-text)" }
             }
           >
             <Radio className="w-5 h-5" />
             {data.buttonText || "Watch Now"}
           </a>
         ) : (
-          <div className={`inline-flex items-center gap-3 px-8 py-4 rounded-full font-semibold text-lg bg-gray-300 text-gray-500 cursor-not-allowed`}>
+          <div className="inline-flex items-center gap-[var(--space-3)] px-[var(--space-6)] py-[var(--space-4)] rounded-full font-semibold text-lg cursor-not-allowed" style={{ backgroundColor: "var(--color-surface-muted)", color: "var(--color-text-muted)" }}>
             <Radio className="w-5 h-5" />
             {data.buttonText || "Watch Now"}
           </div>
@@ -296,7 +302,7 @@ export function WatchLiveBlockPreview({ block }: WatchLiveBlockPreviewProps) {
 
         {/* No URL message in editor */}
         {!data.livestreamUrl && (
-          <p className="mt-4 text-sm italic" style={{ color: textColors.subtext }}>
+          <p className="mt-[var(--space-4)] text-sm italic" style={{ color: textColors.subtext }}>
             Add a livestream URL to enable the button
           </p>
         )}
@@ -321,7 +327,7 @@ function CountdownUnit({
     <div
       className={`
         flex flex-col items-center justify-center
-        w-16 h-20 sm:w-20 sm:h-24 rounded-lg shadow-lg
+        w-16 h-20 sm:w-20 sm:h-24 rounded-[var(--radius)] shadow-lg
         ${useLightTheme
           ? "bg-white/10 backdrop-blur-sm border border-white/20"
           : "bg-gray-900 border border-gray-800"

@@ -4,12 +4,18 @@
  * Button Group Block Preview Component
  *
  * Live preview rendering of button group block.
+ *
+ * DESIGN SYSTEM COMPLIANCE:
+ * - All colors via CSS variables (--btn-*, --color-*)
+ * - Spacing via CSS variables (--space-*)
+ * - Radius via CSS variables (--btn-radius)
  */
 
 import type { Block, ButtonGroupBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 import { getTextColors, resolveTextTheme } from "@/lib/blocks/get-text-colors";
+import { SECTION_PADDING_COMPACT } from "@/lib/blocks/block-styles";
 
 interface ButtonGroupBlockPreviewProps {
   block: Block;
@@ -20,7 +26,7 @@ export function ButtonGroupBlockPreview({ block }: ButtonGroupBlockPreviewProps)
   const { data, background, advanced } = buttonGroupBlock;
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
-  const textColors = getTextColors(background?.textTheme, background?.type);
+  const textColors = getTextColors(background?.textTheme, background?.type, background?.color);
   const useLightTheme = resolveTextTheme(background?.textTheme, background?.type);
   const advancedProps = getAdvancedProps(advanced);
 
@@ -37,14 +43,14 @@ export function ButtonGroupBlockPreview({ block }: ButtonGroupBlockPreviewProps)
     };
 
     if (useLightTheme) {
-      // On light-themed backgrounds (dark text), use white/transparent variants
+      // On light-themed backgrounds (dark text on image/gradient), use white/transparent variants via CSS vars
       switch (variant) {
         case "primary":
-          return { ...baseStyles, backgroundColor: "#ffffff", color: "#1f2937" };
+          return { ...baseStyles, backgroundColor: "var(--on-dark-btn-bg)", color: "var(--on-dark-btn-text)" };
         case "secondary":
-          return { ...baseStyles, backgroundColor: "rgba(255,255,255,0.2)", color: "#ffffff" };
+          return { ...baseStyles, backgroundColor: "var(--on-dark-btn-secondary-bg)", color: "var(--on-dark-btn-secondary-text)" };
         case "outline":
-          return { ...baseStyles, backgroundColor: "transparent", color: "#ffffff", border: "2px solid #ffffff" };
+          return { ...baseStyles, backgroundColor: "transparent", color: "var(--on-dark-btn-outline-text)", border: "2px solid var(--on-dark-btn-outline-border)" };
       }
     } else {
       // Use branding colors via CSS variables
@@ -66,10 +72,10 @@ export function ButtonGroupBlockPreview({ block }: ButtonGroupBlockPreviewProps)
 
   // Base classes without colors (using inline styles for colors)
   const getButtonClasses = () => {
-    return "inline-block px-6 py-3 font-semibold transition-opacity hover:opacity-90";
+    return "inline-block px-[var(--space-5)] py-[var(--space-3)] font-semibold transition-opacity hover:opacity-90";
   };
 
-  const combinedClassName = `block-preview py-8 px-6 relative ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview ${SECTION_PADDING_COMPACT} relative ${advancedProps.className || ""}`.trim();
 
   return (
     <div {...advancedProps} className={combinedClassName} style={backgroundStyle}>
@@ -84,7 +90,7 @@ export function ButtonGroupBlockPreview({ block }: ButtonGroupBlockPreviewProps)
             Add buttons to display...
           </p>
         ) : (
-          <div className={`flex flex-wrap gap-4 ${alignmentClasses[data.alignment]}`}>
+          <div className={`flex flex-wrap gap-[var(--space-4)] ${alignmentClasses[data.alignment]}`}>
             {data.buttons.map((btn) => (
               <a
                 key={btn.id}

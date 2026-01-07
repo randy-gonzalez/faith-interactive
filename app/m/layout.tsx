@@ -8,6 +8,7 @@
 import type { Metadata } from "next";
 import { buildSurfaceUrl } from "@/lib/hostname/parser";
 import { OrganizationSchema } from "@/components/marketing/structured-data";
+import { MarketingNav } from "@/components/marketing/nav";
 import { FiLogo } from "@/components/ui/fi-logo";
 import "./marketing.css";
 
@@ -46,14 +47,6 @@ export const metadata: Metadata = {
   },
 };
 
-const NAV_LINKS = [
-  { href: "/work", label: "Work" },
-  { href: "/services", label: "Services" },
-  { href: "/about", label: "About" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/trends", label: "Trends" },
-];
-
 export default function MarketingLayout({
   children,
 }: {
@@ -74,36 +67,7 @@ export default function MarketingLayout({
         <OrganizationSchema />
       </head>
       <body className="antialiased">
-        {/* Header */}
-        <header className="site-header">
-          <nav className="container">
-            <div className="flex items-center justify-between h-20">
-              {/* Logo */}
-              <a href="/" className="flex items-center">
-                <FiLogo variant="horizontal" colorMode="dark" size={28} />
-              </a>
-
-              {/* Navigation */}
-              <div className="hidden md:flex items-center gap-8">
-                {NAV_LINKS.map((link) => (
-                  <a key={link.href} href={link.href} className="nav-link">
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-
-              {/* CTA */}
-              <div className="flex items-center gap-6">
-                <a href={loginUrl} className="nav-link hidden sm:block">
-                  Sign In
-                </a>
-                <a href="/contact" className="btn-primary">
-                  Get in touch
-                </a>
-              </div>
-            </div>
-          </nav>
-        </header>
+        <MarketingNav loginUrl={loginUrl} />
 
         {/* Main Content */}
         <main>{children}</main>
@@ -118,7 +82,7 @@ export default function MarketingLayout({
                   <FiLogo variant="horizontal" colorMode="light" size={36} />
                 </div>
                 <p className="text-[#737373] max-w-xs">
-                  A design studio for churches.
+                  A web design studio for churches.
                 </p>
               </div>
 

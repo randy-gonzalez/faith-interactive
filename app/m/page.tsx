@@ -89,13 +89,13 @@ export default async function MarketingHomePage() {
         <div className="container">
           <ScrollReveal>
             <p className="manifesto">
-              We&apos;re a design studio. We work with churches.
-              We don&apos;t do templates, themes, or &ldquo;good enough.&rdquo;
+              We&apos;re a web design &amp; development studio.<br/>
+              We work with churches. We serve Jesus &amp; want to make Him known.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <a href="/about" className="link-arrow mt-8 inline-flex">
-              About our studio
+              Our Story
             </a>
           </ScrollReveal>
         </div>
@@ -134,7 +134,7 @@ export default async function MarketingHomePage() {
       <section className="section-lg">
         <div className="container text-center">
           <ScrollReveal>
-            <h2 className="h2 mb-6">Ready to stand out?</h2>
+            <h2 className="h2 mb-6">Ready to get started?</h2>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <a href="/contact" className="btn-primary">

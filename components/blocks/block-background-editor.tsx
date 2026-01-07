@@ -4,13 +4,18 @@
  * Block Background Editor Component
  *
  * Shared background editor for all block types.
- * Supports: Color, Gradient, Image, Video
+ * Supports: Color (semantic roles), Gradient, Image, Video
+ *
+ * IMPORTANT: Color backgrounds use semantic roles (primary, secondary, accent, surface, muted)
+ * instead of raw hex values. This ensures consistent theming across tenants.
  */
 
 import { useState } from "react";
-import type { BlockBackground, TextTheme } from "@/types/blocks";
+import type { BlockBackground, TextTheme, BackgroundRole } from "@/types/blocks";
+import { migrateColorToRole } from "@/types/blocks";
 import { MediaPicker } from "@/components/dashboard/media-picker";
 import { BrandingColorPicker } from "@/components/ui/branding-color-picker";
+import { BackgroundRolePicker } from "@/components/ui/background-role-picker";
 
 interface BlockBackgroundEditorProps {
   background: BlockBackground;
@@ -59,14 +64,26 @@ export function BlockBackgroundEditor({
     const newBackground: BlockBackground = { ...background, type };
 
     // Set defaults if switching to a type without a value
-    if (type === "color" && !newBackground.color) {
-      newBackground.color = "#1e40af";
+    if (type === "color" && !newBackground.role) {
+      // Migrate legacy color if present, otherwise default to primary
+      newBackground.role = newBackground.color
+        ? migrateColorToRole(newBackground.color)
+        : "primary";
+      // Clear deprecated color field
+      delete newBackground.color;
     }
     if (type === "gradient" && !newBackground.gradient) {
       newBackground.gradient = PRESET_GRADIENTS[0].value;
     }
 
     onChange(newBackground);
+  }
+
+  // Get the current role, migrating from legacy color if needed
+  function getCurrentRole(): BackgroundRole {
+    if (background.role) return background.role;
+    if (background.color) return migrateColorToRole(background.color);
+    return "primary";
   }
 
   function handleGradientPaste(value: string) {
@@ -107,11 +124,11 @@ export function BlockBackgroundEditor({
         </div>
       </div>
 
-      {/* Color Options */}
+      {/* Color Options - Semantic Roles Only */}
       {background.type === "color" && (
-        <BrandingColorPicker
-          value={background.color || "#1e40af"}
-          onChange={(color) => updateBackground({ color })}
+        <BackgroundRolePicker
+          value={getCurrentRole()}
+          onChange={(role) => updateBackground({ role, color: undefined })}
           disabled={disabled}
           label="Background Color"
         />

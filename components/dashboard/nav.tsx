@@ -57,6 +57,7 @@ const NAV_SECTIONS: NavSection[] = [
           { label: "Logos", href: "/theme/logos" },
           { label: "Colors", href: "/theme/colors" },
           { label: "Typography", href: "/theme/typography" },
+          { label: "Spacing", href: "/theme/spacing" },
           { label: "Buttons", href: "/theme/buttons" },
         ],
       },

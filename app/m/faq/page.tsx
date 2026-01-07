@@ -25,7 +25,7 @@ const FAQ_ITEMS = [
   {
     question: "Why is it free for church plants?",
     answer:
-      "We believe every new church deserves a solid online presence. You have enough financial challenges, and your website shouldn't be one of them. You just cover the monthly hosting.",
+      "We believe every new church deserves a solid online presence. You have enough financial challenges, and your website shouldn't be one of them. You just cover the monthly platform cost.",
   },
   {
     question: "How long does a project take?",
@@ -38,9 +38,9 @@ const FAQ_ITEMS = [
       "Yes. Every site comes with an admin dashboard where you can update content, add events, and upload sermons. We'll show you how it works.",
   },
   {
-    question: "What's included in hosting?",
+    question: "What's included in the Fi Platform?",
     answer:
-      "Fast servers, security updates, daily backups, SSL certificate, and real support when you need it. $25/month, everything included.",
+      "The Fi Platform is your church admin: manage sermons, events, pages, and more. It includes daily backups, security updates, SSL certificate, and real support when you need it. $25/month, everything included.",
   },
   {
     question: "Do you work with existing sites?",
@@ -60,7 +60,7 @@ const FAQ_ITEMS = [
   {
     question: "Any contracts or commitments?",
     answer:
-      "Hosting is month-to-month. No long-term contracts. If you ever want to leave, we'll help you transition.",
+      "The Fi Platform is month-to-month. No long-term contracts. If you ever want to leave, we'll help you transition.",
   },
 ];
 

@@ -4,11 +4,20 @@
  * Card Grid Block Preview Component
  *
  * Live preview rendering of card grid block.
+ *
+ * DESIGN SYSTEM COMPLIANCE:
+ * - Card backgrounds use var(--color-surface)
+ * - Card padding uses var(--space-5)
+ * - All colors via CSS variables
+ * - Spacing via CSS variables
+ * - Radius via CSS variables
  */
 
 import type { Block, CardGridBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
+import { getTextColors } from "@/lib/blocks/get-text-colors";
+import { SECTION_PADDING, GAP, CONTAINER } from "@/lib/blocks/block-styles";
 
 interface CardGridBlockPreviewProps {
   block: Block;
@@ -19,6 +28,7 @@ export function CardGridBlockPreview({ block }: CardGridBlockPreviewProps) {
   const { data, background, advanced } = cardGridBlock;
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
+  const textColors = getTextColors(background?.textTheme, background?.type, background?.color);
   const advancedProps = getAdvancedProps(advanced);
 
   const columnClasses = {
@@ -27,7 +37,7 @@ export function CardGridBlockPreview({ block }: CardGridBlockPreviewProps) {
     4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
   };
 
-  const combinedClassName = `block-preview py-12 px-6 relative ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview ${SECTION_PADDING} relative ${advancedProps.className || ""}`.trim();
 
   return (
     <div {...advancedProps} className={combinedClassName} style={backgroundStyle}>
@@ -36,17 +46,17 @@ export function CardGridBlockPreview({ block }: CardGridBlockPreviewProps) {
         <div className="absolute inset-0" style={overlay} />
       )}
 
-      <div className="max-w-6xl mx-auto relative z-10">
+      <div className={`${CONTAINER} relative z-10`}>
         {data.cards.length === 0 ? (
-          <p className="text-center text-gray-400 italic">
+          <p className="text-center text-[var(--color-text-muted)] italic">
             Add cards to display...
           </p>
         ) : (
-          <div className={`grid ${columnClasses[data.columns]} gap-6`}>
+          <div className={`grid ${columnClasses[data.columns]} ${GAP["2xl"]}`}>
             {data.cards.map((card) => (
               <div
                 key={card.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden"
+                className="bg-[var(--color-surface)] rounded-[var(--radius)] shadow-md overflow-hidden"
               >
                 {card.imageUrl ? (
                   <img
@@ -55,23 +65,23 @@ export function CardGridBlockPreview({ block }: CardGridBlockPreviewProps) {
                     className="w-full h-48 object-cover"
                   />
                 ) : (
-                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">No image</span>
+                  <div className="w-full h-48 bg-[var(--color-surface-muted)] flex items-center justify-center">
+                    <span className="text-[var(--color-text-muted)] text-sm">No image</span>
                   </div>
                 )}
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <div className="p-[var(--space-5)]">
+                  <h3 className="text-lg font-semibold text-[var(--color-text)] mb-[var(--space-2)]" style={{ fontFamily: "var(--font-heading)" }}>
                     {card.title}
                   </h3>
                   {card.description && (
-                    <p className="text-gray-600 text-sm mb-4">
+                    <p className="text-[var(--color-text-muted)] text-sm mb-[var(--space-4)]">
                       {card.description}
                     </p>
                   )}
                   {card.linkUrl && card.linkText && (
                     <a
                       href={card.linkUrl}
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      className="text-[var(--color-primary)] hover:opacity-80 text-sm font-medium transition-opacity"
                     >
                       {card.linkText} &rarr;
                     </a>

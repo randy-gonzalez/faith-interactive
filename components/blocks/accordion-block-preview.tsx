@@ -4,6 +4,12 @@
  * Accordion Block Preview Component
  *
  * Live preview rendering of accordion block with collapsible items.
+ *
+ * DESIGN SYSTEM COMPLIANCE:
+ * - All colors via CSS variables (--color-*, --on-*)
+ * - Spacing via CSS variables (--space-*)
+ * - Typography via CSS variables (--font-*)
+ * - Border colors via CSS variables (--color-border)
  */
 
 import { useState } from "react";
@@ -11,6 +17,7 @@ import type { Block, AccordionBlock } from "@/types/blocks";
 import { getAdvancedProps } from "./block-advanced-editor";
 import { useBackgroundStyles } from "@/lib/blocks/use-background-styles";
 import { getTextColors, resolveTextTheme } from "@/lib/blocks/get-text-colors";
+import { SECTION_PADDING } from "@/lib/blocks/block-styles";
 
 interface AccordionBlockPreviewProps {
   block: Block;
@@ -32,11 +39,15 @@ export function AccordionBlockPreview({ block }: AccordionBlockPreviewProps) {
   });
 
   const { style: backgroundStyle, overlay } = useBackgroundStyles(background, "transparent");
-  const textColors = getTextColors(background?.textTheme, background?.type);
+  const textColors = getTextColors(background?.textTheme, background?.type, background?.color);
   const useLightTheme = resolveTextTheme(background?.textTheme, background?.type);
-  const borderColor = useLightTheme ? "border-white/20" : "border-gray-200";
   const advancedProps = getAdvancedProps(advanced);
-  const combinedClassName = `block-preview py-12 px-6 relative ${advancedProps.className || ""}`.trim();
+  const combinedClassName = `block-preview ${SECTION_PADDING} relative ${advancedProps.className || ""}`.trim();
+
+  // Border color - use CSS variable for dark theme, white/opacity for light theme
+  const borderStyle = useLightTheme
+    ? { borderColor: "rgba(255, 255, 255, 0.2)" }
+    : { borderColor: "var(--color-border)" };
 
   function toggleItem(id: string) {
     setOpenItems((prev) => {
@@ -60,8 +71,8 @@ export function AccordionBlockPreview({ block }: AccordionBlockPreviewProps) {
       <div className="max-w-3xl mx-auto relative z-10">
         {data.heading && (
           <h2
-            className="text-2xl md:text-3xl font-bold text-center mb-8"
-            style={{ color: textColors.heading }}
+            className="text-[length:var(--font-size-h2)] font-bold text-center mb-[var(--space-6)]"
+            style={{ color: textColors.heading, fontFamily: "var(--font-heading)" }}
           >
             {data.heading}
           </h2>
@@ -72,9 +83,9 @@ export function AccordionBlockPreview({ block }: AccordionBlockPreviewProps) {
             Add accordion items to display...
           </p>
         ) : (
-          <div className={`divide-y ${borderColor}`}>
+          <div className="divide-y" style={borderStyle}>
             {data.items.map((item) => (
-              <div key={item.id} className="py-4">
+              <div key={item.id} className="py-[var(--space-4)]">
                 <button
                   type="button"
                   onClick={() => toggleItem(item.id)}
@@ -94,7 +105,7 @@ export function AccordionBlockPreview({ block }: AccordionBlockPreviewProps) {
                   </svg>
                 </button>
                 {openItems.has(item.id) && (
-                  <div className="mt-3" style={{ color: textColors.text }}>
+                  <div className="mt-[var(--space-3)]" style={{ color: textColors.text }}>
                     <div dangerouslySetInnerHTML={{ __html: item.content }} />
                   </div>
                 )}

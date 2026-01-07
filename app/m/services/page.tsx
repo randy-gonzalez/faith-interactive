@@ -88,14 +88,14 @@ export default function ServicesPage() {
                 <p className="text-micro text-[#737373] mb-4">03</p>
                 <h2 className="h2 mb-6">Ongoing Support</h2>
                 <p className="text-large text-[#525252] max-w-2xl mb-8">
-                  We don&apos;t disappear after launch. Hosting, updates, and a
-                  real person to call when you need help. We&apos;re here for the
-                  long haul.
+                  We don&apos;t disappear after launch. The Fi Platform keeps your
+                  site secure, backed up, and running smoothly. Plus a real person
+                  to call when you need help.
                 </p>
                 <div className="flex flex-wrap gap-6 text-[#737373]">
-                  <span>Reliable hosting</span>
+                  <span>Fi Platform</span>
+                  <span>Daily backups</span>
                   <span>Security updates</span>
-                  <span>Content changes</span>
                   <span>Real support</span>
                 </div>
               </div>
