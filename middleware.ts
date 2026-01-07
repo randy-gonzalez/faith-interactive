@@ -1,13 +1,12 @@
 /**
- * Next.js Middleware - Marketing Site Only
+ * Next.js Middleware - Marketing Site
  *
- * Simplified middleware for marketing-only site.
- * All requests are routed to the /m route group.
+ * Handles rate limiting and request context headers.
+ * No route rewrites needed - routes are at root level.
  */
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { parseHostname, getSurfaceRoutePrefix } from "@/lib/hostname/parser";
 
 // ============================================================================
 // Constants
@@ -18,9 +17,6 @@ const HEADERS = {
   REQUEST_ID: "x-request-id",
   SURFACE_TYPE: "x-surface-type",
 } as const;
-
-/** Routes that don't require surface routing (global routes) */
-const GLOBAL_ROUTES = ["/api/health", "/api/marketing"];
 
 // ============================================================================
 // Rate Limiting (Edge-compatible, in-memory)
@@ -82,20 +78,12 @@ function getOrGenerateRequestId(request: NextRequest): string {
   return `req_${timestamp}_${random}`;
 }
 
-/**
- * Check if a route is global (doesn't require surface routing)
- */
-function isGlobalRoute(pathname: string): boolean {
-  return GLOBAL_ROUTES.some((route) => pathname.startsWith(route));
-}
-
 // ============================================================================
 // Main Middleware
 // ============================================================================
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const hostname = request.headers.get("host") || "";
 
   // Skip middleware for static files and Next.js internals
   if (
@@ -107,14 +95,6 @@ export async function middleware(request: NextRequest) {
   }
 
   const requestId = getOrGenerateRequestId(request);
-
-  // Debug logging for hostname routing
-  if (process.env.NODE_ENV !== "production") {
-    const parsed = parseHostname(hostname);
-    console.log(
-      `[Middleware] hostname=${hostname} surface=${parsed.surface} path=${pathname}`
-    );
-  }
 
   // Rate limiting
   const clientIp = getClientIp(request);
@@ -136,33 +116,7 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set(HEADERS.REQUEST_ID, requestId);
   requestHeaders.set(HEADERS.SURFACE_TYPE, "marketing");
 
-  // Global routes and API routes don't need rewriting
-  if (isGlobalRoute(pathname) || pathname.startsWith("/api/")) {
-    const response = NextResponse.next({ request: { headers: requestHeaders } });
-    response.headers.set(
-      "X-RateLimit-Remaining",
-      rateLimitResult.remaining.toString()
-    );
-    response.headers.set(HEADERS.REQUEST_ID, requestId);
-    return response;
-  }
-
-  // Rewrite page routes to the /m route group
-  const routePrefix = getSurfaceRoutePrefix("marketing");
-  const rewritePath = `${routePrefix}${pathname === "/" ? "" : pathname}`;
-
-  const rewriteUrl = new URL(rewritePath, request.url);
-
-  // Preserve query params
-  request.nextUrl.searchParams.forEach((value: string, key: string) => {
-    rewriteUrl.searchParams.set(key, value);
-  });
-
-  const response = NextResponse.rewrite(rewriteUrl, {
-    request: { headers: requestHeaders },
-  });
-
-  // Add standard headers
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set(
     "X-RateLimit-Remaining",
     rateLimitResult.remaining.toString()
@@ -177,13 +131,6 @@ export async function middleware(request: NextRequest) {
  */
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
     "/((?!_next/static|_next/image|favicon.ico|public/).*)",
   ],
 };
