@@ -270,10 +270,12 @@ DATABASE_URL="your-connection-string" npm run db:seed
 2. **Configure Build Settings**
    ```
    Framework preset: Next.js
-   Build command: npx @cloudflare/next-on-pages
+   Build command: npm run build && npx @cloudflare/next-on-pages
    Build output directory: .vercel/output/static
    Root directory: / (or your app directory)
    ```
+
+   > **Important:** The build command runs `prisma generate` (via `npm run build`) to generate the Prisma client before building for Cloudflare.
 
 3. **Set Environment Variables**
    - Add all required variables before first deploy
@@ -376,6 +378,18 @@ curl -X POST https://faith-interactive.com/api/auth/login \
 ## Troubleshooting
 
 ### Common Issues
+
+#### Build Fails: "Can't resolve '.prisma/client/index-browser'"
+
+**Cause:** Prisma client not generated before build.
+
+**Solution:** Ensure your build command includes `prisma generate`:
+```bash
+# In Cloudflare Pages build settings:
+npm run build && npx @cloudflare/next-on-pages
+```
+
+The `npm run build` script already includes `prisma generate` as a prerequisite.
 
 #### Build Fails: "Edge runtime not supported"
 
