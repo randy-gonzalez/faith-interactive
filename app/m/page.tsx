@@ -16,18 +16,26 @@ const FEATURED_WORK = [
   { name: "Calvary Chapel Boulder", slug: "calvary-chapel-boulder" },
 ];
 
+// Force dynamic rendering - database not available at build time on Cloudflare
+export const dynamic = "force-dynamic";
+
 export default async function MarketingHomePage() {
   // Fetch featured case studies from database
-  const caseStudies = await prisma.caseStudy.findMany({
-    where: { status: "PUBLISHED", featured: true },
-    orderBy: { sortOrder: "asc" },
-    take: 4,
-  });
+  let workItems = FEATURED_WORK;
 
-  // Use database case studies if available, otherwise use static list
-  const workItems = caseStudies.length > 0
-    ? caseStudies.map((s) => ({ name: s.churchName, slug: s.slug }))
-    : FEATURED_WORK;
+  try {
+    const caseStudies = await prisma.caseStudy.findMany({
+      where: { status: "PUBLISHED", featured: true },
+      orderBy: { sortOrder: "asc" },
+      take: 4,
+    });
+
+    if (caseStudies.length > 0) {
+      workItems = caseStudies.map((s) => ({ name: s.churchName, slug: s.slug }));
+    }
+  } catch {
+    // Database unavailable (e.g., during build) - use static fallback
+  }
 
   return (
     <>

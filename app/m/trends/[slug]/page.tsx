@@ -12,6 +12,9 @@ import Link from "next/link";
 import { BlogPostSchema } from "@/components/marketing/structured-data";
 import type { TextBlock } from "@/types/blocks";
 
+// Force dynamic rendering - database not available at build time on Cloudflare
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }

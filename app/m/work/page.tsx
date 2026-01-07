@@ -33,6 +33,9 @@ interface CaseStudy {
   featured: boolean;
 }
 
+// Force dynamic rendering - database not available at build time on Cloudflare
+export const dynamic = "force-dynamic";
+
 export default async function WorkPage() {
   const caseStudies = await prisma.caseStudy.findMany({
     where: { status: "PUBLISHED" },

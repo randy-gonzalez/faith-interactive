@@ -21,6 +21,9 @@ export const metadata: Metadata = {
     "Thoughts on church websites, design, and digital presence.",
 };
 
+// Force dynamic rendering - database not available at build time on Cloudflare
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   searchParams: Promise<{ category?: string }>;
 }

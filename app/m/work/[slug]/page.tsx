@@ -15,6 +15,9 @@ import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { notFound } from "next/navigation";
 
+// Force dynamic rendering - database not available at build time on Cloudflare
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
