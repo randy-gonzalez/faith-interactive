@@ -37,7 +37,8 @@
       "Bash(npm run db:migrate:reset:*)",
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" npm run db:migrate:reset:*)",
       "Bash(tree:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm info:*)"
     ]
   }
 }
