@@ -135,47 +135,62 @@ The current in-memory rate limiter works but resets on cold starts. For producti
 ### Install Dependencies
 
 ```bash
-npm install -D @cloudflare/next-on-pages wrangler
+npm install -D @opennextjs/cloudflare wrangler
 ```
 
-### Create wrangler.toml
+> **Note:** We use OpenNext instead of the deprecated `@cloudflare/next-on-pages`. OpenNext supports the Node.js runtime which is required for Prisma and other Node.js features.
 
-Create `wrangler.toml` in the project root:
+### Create wrangler.jsonc
 
-```toml
-name = "fi-app"
-compatibility_date = "2024-01-01"
-compatibility_flags = ["nodejs_compat"]
+Create `wrangler.jsonc` in the project root (OpenNext uses JSONC format):
 
-# Pages configuration
-pages_build_output_dir = ".vercel/output/static"
+```jsonc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "fi-platform",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-01-01",
+  "compatibility_flags": ["nodejs_compat"],
 
-# KV Namespace binding (for rate limiting)
-[[kv_namespaces]]
-binding = "RATE_LIMIT_KV"
-id = "<your-kv-namespace-id>"
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
 
-# R2 Bucket binding (optional - can use env vars instead)
-[[r2_buckets]]
-binding = "MEDIA_BUCKET"
-bucket_name = "fi-media"
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT_KV",
+      "id": "<your-kv-namespace-id>"
+    }
+  ],
 
-# Environment variables (non-secrets)
-[vars]
-NODE_ENV = "production"
-NEXT_PUBLIC_APP_URL = "https://faith-interactive.com"
+  "vars": {
+    "NODE_ENV": "production",
+    "LOG_LEVEL": "info",
+    "S3_REGION": "auto"
+  }
+}
 ```
 
-### Update package.json Scripts
+### Create open-next.config.ts
 
-Add these scripts to `package.json`:
+Create `open-next.config.ts` in the project root:
+
+```typescript
+import { defineCloudflareConfig } from "@opennextjs/cloudflare";
+
+export default defineCloudflareConfig({});
+```
+
+### package.json Scripts
+
+The following scripts are already configured:
 
 ```json
 {
   "scripts": {
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "pages:preview": "wrangler pages dev .vercel/output/static",
-    "pages:deploy": "wrangler pages deploy .vercel/output/static"
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   }
 }
 ```
@@ -187,7 +202,7 @@ Create `.dev.vars` (gitignored) for local Wrangler development:
 ```
 DATABASE_URL=postgresql://...
 JWT_SECRET=your-jwt-secret-min-32-chars
-S3_BUCKET=fi-media
+S3_BUCKET=fi-platform
 S3_REGION=auto
 S3_ENDPOINT=https://xxx.r2.cloudflarestorage.com
 S3_ACCESS_KEY_ID=xxx
@@ -260,49 +275,54 @@ DATABASE_URL="your-connection-string" npm run db:seed
 
 ## Step 7: Deploy to Cloudflare Pages
 
-### Option A: GitHub Integration (Recommended)
+### Option A: CLI Deploy (Recommended)
+
+Deploy using the OpenNext CLI:
+
+```bash
+# Login to Cloudflare (first time only)
+wrangler login
+
+# Build and deploy
+npm run deploy
+```
+
+This runs `opennextjs-cloudflare build && opennextjs-cloudflare deploy` which:
+1. Builds your Next.js app with `prisma generate && next build`
+2. Transforms the output for Cloudflare Workers
+3. Deploys to Cloudflare
+
+### Option B: GitHub Integration
 
 1. **Connect Repository**
-   - Go to Workers & Pages > Create application > Pages
+   - Go to Workers & Pages > Create application > Workers
    - Connect to Git > Select your repository
    - Authorize Cloudflare access
 
 2. **Configure Build Settings**
    ```
-   Framework preset: Next.js
-   Build command: npm run build && npx @cloudflare/next-on-pages
-   Build output directory: .vercel/output/static
+   Build command: npm run build && npx opennextjs-cloudflare build
+   Build output directory: .open-next
    Root directory: / (or your app directory)
    ```
 
-   > **Important:** The build command runs `prisma generate` (via `npm run build`) to generate the Prisma client before building for Cloudflare.
-
 3. **Set Environment Variables**
    - Add all required variables before first deploy
+   - Mark sensitive values as encrypted
 
 4. **Deploy**
    - Click "Save and Deploy"
-   - Wait for build to complete (5-10 minutes first time)
+   - Wait for build to complete
 
-### Option B: Direct Deploy via CLI
+### Local Preview
+
+Test your deployment locally before pushing:
 
 ```bash
-# Login to Cloudflare
-wrangler login
-
-# Build the application
-npm run build
-npm run pages:build
-
-# Deploy to Pages
-npm run pages:deploy
-
-# Or create a new Pages project
-wrangler pages project create fi-app
-
-# Then deploy
-wrangler pages deploy .vercel/output/static --project-name=fi-app
+npm run preview
 ```
+
+This builds and runs the app in a local Cloudflare Workers environment.
 
 ---
 
@@ -383,21 +403,19 @@ curl -X POST https://faith-interactive.com/api/auth/login \
 
 **Cause:** Prisma client not generated before build.
 
-**Solution:** Ensure your build command includes `prisma generate`:
+**Solution:** The `npm run build` script already includes `prisma generate`. Ensure you're using the correct build command:
 ```bash
-# In Cloudflare Pages build settings:
-npm run build && npx @cloudflare/next-on-pages
+npm run build && npx opennextjs-cloudflare build
 ```
 
-The `npm run build` script already includes `prisma generate` as a prerequisite.
+#### Worker Size Limit Exceeded
 
-#### Build Fails: "Edge runtime not supported"
+**Cause:** Cloudflare Workers have size limits (3 MiB free, 10 MiB paid).
 
-Some Node.js APIs aren't available in Workers. Check for:
-- `fs` module usage (use R2 instead)
-- Native Node modules
-
-**Solution:** Ensure code paths that use Node-specific features are server-only.
+**Solution:**
+- Only the compressed (gzip) size counts toward the limit
+- Review and remove unused dependencies
+- Consider code splitting for large pages
 
 #### Database Connection Timeouts
 
@@ -443,8 +461,8 @@ Then check Pages logs for detailed output.
 
 ### Getting Help
 
-- [Cloudflare Pages Docs](https://developers.cloudflare.com/pages/)
-- [next-on-pages GitHub](https://github.com/cloudflare/next-on-pages)
+- [OpenNext Cloudflare Docs](https://opennext.js.org/cloudflare)
+- [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
 - [Prisma Edge Deployment](https://www.prisma.io/docs/guides/deployment/edge)
 
 ---
@@ -455,9 +473,10 @@ Then check Pages logs for detailed output.
 [ ] Database provisioned and migrated
 [ ] R2 bucket created with public access
 [ ] KV namespace created (optional)
-[ ] wrangler.toml configured
+[ ] wrangler.jsonc configured
+[ ] open-next.config.ts created
 [ ] Environment variables set in Cloudflare
-[ ] GitHub integration connected (or CLI deploy)
+[ ] CLI deploy completed (or GitHub integration)
 [ ] Custom domain configured
 [ ] SSL certificate active
 [ ] Wildcard DNS for multi-tenant (if needed)
