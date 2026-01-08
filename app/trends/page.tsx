@@ -45,7 +45,7 @@ export default async function TrendsPage() {
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <h1 className="text-display hero-headline mb-8">
-              Thoughts on church & design
+              Digital Trends Churches Can’t Ignore
             </h1>
           </ScrollReveal>
         </div>
