@@ -5,7 +5,7 @@
  * Portfolio-led. Minimal copy. Maximum impact.
  */
 
-import { prisma } from "@/lib/db/prisma";
+import { db } from "@/lib/db/neon";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 
 // Featured work items with placeholder images until real assets exist
@@ -24,9 +24,9 @@ export default async function MarketingHomePage() {
   let workItems = FEATURED_WORK;
 
   try {
-    const caseStudies = await prisma.caseStudy.findMany({
+    const caseStudies = await db.caseStudy.findMany({
       where: { status: "PUBLISHED", featured: true },
-      orderBy: { sortOrder: "asc" },
+      orderBy: [{ sortOrder: "asc" }],
       take: 4,
     });
 

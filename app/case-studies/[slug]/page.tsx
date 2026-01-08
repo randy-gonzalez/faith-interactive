@@ -4,7 +4,7 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { prisma } from "@/lib/db/prisma";
+import { db } from "@/lib/db/neon";
 import { notFound } from "next/navigation";
 
 // Force dynamic rendering - database not available at build time on Cloudflare
@@ -16,7 +16,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const caseStudy = await prisma.caseStudy.findUnique({
+  const caseStudy = await db.caseStudy.findUnique({
     where: { slug, status: "PUBLISHED" },
   });
 
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function CaseStudyPage({ params }: PageProps) {
   const { slug } = await params;
 
-  const caseStudy = await prisma.caseStudy.findUnique({
+  const caseStudy = await db.caseStudy.findUnique({
     where: { slug, status: "PUBLISHED" },
   });
 

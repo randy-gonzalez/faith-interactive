@@ -6,7 +6,9 @@
 // ==============================================================================
 
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  // Use client-side engine for Cloudflare Workers compatibility (no Rust binaries)
+  engineType = "client"
 }
 
 datasource db {

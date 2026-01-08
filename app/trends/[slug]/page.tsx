@@ -6,7 +6,7 @@
  */
 
 import type { Metadata } from "next";
-import { prisma } from "@/lib/db/prisma";
+import { db } from "@/lib/db/neon";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { BlogPostSchema } from "@/components/marketing/structured-data";
@@ -21,7 +21,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await prisma.blogPost.findUnique({
+  const post = await db.blogPost.findUnique({
     where: { slug, status: "PUBLISHED" },
   });
 
@@ -47,12 +47,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function TrendsPostPage({ params }: PageProps) {
   const { slug } = await params;
 
-  const post = await prisma.blogPost.findUnique({
+  const post = await db.blogPost.findUnique({
     where: { slug, status: "PUBLISHED" },
-    include: {
-      category: true,
-      tags: { include: { tag: true } },
-    },
   });
 
   if (!post) {
@@ -138,22 +134,6 @@ export default async function TrendsPostPage({ params }: PageProps) {
               className="prose-article"
               dangerouslySetInnerHTML={{ __html: articleContent }}
             />
-
-            {/* Tags */}
-            {post.tags.length > 0 && (
-              <div className="mt-16 pt-8 border-t border-[#e5e5e5]">
-                <div className="flex flex-wrap gap-3">
-                  {post.tags.map(({ tag }) => (
-                    <span
-                      key={tag.id}
-                      className="text-sm text-[#737373]"
-                    >
-                      #{tag.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </article>

@@ -11,7 +11,7 @@
  */
 
 import type { Metadata } from "next";
-import { prisma } from "@/lib/db/prisma";
+import { db } from "@/lib/db/neon";
 import Link from "next/link";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 
@@ -32,19 +32,22 @@ export default async function TrendsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const categorySlug = params.category;
 
-  const where: Record<string, unknown> = { status: "PUBLISHED" };
+  // Get category ID if filtering by category
+  let categoryId: string | undefined;
   if (categorySlug) {
-    where.category = { slug: categorySlug };
+    const category = await db.blogCategory.findUnique({
+      where: { slug: categorySlug },
+    });
+    categoryId = category?.id;
   }
 
   const [posts, categories] = await Promise.all([
-    prisma.blogPost.findMany({
-      where,
-      orderBy: { publishedAt: "desc" },
-      include: { category: true },
+    db.blogPost.findMany({
+      where: { status: "PUBLISHED", ...(categoryId && { categoryId }) },
+      orderBy: [{ publishedAt: "desc" }],
     }),
-    prisma.blogCategory.findMany({
-      orderBy: { sortOrder: "asc" },
+    db.blogCategory.findMany({
+      orderBy: [{ sortOrder: "asc" }],
     }),
   ]);
 

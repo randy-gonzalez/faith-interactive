@@ -3,20 +3,11 @@ import type { NextConfig } from "next";
 /**
  * Next.js Configuration for Faith Interactive Marketing Site
  *
- * Security headers are configured here to work with Cloudflare CDN.
- * SSL/HTTPS is handled by Cloudflare, so we don't configure it here.
+ * Deployed on Vercel with full Next.js optimization support.
  */
 const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
-
-  // Disable Sharp-based image optimization for Cloudflare Workers compatibility
-  images: {
-    unoptimized: true,
-  },
-
-  // Exclude sharp from serverless functions (not compatible with Cloudflare Workers)
-  serverExternalPackages: ["sharp"],
 
   // Security headers
   async headers() {

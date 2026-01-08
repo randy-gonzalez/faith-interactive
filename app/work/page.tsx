@@ -12,7 +12,7 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { prisma } from "@/lib/db/prisma";
+import { db, type CaseStudy } from "@/lib/db/neon";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 
 export const metadata: Metadata = {
@@ -21,23 +21,12 @@ export const metadata: Metadata = {
     "Church websites we've designed. Real projects for real churches.",
 };
 
-interface CaseStudy {
-  id: string;
-  churchName: string;
-  slug: string;
-  description: string;
-  images: unknown;
-  afterImage: string | null;
-  logo: string | null;
-  liveSiteUrl: string | null;
-  featured: boolean;
-}
 
 // Force dynamic rendering - database not available at build time on Cloudflare
 export const dynamic = "force-dynamic";
 
 export default async function WorkPage() {
-  const caseStudies = await prisma.caseStudy.findMany({
+  const caseStudies = await db.caseStudy.findMany({
     where: { status: "PUBLISHED" },
     orderBy: [{ featured: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
   });
@@ -71,7 +60,7 @@ export default async function WorkPage() {
             {caseStudies.map((study, index) => (
               <WorkItem
                 key={study.id}
-                study={study as CaseStudy}
+                study={study}
                 index={index}
               />
             ))}
@@ -109,7 +98,7 @@ export default async function WorkPage() {
 
 function WorkItem({ study, index }: { study: CaseStudy; index: number }) {
   // Get hero image from afterImage or first image in gallery
-  const images = Array.isArray(study.images) ? (study.images as string[]) : [];
+  const images = study.images || [];
   const heroImage = study.afterImage || images[0] || null;
 
   return (

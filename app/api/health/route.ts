@@ -8,7 +8,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
+import { neon } from "@neondatabase/serverless";
 import type { HealthCheckResponse } from "@/types";
 
 // Application version
@@ -19,7 +19,8 @@ export async function GET() {
   let databaseStatus: "connected" | "disconnected" = "disconnected";
 
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    const sql = neon(process.env.DATABASE_URL!);
+    await sql`SELECT 1`;
     databaseStatus = "connected";
   } catch {
     databaseStatus = "disconnected";

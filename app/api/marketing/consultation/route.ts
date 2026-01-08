@@ -7,9 +7,10 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
+import { neon } from "@neondatabase/serverless";
 import { logger } from "@/lib/logging/logger";
 import { consultationFormSchema, formatZodError } from "@/lib/validation/schemas";
+import { createId } from "@paralleldrive/cuid2";
 
 // Simple in-memory rate limiting
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -84,21 +85,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Save to database
-    const consultation = await prisma.consultationRequest.create({
-      data: {
-        name,
-        email,
-        phone: phone || null,
-        churchName: churchName || null,
-        packageInterest: packageInterest || null,
-        message: message || null,
-        ipAddress: ip,
-        userAgent: userAgent || null,
-      },
-    });
+    const sql = neon(process.env.DATABASE_URL!);
+    const id = createId();
+    const now = new Date().toISOString();
+
+    await sql`
+      INSERT INTO "ConsultationRequest" (
+        id, name, email, phone, "churchName", "packageInterest",
+        message, "ipAddress", "userAgent", status, "createdAt", "updatedAt"
+      ) VALUES (
+        ${id}, ${name}, ${email}, ${phone || null}, ${churchName || null},
+        ${packageInterest || null}, ${message || null}, ${ip},
+        ${userAgent || null}, 'NEW', ${now}, ${now}
+      )
+    `;
 
     logger.info("Consultation request submitted", {
-      consultationId: consultation.id,
+      consultationId: id,
       email,
       packageInterest,
     });
