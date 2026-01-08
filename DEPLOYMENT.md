@@ -75,19 +75,7 @@ Go to your Vercel project → **Settings** → **Environment Variables**
 | `NEXT_PUBLIC_BASE_URL` | Same as APP_URL | All |
 | `NEXT_PUBLIC_MAIN_DOMAIN` | `your-domain.com` (no https) | All |
 
-### Optional Variables (if using media storage)
-
-| Variable | Value |
-|----------|-------|
-| `S3_BUCKET` | Your R2/S3 bucket name |
-| `S3_REGION` | `auto` (for R2) or AWS region |
-| `S3_ENDPOINT` | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` |
-| `S3_ACCESS_KEY_ID` | Your access key |
-| `S3_SECRET_ACCESS_KEY` | Your secret key |
-| `S3_PUBLIC_URL` | Public URL for the bucket |
-| `IMAGE_PROCESSING_ENABLED` | `true` |
-
-### Other Optional Variables
+### Optional Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
