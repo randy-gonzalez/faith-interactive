@@ -9,6 +9,18 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
 
+  // Redirect old category URLs to new SEO-friendly structure
+  async redirects() {
+    return [
+      {
+        source: "/trends",
+        has: [{ type: "query", key: "category", value: "(?<cat>.*)" }],
+        destination: "/trends/category/:cat",
+        permanent: true,
+      },
+    ];
+  },
+
   // Security headers
   async headers() {
     const securityHeaders = [
@@ -78,6 +90,10 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/trends/:slug",
+        headers: publicCacheHeaders,
+      },
+      {
+        source: "/trends/category/:slug",
         headers: publicCacheHeaders,
       },
       {

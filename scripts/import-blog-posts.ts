@@ -13,13 +13,20 @@
  */
 
 import { PrismaClient, MarketingPageStatus } from "@prisma/client";
+import { PrismaNeonHTTP } from "@prisma/adapter-neon";
 import * as cheerio from "cheerio";
 import { createId } from "@paralleldrive/cuid2";
 
-const prisma = new PrismaClient();
+// Create Prisma client with Neon HTTP adapter (same as main app)
+const connectionString = process.env.DATABASE_URL!;
+const adapter = new PrismaNeonHTTP(connectionString, {
+  arrayMode: false,
+  fullResults: true,
+});
+const prisma = new PrismaClient({ adapter });
 
 // Configuration
-const SOURCE_BASE_URL = "https://faith-interactive.com";
+const SOURCE_BASE_URL = "https://wordpress-1057367-3849823.cloudwaysapps.com";
 const BLOG_LISTING_URL = `${SOURCE_BASE_URL}/fi-blog/`;
 const TOTAL_PAGES = 4;
 const REQUEST_DELAY_MS = 500; // Delay between requests to avoid rate limiting
@@ -267,7 +274,11 @@ function inferTags(post: SourcePost): string[] {
 
 async function fetchPage(url: string): Promise<string> {
   log(`  Fetching: ${url}`, true);
-  const response = await fetch(url);
+
+  // Use http for cloudwaysapps.com due to SSL cert mismatch
+  const fetchUrl = url.replace('https://wordpress-1057367-3849823.cloudwaysapps.com', 'http://wordpress-1057367-3849823.cloudwaysapps.com');
+
+  const response = await fetch(fetchUrl);
   if (!response.ok) {
     throw new Error(`Failed to fetch ${url}: ${response.status}`);
   }
@@ -603,8 +614,8 @@ async function importPost(
     return true;
   }
 
-  // Create the post
-  await prisma.blogPost.create({
+  // Create the post first (without tags - Neon HTTP doesn't support transactions)
+  const createdPost = await prisma.blogPost.create({
     data: {
       title: post.title,
       slug: post.slug,
@@ -619,13 +630,18 @@ async function importPost(
       metaDescription: post.excerpt.substring(0, 500),
       ogImage: post.featuredImage,
       noIndex: false,
-      tags: {
-        create: tagIds.map((tagId) => ({
-          tagId,
-        })),
-      },
     },
   });
+
+  // Create tag associations separately
+  for (const tagId of tagIds) {
+    await prisma.blogPostTag.create({
+      data: {
+        postId: createdPost.id,
+        tagId,
+      },
+    });
+  }
 
   log(`  Imported: ${post.title}`);
   return true;

@@ -1,33 +1,55 @@
 /**
- * Trends Page
+ * Category Trends Page
  *
- * Purpose: Share useful thinking, not content marketing.
- * Answer: "What are these people thinking about?"
- *
- * Intentionally excluded:
- * - Card-heavy layouts
- * - Gradient pill buttons
- * - Marketing language in descriptions
+ * SEO-friendly URL structure: /trends/category/[categorySlug]
  */
 
 import type { Metadata } from "next";
 import { db } from "@/lib/db/neon";
 import Link from "next/link";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
-
-export const metadata: Metadata = {
-  title: "Trends",
-  description:
-    "Thoughts on church websites, design, and digital presence.",
-};
+import { notFound } from "next/navigation";
 
 // Force dynamic rendering - database not available at build time
 export const dynamic = "force-dynamic";
 
-export default async function TrendsPage() {
+interface PageProps {
+  params: Promise<{ categorySlug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { categorySlug } = await params;
+
+  const category = await db.blogCategory.findUnique({
+    where: { slug: categorySlug },
+  });
+
+  if (!category) {
+    return {
+      title: "Category Not Found",
+    };
+  }
+
+  return {
+    title: `${category.name} | Trends`,
+    description: `Thoughts on ${category.name.toLowerCase()} for churches and ministries.`,
+  };
+}
+
+export default async function CategoryTrendsPage({ params }: PageProps) {
+  const { categorySlug } = await params;
+
+  const category = await db.blogCategory.findUnique({
+    where: { slug: categorySlug },
+  });
+
+  if (!category) {
+    notFound();
+  }
+
   const [posts, categories] = await Promise.all([
     db.blogPost.findMany({
-      where: { status: "PUBLISHED" },
+      where: { status: "PUBLISHED", categoryId: category.id },
       orderBy: [{ publishedAt: "desc" }],
     }),
     db.blogCategory.findMany({
@@ -45,7 +67,7 @@ export default async function TrendsPage() {
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <h1 className="text-display hero-headline mb-8">
-              Thoughts on church & design
+              {category.name}
             </h1>
           </ScrollReveal>
         </div>
@@ -58,17 +80,21 @@ export default async function TrendsPage() {
             <div className="flex flex-wrap gap-6">
               <Link
                 href="/trends"
-                className="text-sm font-medium transition-colors text-[#171717]"
+                className="text-sm font-medium transition-colors text-[#737373] hover:text-[#171717]"
               >
                 All
               </Link>
-              {categories.map((category) => (
+              {categories.map((cat) => (
                 <Link
-                  key={category.id}
-                  href={`/trends/category/${category.slug}`}
-                  className="text-sm font-medium transition-colors text-[#737373] hover:text-[#171717]"
+                  key={cat.id}
+                  href={`/trends/category/${cat.slug}`}
+                  className={`text-sm font-medium transition-colors ${
+                    categorySlug === cat.slug
+                      ? "text-[#171717]"
+                      : "text-[#737373] hover:text-[#171717]"
+                  }`}
                 >
-                  {category.name}
+                  {cat.name}
                 </Link>
               ))}
             </div>
@@ -81,7 +107,7 @@ export default async function TrendsPage() {
         <div className="container">
           {posts.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-[#737373]">Coming soon.</p>
+              <p className="text-[#737373]">Nothing here yet.</p>
             </div>
           ) : (
             <div className="max-w-3xl">
