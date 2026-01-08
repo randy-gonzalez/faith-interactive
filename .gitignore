@@ -6,10 +6,8 @@ node_modules/
 .next/
 out/
 
-# OpenNext (Cloudflare deployment)
-.open-next/
+# Vercel
 .vercel/
-.dev.vars
 
 # Production build
 build/
@@ -34,6 +32,7 @@ pnpm-debug.log*
 # IDE
 .idea/
 .vscode/
+.claude/
 *.swp
 *.swo
 .DS_Store
