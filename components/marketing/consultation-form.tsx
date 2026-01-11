@@ -83,7 +83,7 @@ export function ConsultationForm({ preselectedPackage }: ConsultationFormProps) 
   }, [success]);
 
   if (success) {
-    const calendlyUrl = `https://calendly.com/faith-interactive/redesign?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
+    const calendlyUrl = `https://calendly.com/faith-interactive/redesign?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&a1=${encodeURIComponent(churchName)}`;
 
     return (
       <div className="py-8">

@@ -11,6 +11,10 @@ import { neon } from "@neondatabase/serverless";
 import { logger } from "@/lib/logging/logger";
 import { consultationFormSchema, formatZodError } from "@/lib/validation/schemas";
 import { createId } from "@paralleldrive/cuid2";
+import { sendConsultationNotificationEmail } from "@/lib/email/send";
+
+// Admin email(s) to receive consultation notifications
+const ADMIN_NOTIFICATION_EMAILS = (process.env.ADMIN_NOTIFICATION_EMAILS || "hello@faith-interactive.com").split(",").map(e => e.trim());
 
 // Simple in-memory rate limiting
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -105,6 +109,26 @@ export async function POST(request: NextRequest) {
       email,
       packageInterest,
     });
+
+    // Send email notification to admin(s)
+    try {
+      await sendConsultationNotificationEmail(
+        ADMIN_NOTIFICATION_EMAILS,
+        {
+          name,
+          email,
+          phone: phone || null,
+          churchName: churchName || null,
+          packageInterest: packageInterest || null,
+          message: message || null,
+        },
+        id
+      );
+      logger.info("Consultation notification email sent", { consultationId: id });
+    } catch (emailError) {
+      // Log but don't fail the request if email fails
+      logger.error("Failed to send consultation notification email", emailError as Error, { consultationId: id });
+    }
 
     return NextResponse.json({
       success: true,
