@@ -33,11 +33,11 @@ const nextConfig: NextConfig = {
         key: "Content-Security-Policy",
         value: [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com https://www.googletagmanager.com https://www.google-analytics.com",
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com",
           "img-src 'self' data: https:",
           "font-src 'self' data: https://fonts.gstatic.com",
-          "connect-src 'self' https://calendly.com",
+          "connect-src 'self' https://calendly.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com",
           "frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.google.com https://maps.google.com https://calendly.com",
           "media-src 'self' https:",
         ].join("; "),
