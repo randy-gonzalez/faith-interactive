@@ -9,11 +9,11 @@ import { db } from "@/lib/db/neon";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 
 // Featured work items with placeholder images until real assets exist
-const FEATURED_WORK = [
-  { name: "The Sanctuary", slug: "the-sanctuary" },
-  { name: "Redeemer City Church", slug: "redeemer-city-church" },
-  { name: "The Sending Church", slug: "the-sending-church" },
-  { name: "Calvary Chapel Boulder", slug: "calvary-chapel-boulder" },
+const FEATURED_WORK: { name: string; slug: string; logo: string | null }[] = [
+  { name: "The Sanctuary", slug: "the-sanctuary", logo: null },
+  { name: "Redeemer City Church", slug: "redeemer-city-church", logo: null },
+  { name: "The Sending Church", slug: "the-sending-church", logo: null },
+  { name: "Calvary Chapel Boulder", slug: "calvary-chapel-boulder", logo: null },
 ];
 
 // Force dynamic rendering - database not available at build time on Cloudflare
@@ -31,7 +31,7 @@ export default async function MarketingHomePage() {
     });
 
     if (caseStudies.length > 0) {
-      workItems = caseStudies.map((s) => ({ name: s.churchName, slug: s.slug }));
+      workItems = caseStudies.map((s) => ({ name: s.churchName, slug: s.slug, logo: s.logo }));
     }
   } catch {
     // Database unavailable (e.g., during build) - use static fallback
@@ -69,13 +69,21 @@ export default async function MarketingHomePage() {
               href={`/work/${item.slug}`}
               className="work-item group"
             >
-              {/* Gradient background - will be replaced with images */}
-              <div
-                className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
-                style={{
-                  background: `linear-gradient(${135 + index * 45}deg, #4f76f6, #77f2a1)`,
-                }}
-              />
+              {/* Featured image or gradient fallback */}
+              {item.logo ? (
+                <img
+                  src={item.logo}
+                  alt={item.name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div
+                  className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                  style={{
+                    background: `linear-gradient(${135 + index * 45}deg, #4f76f6, #77f2a1)`,
+                  }}
+                />
+              )}
               {/* Always-visible title overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-6 md:p-8">
                 <span className="text-white text-xl md:text-2xl font-medium">
