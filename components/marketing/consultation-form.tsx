@@ -4,9 +4,11 @@
  * Consultation Form Component
  *
  * Contact form for consultation requests with honeypot spam protection.
+ * Shows Calendly embed after successful submission.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { trackLeadConversion } from "@/lib/analytics/track-event";
 
 interface ConsultationFormProps {
   preselectedPackage?: string;
@@ -59,6 +61,7 @@ export function ConsultationForm({ preselectedPackage }: ConsultationFormProps) 
       }
 
       setSuccess(true);
+      trackLeadConversion("consultation_request");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -66,19 +69,41 @@ export function ConsultationForm({ preselectedPackage }: ConsultationFormProps) 
     }
   }
 
+  // Load Calendly widget script when success state is reached
+  useEffect(() => {
+    if (success) {
+      const script = document.createElement("script");
+      script.src = "https://assets.calendly.com/assets/external/widget.js";
+      script.async = true;
+      document.body.appendChild(script);
+      return () => {
+        document.body.removeChild(script);
+      };
+    }
+  }, [success]);
+
   if (success) {
+    const calendlyUrl = `https://calendly.com/faith-interactive/redesign?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
+
     return (
-      <div className="text-center py-12">
-        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-[#77f2a1] to-[#00ffce] flex items-center justify-center">
-          <svg className="w-8 h-8 text-[#000646]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+      <div className="py-8">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-linear-to-br from-[#77f2a1] to-[#00ffce] flex items-center justify-center">
+            <svg className="w-8 h-8 text-[#000646]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 className="text-2xl font-bold text-[#000646] mb-2">Thank You!</h3>
+          <p className="text-gray-600 max-w-md mx-auto">
+            We&apos;ve received your consultation request. Schedule a call below to discuss your project!
+          </p>
         </div>
-        <h3 className="text-2xl font-bold text-[#000646] mb-2">Thank You!</h3>
-        <p className="text-gray-600 max-w-md mx-auto">
-          We&apos;ve received your consultation request and will be in touch within 24 hours.
-          We&apos;re excited to help your church grow online!
-        </p>
+
+        <div
+          className="calendly-inline-widget"
+          data-url={calendlyUrl}
+          style={{ minWidth: "320px", height: "700px" }}
+        />
       </div>
     );
   }

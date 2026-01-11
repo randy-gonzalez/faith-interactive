@@ -9,7 +9,7 @@ Complete guide to deploying Faith Interactive Marketing Site to Vercel.
 This deployment uses:
 - **Vercel** - Hosts the Next.js 16 application
 - **Neon** - Serverless PostgreSQL database
-- **Cloudflare R2** (or S3) - Media storage (optional)
+- **Resend** - Transactional emails
 
 ---
 
@@ -75,7 +75,20 @@ Go to your Vercel project → **Settings** → **Environment Variables**
 | `NEXT_PUBLIC_BASE_URL` | Same as APP_URL | All |
 | `NEXT_PUBLIC_MAIN_DOMAIN` | `your-domain.com` (no https) | All |
 
-### Optional Variables
+### Email Configuration (Resend)
+
+| Variable | Description |
+|----------|-------------|
+| `RESEND_API_KEY` | API key from [resend.com](https://resend.com) |
+| `EMAIL_FROM` | Verified sender (e.g., `Faith Interactive <noreply@faith-interactive.com>`) |
+
+**Setting up Resend:**
+1. Create account at [resend.com](https://resend.com)
+2. Add and verify your domain
+3. Create an API key
+4. Add environment variables to Vercel
+
+### Other Optional Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|

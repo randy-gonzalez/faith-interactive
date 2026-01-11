@@ -1,15 +1,19 @@
 /**
  * Email Service
  *
- * Simple email sending abstraction. In development, emails are logged to console.
- * In production, this can be replaced with an actual email provider (SendGrid, SES, etc.)
- *
- * IMPLEMENTATION NOTE:
- * For production, replace the sendEmail function body with actual email provider code.
- * The function signature and types should remain the same.
+ * Simple email sending abstraction using Resend.
+ * In development without RESEND_API_KEY, emails are logged to console.
+ * In production, emails are sent via Resend.
  */
 
+import { Resend } from "resend";
 import { logger } from "@/lib/logging/logger";
+
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
+
+const FROM_EMAIL = process.env.EMAIL_FROM || "Faith Interactive <noreply@faith-interactive.com>";
 
 export interface EmailOptions {
   to: string;
@@ -21,29 +25,36 @@ export interface EmailOptions {
 /**
  * Send an email.
  *
- * In development: logs to console.
- * In production: implement actual email sending here.
+ * With RESEND_API_KEY: sends via Resend.
+ * Without RESEND_API_KEY: logs to console (dev mode).
  *
  * @param options - Email options
- * @returns Promise that resolves when email is "sent"
+ * @returns Promise that resolves when email is sent
  */
 export async function sendEmail(options: EmailOptions): Promise<void> {
   const { to, subject, text, html } = options;
 
-  // In production, replace this with actual email provider
-  // Example with SendGrid:
-  // const sgMail = require('@sendgrid/mail');
-  // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  // await sgMail.send({ to, from: 'noreply@faithinteractive.com', subject, text, html });
+  // Production: send via Resend
+  if (resend) {
+    const { error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject,
+      text,
+      html,
+    });
 
-  if (process.env.NODE_ENV === "production") {
-    // TODO: Implement production email sending
-    logger.warn("Email sending not configured for production", { to, subject });
+    if (error) {
+      logger.error("Failed to send email via Resend", new Error(error.message), { to, subject });
+      throw new Error(`Failed to send email: ${error.message}`);
+    }
+
+    logger.info("Email sent via Resend", { to, subject });
     return;
   }
 
   // Development: log the email
-  logger.info("Email would be sent (dev mode)", {
+  logger.info("Email would be sent (dev mode - no RESEND_API_KEY)", {
     to,
     subject,
     text: text.substring(0, 200) + (text.length > 200 ? "..." : ""),

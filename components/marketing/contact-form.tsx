@@ -4,9 +4,11 @@
  * Contact Form
  *
  * Simple, clean contact form. No marketing fluff.
+ * Shows Calendly embed after successful submission.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { trackLeadConversion } from "@/lib/analytics/track-event";
 
 export function ContactForm() {
   const [name, setName] = useState("");
@@ -44,6 +46,7 @@ export function ContactForm() {
       }
 
       setSuccess(true);
+      trackLeadConversion("contact_form");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -51,13 +54,36 @@ export function ContactForm() {
     }
   }
 
+  // Load Calendly widget script when success state is reached
+  useEffect(() => {
+    if (success) {
+      const script = document.createElement("script");
+      script.src = "https://assets.calendly.com/assets/external/widget.js";
+      script.async = true;
+      document.body.appendChild(script);
+      return () => {
+        document.body.removeChild(script);
+      };
+    }
+  }, [success]);
+
   if (success) {
+    const calendlyUrl = `https://calendly.com/faith-interactive/redesign?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
+
     return (
-      <div className="py-12">
-        <p className="h3 mb-4">Thanks for reaching out.</p>
-        <p className="text-[#525252]">
-          We&apos;ll be in touch soon.
-        </p>
+      <div className="py-8">
+        <div className="mb-8">
+          <p className="h3 mb-4">Thanks for reaching out.</p>
+          <p className="text-[#525252]">
+            Schedule a call below to discuss your project!
+          </p>
+        </div>
+
+        <div
+          className="calendly-inline-widget"
+          data-url={calendlyUrl}
+          style={{ minWidth: "320px", height: "700px" }}
+        />
       </div>
     );
   }
