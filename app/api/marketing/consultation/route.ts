@@ -14,7 +14,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { sendConsultationNotificationEmail } from "@/lib/email/send";
 
 // Admin email(s) to receive consultation notifications
-const ADMIN_NOTIFICATION_EMAILS = (process.env.ADMIN_NOTIFICATION_EMAILS || "hello@faith-interactive.com").split(",").map(e => e.trim());
+const ADMIN_NOTIFICATION_EMAILS = (process.env.ADMIN_NOTIFICATION_EMAILS || "randy@faith-interactive.com").split(",").map(e => e.trim());
 
 // Simple in-memory rate limiting
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();

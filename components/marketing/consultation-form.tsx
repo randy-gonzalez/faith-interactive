@@ -69,22 +69,37 @@ export function ConsultationForm({ preselectedPackage }: ConsultationFormProps) 
     }
   }
 
-  // Load Calendly widget script when success state is reached
+  // Load Calendly widget script and initialize when success state is reached
   useEffect(() => {
     if (success) {
       const script = document.createElement("script");
       script.src = "https://assets.calendly.com/assets/external/widget.js";
       script.async = true;
+      script.onload = () => {
+        // Initialize Calendly with prefill data after script loads
+        const Calendly = (window as unknown as { Calendly?: { initInlineWidget: (options: unknown) => void } }).Calendly;
+        if (Calendly) {
+          Calendly.initInlineWidget({
+            url: "https://calendly.com/faith-interactive/redesign",
+            parentElement: document.getElementById("calendly-embed"),
+            prefill: {
+              name: name,
+              email: email,
+              customAnswers: {
+                a1: churchName || "",
+              },
+            },
+          });
+        }
+      };
       document.body.appendChild(script);
       return () => {
         document.body.removeChild(script);
       };
     }
-  }, [success]);
+  }, [success, name, email, churchName]);
 
   if (success) {
-    const calendlyUrl = `https://calendly.com/faith-interactive/redesign?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&a1=${encodeURIComponent(churchName)}`;
-
     return (
       <div className="py-8">
         <div className="text-center mb-8">
@@ -100,8 +115,7 @@ export function ConsultationForm({ preselectedPackage }: ConsultationFormProps) 
         </div>
 
         <div
-          className="calendly-inline-widget"
-          data-url={calendlyUrl}
+          id="calendly-embed"
           style={{ minWidth: "320px", height: "700px" }}
         />
       </div>

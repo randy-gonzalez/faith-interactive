@@ -30,20 +30,11 @@ export const metadata: Metadata = {
     siteName: "Faith Interactive",
     title: "Faith Interactive | Church Website Design",
     description: "A design studio for churches.",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Faith Interactive",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Faith Interactive | Church Website Design",
     description: "A design studio for churches.",
-    images: ["/og-image.jpg"],
   },
 };
 
