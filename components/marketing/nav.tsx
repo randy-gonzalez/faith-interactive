@@ -103,36 +103,60 @@ export function MarketingNav() {
       </header>
 
       {/* Mobile Menu Overlay */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-100 bg-white md:hidden">
-          <div className="h-full flex flex-col justify-center px-8">
-            <div className="flex flex-col gap-4">
-              {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`text-4xl sm:text-5xl font-medium ${
-                    isActive(link.href) ? "text-black" : "text-[#737373] hover:text-black"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
+      <div
+        className={`fixed inset-0 z-100 bg-white md:hidden transition-opacity duration-300 ${
+          isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        {/* Close Button */}
+        <div className="absolute top-0 right-0 p-6">
+          <button
+            onClick={() => setIsMenuOpen(false)}
+            className="w-10 h-10 flex items-center justify-center"
+            aria-label="Close menu"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
 
-            <div className="mt-12">
+        <div className="h-full flex flex-col justify-center px-8">
+          <div className="flex flex-col gap-4">
+            {NAV_LINKS.map((link) => (
               <Link
-                href="/contact"
+                key={link.href}
+                href={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="btn-primary text-lg"
+                className={`text-4xl sm:text-5xl font-medium ${
+                  isActive(link.href) ? "text-black" : "text-[#737373] hover:text-black"
+                }`}
               >
-                Get in touch
+                {link.label}
               </Link>
-            </div>
+            ))}
+          </div>
+
+          <div className="mt-12">
+            <Link
+              href="/contact"
+              onClick={() => setIsMenuOpen(false)}
+              className="btn-primary text-lg"
+            >
+              Get in touch
+            </Link>
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 }
