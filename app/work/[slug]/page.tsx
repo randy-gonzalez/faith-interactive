@@ -78,7 +78,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
               {/* Metrics */}
               {caseStudy.metrics && typeof caseStudy.metrics === 'object' && Object.keys(caseStudy.metrics).length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-8">
-                  {Object.entries(caseStudy.metrics as Record<string, string>).map(([label, value]) => (
+                  {Object.entries(caseStudy.metrics as Record<string, string>).reverse().map(([label, value]) => (
                     <div key={label}>
                       <p className="text-2xl md:text-3xl font-medium text-gradient">{value}</p>
                       <p className="text-small text-[#737373]">{label}</p>
