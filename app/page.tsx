@@ -129,22 +129,22 @@ export default async function MarketingHomePage() {
           </ScrollReveal>
           <div className="services-list">
             <ScrollReveal delay={0.1}>
-              <div className="services-item">
+              <a href="/services" className="services-item">
                 <span>Church Identity</span>
                 <span className="text-[#737373]">&rarr;</span>
-              </div>
+              </a>
             </ScrollReveal>
             <ScrollReveal delay={0.15}>
-              <div className="services-item">
+              <a href="/services" className="services-item">
                 <span>Church Website Design</span>
                 <span className="text-[#737373]">&rarr;</span>
-              </div>
+              </a>
             </ScrollReveal>
             <ScrollReveal delay={0.2}>
-              <div className="services-item">
+              <a href="/services" className="services-item">
                 <span>Ongoing Support</span>
                 <span className="text-[#737373]">&rarr;</span>
-              </div>
+              </a>
             </ScrollReveal>
           </div>
         </div>
