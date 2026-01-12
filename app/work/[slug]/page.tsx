@@ -65,16 +65,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
               &larr; Work
             </Link>
 
-            <div className="flex items-start gap-6 md:gap-8">
-              {/* Logo */}
-              {caseStudy.logo && (
-                <img
-                  src={caseStudy.logo}
-                  alt={`${caseStudy.churchName} logo`}
-                  className="w-20 h-20 md:w-32 md:h-32 object-contain shrink-0"
-                />
-              )}
-
+            <div className="flex items-start justify-between gap-8 md:gap-12">
               <div>
                 <h1 className="text-display mb-6">{caseStudy.churchName}</h1>
 
@@ -96,6 +87,15 @@ export default async function WorkDetailPage({ params }: PageProps) {
                   </a>
                 )}
               </div>
+
+              {/* Logo */}
+              {caseStudy.logo && (
+                <img
+                  src={caseStudy.logo}
+                  alt={`${caseStudy.churchName} logo`}
+                  className="w-32 h-32 md:w-48 md:h-48 object-contain shrink-0 hidden sm:block"
+                />
+              )}
             </div>
           </div>
         </div>
