@@ -50,7 +50,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
   }
 
   const images = Array.isArray(caseStudy.images) ? (caseStudy.images as string[]) : [];
-  const heroImage = caseStudy.afterImage || images[0] || null;
+  const featuredImage = images[0] || null;
 
   return (
     <>
@@ -65,34 +65,47 @@ export default async function WorkDetailPage({ params }: PageProps) {
               &larr; Work
             </Link>
 
-            <h1 className="text-display mb-6">{caseStudy.churchName}</h1>
+            <div className="flex items-start gap-6 md:gap-8">
+              {/* Logo */}
+              {caseStudy.logo && (
+                <img
+                  src={caseStudy.logo}
+                  alt={`${caseStudy.churchName} logo`}
+                  className="w-16 h-16 md:w-24 md:h-24 object-contain flex-shrink-0"
+                />
+              )}
 
-            {caseStudy.description && (
-              <p className="text-large text-[#525252] max-w-2xl mb-8">
-                {caseStudy.description}
-              </p>
-            )}
+              <div>
+                <h1 className="text-display mb-6">{caseStudy.churchName}</h1>
 
-            {caseStudy.liveSiteUrl && (
-              <a
-                href={caseStudy.liveSiteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary"
-              >
-                Visit their website
-                <span className="btn-arrow">→</span>
-              </a>
-            )}
+                {caseStudy.description && (
+                  <p className="text-large text-[#525252] max-w-2xl mb-8">
+                    {caseStudy.description}
+                  </p>
+                )}
+
+                {caseStudy.liveSiteUrl && (
+                  <a
+                    href={caseStudy.liveSiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary"
+                  >
+                    Visit their website
+                    <span className="btn-arrow">→</span>
+                  </a>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Hero Image */}
-      {heroImage && (
+      {/* Featured Image */}
+      {featuredImage && (
         <section className="container mb-16">
           <img
-            src={heroImage}
+            src={featuredImage}
             alt={caseStudy.churchName}
             className="w-full"
           />

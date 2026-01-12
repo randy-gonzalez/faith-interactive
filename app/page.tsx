@@ -9,11 +9,11 @@ import { db } from "@/lib/db/neon";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 
 // Featured work items with placeholder images until real assets exist
-const FEATURED_WORK: { name: string; slug: string; logo: string | null }[] = [
-  { name: "The Sanctuary", slug: "the-sanctuary", logo: null },
-  { name: "Redeemer City Church", slug: "redeemer-city-church", logo: null },
-  { name: "The Sending Church", slug: "the-sending-church", logo: null },
-  { name: "Calvary Chapel Boulder", slug: "calvary-chapel-boulder", logo: null },
+const FEATURED_WORK: { name: string; slug: string; featuredImage: string | null }[] = [
+  { name: "The Sanctuary", slug: "the-sanctuary", featuredImage: null },
+  { name: "Redeemer City Church", slug: "redeemer-city-church", featuredImage: null },
+  { name: "The Sending Church", slug: "the-sending-church", featuredImage: null },
+  { name: "Calvary Chapel Boulder", slug: "calvary-chapel-boulder", featuredImage: null },
 ];
 
 // Force dynamic rendering - database not available at build time on Cloudflare
@@ -31,7 +31,11 @@ export default async function MarketingHomePage() {
     });
 
     if (caseStudies.length > 0) {
-      workItems = caseStudies.map((s) => ({ name: s.churchName, slug: s.slug, logo: s.logo }));
+      workItems = caseStudies.map((s) => ({
+        name: s.churchName,
+        slug: s.slug,
+        featuredImage: s.images.length > 0 ? s.images[0] : null,
+      }));
     }
   } catch {
     // Database unavailable (e.g., during build) - use static fallback
@@ -70,9 +74,9 @@ export default async function MarketingHomePage() {
               className="work-item group"
             >
               {/* Featured image or gradient fallback */}
-              {item.logo ? (
+              {item.featuredImage ? (
                 <img
-                  src={item.logo}
+                  src={item.featuredImage}
                   alt={item.name}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
