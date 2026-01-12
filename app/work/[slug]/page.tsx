@@ -50,6 +50,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
   }
 
   const featuredImage = caseStudy.featuredImage;
+  const images = Array.isArray(caseStudy.images) ? (caseStudy.images as string[]) : [];
 
   return (
     <>
