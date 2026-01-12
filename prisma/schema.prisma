@@ -172,6 +172,7 @@ model CaseStudy {
   churchName       String
   slug             String              @unique
   logo             String?
+  featuredImage    String?
   description      String              @db.Text
   challenge        String?             @db.Text
   solution         String?             @db.Text

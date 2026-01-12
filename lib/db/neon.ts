@@ -13,6 +13,7 @@ export interface CaseStudy {
   churchName: string;
   slug: string;
   logo: string | null;
+  featuredImage: string | null;
   description: string;
   challenge: string | null;
   solution: string | null;
@@ -268,6 +269,7 @@ function mapCaseStudyRow(row: Record<string, unknown>): CaseStudy {
     churchName: row.churchName as string,
     slug: row.slug as string,
     logo: row.logo as string | null,
+    featuredImage: row.featuredImage as string | null,
     description: row.description as string,
     challenge: row.challenge as string | null,
     solution: row.solution as string | null,

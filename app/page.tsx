@@ -34,7 +34,7 @@ export default async function MarketingHomePage() {
       workItems = caseStudies.map((s) => ({
         name: s.churchName,
         slug: s.slug,
-        featuredImage: s.images.length > 0 ? s.images[0] : null,
+        featuredImage: s.featuredImage,
       }));
     }
   } catch {

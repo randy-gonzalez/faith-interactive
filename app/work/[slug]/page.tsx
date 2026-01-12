@@ -49,8 +49,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const images = Array.isArray(caseStudy.images) ? (caseStudy.images as string[]) : [];
-  const featuredImage = images[0] || null;
+  const featuredImage = caseStudy.featuredImage;
 
   return (
     <>
@@ -71,7 +70,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
                 <img
                   src={caseStudy.logo}
                   alt={`${caseStudy.churchName} logo`}
-                  className="w-16 h-16 md:w-24 md:h-24 object-contain flex-shrink-0"
+                  className="w-20 h-20 md:w-32 md:h-32 object-contain shrink-0"
                 />
               )}
 
