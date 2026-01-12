@@ -18,8 +18,8 @@
   --fi-off-white: #fafafa;
 
   /* Brand accent — pulled from logo gradient */
-  --fi-blue: #4f76f6;
-  --fi-mint: #77f2a1;
+  --fi-blue: #3a5fd4;
+  --fi-mint: #4de88a;
 
   /* Neutrals */
   --fi-gray-900: #171717;
@@ -131,6 +131,14 @@ a {
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(79, 118, 246, 0.35);
+}
+
+.btn-primary .btn-arrow {
+  transition: transform 0.2s ease;
+}
+
+.btn-primary:hover .btn-arrow {
+  transform: translateX(4px);
 }
 
 /* Ghost button */

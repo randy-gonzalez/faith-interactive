@@ -78,9 +78,10 @@ export default async function WorkDetailPage({ params }: PageProps) {
                 href={caseStudy.liveSiteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="link-arrow"
+                className="btn-primary"
               >
                 Visit their website
+                <span className="btn-arrow">→</span>
               </a>
             )}
           </div>
