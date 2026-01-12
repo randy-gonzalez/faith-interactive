@@ -103,40 +103,36 @@ export function MarketingNav() {
       </header>
 
       {/* Mobile Menu Overlay */}
-      <div
-        className={`fixed inset-0 z-100 bg-[#0a0a0a] transition-opacity duration-300 ease-out md:hidden ${
-          isMenuOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
-      >
-        <div className="h-full flex flex-col justify-center px-8">
-          <nav className="space-y-4">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsMenuOpen(false)}
-                className={`block text-4xl sm:text-5xl font-medium transition-colors duration-200 ${
-                  isActive(link.href) ? "text-white" : "text-gray-500 hover:text-white"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-100 bg-[#0a0a0a] md:hidden">
+          <div className="h-full flex flex-col justify-center px-8">
+            <div className="flex flex-col gap-4">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`text-4xl sm:text-5xl font-medium ${
+                    isActive(link.href) ? "text-white" : "text-[#737373] hover:text-white"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
 
-          <div className="mt-12">
-            <Link
-              href="/contact"
-              onClick={() => setIsMenuOpen(false)}
-              className="btn-primary text-lg"
-            >
-              Get in touch
-            </Link>
+            <div className="mt-12">
+              <Link
+                href="/contact"
+                onClick={() => setIsMenuOpen(false)}
+                className="btn-primary text-lg"
+              >
+                Get in touch
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
