@@ -57,44 +57,51 @@ export default async function WorkDetailPage({ params }: PageProps) {
       {/* Hero */}
       <section className="hero">
         <div className="container">
-          <div className="max-w-4xl">
-            <Link
-              href="/work"
-              className="text-micro text-[#737373] hover:text-[#171717] transition-colors mb-6 inline-block"
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+            {/* Left: Text Content */}
+            <div>
+              <Link
+                href="/work"
+                className="text-micro text-[#737373] hover:text-[#171717] transition-colors mb-6 inline-block"
+              >
+                &larr; Work
+              </Link>
+
+              <h1 className="text-display mb-6">{caseStudy.churchName}</h1>
+
+              {caseStudy.description && (
+                <p className="text-large text-[#525252] max-w-xl mb-8">
+                  {caseStudy.description}
+                </p>
+              )}
+
+              {caseStudy.liveSiteUrl && (
+                <a
+                  href={caseStudy.liveSiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary"
+                >
+                  Visit their website
+                  <span className="btn-arrow">→</span>
+                </a>
+              )}
+            </div>
+
+            {/* Right: Brand Block with Logo */}
+            <div
+              className="aspect-square w-full flex items-center justify-center p-12 bg-[#c23a3a]"
             >
-              &larr; Work
-            </Link>
-
-            <div className="flex items-start justify-between gap-8 md:gap-12">
-              <div>
-                <h1 className="text-display mb-6">{caseStudy.churchName}</h1>
-
-                {caseStudy.description && (
-                  <p className="text-large text-[#525252] max-w-2xl mb-8">
-                    {caseStudy.description}
-                  </p>
-                )}
-
-                {caseStudy.liveSiteUrl && (
-                  <a
-                    href={caseStudy.liveSiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-primary"
-                  >
-                    Visit their website
-                    <span className="btn-arrow">→</span>
-                  </a>
-                )}
-              </div>
-
-              {/* Logo */}
-              {caseStudy.logo && (
+              {caseStudy.logo ? (
                 <img
                   src={caseStudy.logo}
                   alt={`${caseStudy.churchName} logo`}
-                  className="w-32 h-32 md:w-48 md:h-48 object-contain shrink-0 hidden sm:block"
+                  className="w-full h-full object-contain"
                 />
+              ) : (
+                <span className="text-white text-4xl font-medium">
+                  {caseStudy.churchName.charAt(0)}
+                </span>
               )}
             </div>
           </div>

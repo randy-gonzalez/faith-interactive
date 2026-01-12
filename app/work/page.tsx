@@ -97,9 +97,7 @@ export default async function WorkPage() {
 }
 
 function WorkItem({ study, index }: { study: CaseStudy; index: number }) {
-  // Get hero image from afterImage or first image in gallery
-  const images = study.images || [];
-  const heroImage = study.afterImage || images[0] || null;
+  const heroImage = study.featuredImage;
 
   return (
     <Link
