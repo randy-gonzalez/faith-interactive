@@ -46,7 +46,7 @@ export function MarketingNav() {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center z-110">
-              <FiLogo variant="horizontal" colorMode={isMenuOpen ? "light" : "dark"} size={28} />
+              <FiLogo variant="horizontal" colorMode="dark" size={28} />
             </Link>
 
             {/* Desktop Navigation */}
@@ -78,22 +78,22 @@ export function MarketingNav() {
             >
               <div className="relative w-6 h-4">
                 <span
-                  className={`absolute left-0 w-6 h-0.5 transition-all duration-300 ease-out ${
+                  className={`absolute left-0 w-6 h-0.5 transition-all duration-300 ease-out bg-black ${
                     isMenuOpen
-                      ? "top-1/2 -translate-y-1/2 rotate-45 bg-white"
-                      : "top-0 bg-(--fi-black)"
+                      ? "top-1/2 -translate-y-1/2 rotate-45"
+                      : "top-0"
                   }`}
                 />
                 <span
-                  className={`absolute left-0 top-1/2 -translate-y-1/2 w-6 h-0.5 transition-all duration-300 ease-out ${
-                    isMenuOpen ? "opacity-0 bg-white" : "opacity-100 bg-(--fi-black)"
+                  className={`absolute left-0 top-1/2 -translate-y-1/2 w-6 h-0.5 transition-all duration-300 ease-out bg-black ${
+                    isMenuOpen ? "opacity-0" : "opacity-100"
                   }`}
                 />
                 <span
-                  className={`absolute left-0 w-6 h-0.5 transition-all duration-300 ease-out ${
+                  className={`absolute left-0 w-6 h-0.5 transition-all duration-300 ease-out bg-black ${
                     isMenuOpen
-                      ? "top-1/2 -translate-y-1/2 -rotate-45 bg-white"
-                      : "bottom-0 bg-(--fi-black)"
+                      ? "top-1/2 -translate-y-1/2 -rotate-45"
+                      : "bottom-0"
                   }`}
                 />
               </div>
@@ -104,7 +104,7 @@ export function MarketingNav() {
 
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="fixed inset-0 z-100 bg-[#0a0a0a] md:hidden">
+        <div className="fixed inset-0 z-100 bg-white md:hidden">
           <div className="h-full flex flex-col justify-center px-8">
             <div className="flex flex-col gap-4">
               {NAV_LINKS.map((link) => (
@@ -113,7 +113,7 @@ export function MarketingNav() {
                   href={link.href}
                   onClick={() => setIsMenuOpen(false)}
                   className={`text-4xl sm:text-5xl font-medium ${
-                    isActive(link.href) ? "text-white" : "text-[#737373] hover:text-white"
+                    isActive(link.href) ? "text-black" : "text-[#737373] hover:text-black"
                   }`}
                 >
                   {link.label}
