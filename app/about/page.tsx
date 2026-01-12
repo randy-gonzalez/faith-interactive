@@ -149,7 +149,7 @@ export default function AboutPage() {
               <div className="group">
                 <div className="overflow-hidden mb-6">
                   <img
-                    src="https://randy-gonzalez.com/wp-content/uploads/2025/01/randy-gonzalez-2022-thumb-768x768.jpg"
+                    src="https://assets.faith-interactive.com/platform/media/randy-gonzalez-58ma.jpg"
                     alt="Randy Gonzalez"
                     className="w-full aspect-square object-cover grayscale transition-transform duration-500 group-hover:scale-105"
                   />
@@ -174,7 +174,7 @@ export default function AboutPage() {
               <div className="group">
                 <div className="overflow-hidden mb-6">
                   <img
-                    src="https://shiftagency.com/wp-content/uploads/2025/03/portrait-jason.png"
+                    src="https://assets.faith-interactive.com/platform/media/jason-klein-9uoh.png"
                     alt="Jason Klein"
                     className="w-full aspect-square object-cover grayscale transition-transform duration-500 group-hover:scale-105"
                   />
@@ -197,7 +197,7 @@ export default function AboutPage() {
               <div className="group">
                 <div className="overflow-hidden mb-6">
                   <img
-                    src="https://shiftagency.com/wp-content/uploads/2025/03/Rodney-Bowen.png"
+                    src="https://assets.faith-interactive.com/platform/media/rodney-bowen-raaj.png"
                     alt="Rodney Bowen"
                     className="w-full aspect-square object-cover grayscale transition-transform duration-500 group-hover:scale-105"
                   />
@@ -219,7 +219,7 @@ export default function AboutPage() {
               <div className="group">
                 <div className="overflow-hidden mb-6">
                   <img
-                    src="https://shiftagency.com/wp-content/uploads/2022/09/portrait-john.png"
+                    src="https://assets.faith-interactive.com/platform/media/john-ko-vrfv.png"
                     alt="John Ko"
                     className="w-full aspect-square object-cover grayscale transition-transform duration-500 group-hover:scale-105"
                   />
@@ -242,7 +242,7 @@ export default function AboutPage() {
               <div className="group">
                 <div className="overflow-hidden mb-6">
                   <img
-                    src="https://shiftagency.com/wp-content/uploads/2025/03/WhatsApp-Image-2024-05-02-at-11.48.46_5ad6bb07lk-e1740973451839.jpg"
+                    src="https://assets.faith-interactive.com/platform/media/audimar-escalona-br1h.jpg"
                     alt="Audimar Escalona"
                     className="w-full aspect-square object-cover grayscale transition-transform duration-500 group-hover:scale-105"
                   />
