@@ -75,6 +75,18 @@ export default async function WorkDetailPage({ params }: PageProps) {
                 </p>
               )}
 
+              {/* Metrics */}
+              {caseStudy.metrics && typeof caseStudy.metrics === 'object' && Object.keys(caseStudy.metrics).length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-8">
+                  {Object.entries(caseStudy.metrics as Record<string, string>).map(([label, value]) => (
+                    <div key={label}>
+                      <p className="text-2xl md:text-3xl font-medium text-gradient">{value}</p>
+                      <p className="text-small text-[#737373]">{label}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {caseStudy.liveSiteUrl && (
                 <a
                   href={caseStudy.liveSiteUrl}
@@ -88,20 +100,20 @@ export default async function WorkDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            {/* Right: Brand Block with Logo */}
-            <div
-              className="aspect-square w-full flex items-center justify-center p-12 bg-[#c23a3a]"
-            >
+            {/* Right: Logo */}
+            <div className="flex items-center justify-end">
               {caseStudy.logo ? (
                 <img
                   src={caseStudy.logo}
                   alt={`${caseStudy.churchName} logo`}
-                  className="w-full h-full object-contain"
+                  className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain"
                 />
               ) : (
-                <span className="text-white text-4xl font-medium">
-                  {caseStudy.churchName.charAt(0)}
-                </span>
+                <div className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 flex items-center justify-center bg-gradient-to-br from-[var(--fi-blue)]/10 to-[var(--fi-mint)]/10 rounded-lg">
+                  <span className="text-6xl md:text-7xl lg:text-8xl font-medium text-[var(--fi-gray-300)]">
+                    {caseStudy.churchName.charAt(0)}
+                  </span>
+                </div>
               )}
             </div>
           </div>
