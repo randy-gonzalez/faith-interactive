@@ -104,45 +104,29 @@ export function MarketingNav() {
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 z-100 bg-(--fi-black) transition-all duration-500 ease-out md:hidden ${
+        className={`fixed inset-0 z-100 bg-[#0a0a0a] transition-opacity duration-300 ease-out md:hidden ${
           isMenuOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
         }`}
       >
         <div className="h-full flex flex-col justify-center px-8">
-          <nav className="space-y-2">
-            {NAV_LINKS.map((link, index) => (
+          <nav className="space-y-4">
+            {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className={`block text-4xl sm:text-5xl font-medium transition-all duration-500 ease-out ${
-                  isMenuOpen
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-4"
-                } ${
-                  isActive(link.href) ? "text-white" : "text-(--fi-gray-500) hover:text-white"
+                className={`block text-4xl sm:text-5xl font-medium transition-colors duration-200 ${
+                  isActive(link.href) ? "text-white" : "text-gray-500 hover:text-white"
                 }`}
-                style={{
-                  transitionDelay: isMenuOpen ? `${150 + index * 50}ms` : "0ms",
-                }}
               >
                 {link.label}
               </Link>
             ))}
           </nav>
 
-          <div
-            className={`mt-12 transition-all duration-500 ease-out ${
-              isMenuOpen
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-4"
-            }`}
-            style={{
-              transitionDelay: isMenuOpen ? `${150 + NAV_LINKS.length * 50}ms` : "0ms",
-            }}
-          >
+          <div className="mt-12">
             <Link
               href="/contact"
               onClick={() => setIsMenuOpen(false)}
