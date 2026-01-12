@@ -21,6 +21,11 @@ export function trackLeadConversion(label: string) {
       event_label: label,
       value: 1,
     } satisfies LeadEventParams);
+
+    // Google Ads conversion
+    window.gtag("event", "conversion", {
+      send_to: "AW-17832451728/sKFjCOnlv-AbEJC9lrdC",
+    });
   }
 }
 
