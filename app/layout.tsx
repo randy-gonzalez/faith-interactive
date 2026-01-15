@@ -127,7 +127,7 @@ export default function MarketingLayout({
                 &copy; {new Date().getFullYear()} Faith Interactive - A ministry of <a className="footer-link" href="https://shiftagency.com/"><u>Shift Agency, LLC</u></a>
               </p>
               <a href="/privacy" className="footer-link text-sm">
-                Privacy Policy
+                Privacy & Terms
               </a>
             </div>
           </div>
