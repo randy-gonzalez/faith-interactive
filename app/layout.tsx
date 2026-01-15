@@ -70,8 +70,13 @@ export default function MarketingLayout({
                 <div className="mb-6">
                   <FiLogo variant="horizontal" colorMode="light" size={36} />
                 </div>
-                <p className="text-[#737373] max-w-xs">
-                  A web design studio for churches.
+                <p className="text-[#737373]">
+                  But those who wait on the Lord<br/>
+                  Shall renew their strength;<br/>
+                  They shall mount up with wings like eagles,<br/>
+                  They shall run and not be weary,<br/>
+                  They shall walk and not faint.<br/><br/>
+                  <strong>Isaiah 40:31</strong>
                 </p>
               </div>
 
@@ -119,7 +124,7 @@ export default function MarketingLayout({
             {/* Bottom */}
             <div className="border-t border-[#262626] mt-12 pt-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <p className="text-[#525252] text-sm">
-                &copy; {new Date().getFullYear()} Faith Interactive
+                &copy; {new Date().getFullYear()} Faith Interactive - A ministry of <a className="footer-link" href="https://shiftagency.com/"><u>Shift Agency, LLC</u></a>
               </p>
             </div>
           </div>
