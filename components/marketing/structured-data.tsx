@@ -13,7 +13,7 @@ export function OrganizationSchema() {
     description:
       "Church website design and development company specializing in creating beautiful, effective digital experiences for churches.",
     url: "https://faith-interactive.com",
-    telephone: "+1-833-307-1917",
+    telephone: "+1-949-805-4031",
     email: "hello@faith-interactive.com",
     logo: "https://faith-interactive.com/faith-interactive-logo.png",
     image: "https://faith-interactive.com/og-image.jpg",

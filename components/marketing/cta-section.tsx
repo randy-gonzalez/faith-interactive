@@ -105,10 +105,10 @@ export function PhoneCTA() {
       <div>
         <p className="text-sm text-gray-500">Call us today</p>
         <a
-          href="tel:+18333071917"
+          href="tel:+19498054031"
           className="text-xl font-bold text-[#000646] hover:text-[#00d4aa] transition-colors"
         >
-          (833) 307-1917
+          (949) 805-4031
         </a>
       </div>
     </div>

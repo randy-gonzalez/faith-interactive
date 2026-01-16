@@ -76,10 +76,10 @@ export default function ContactPage() {
                   <div>
                     <p className="text-[#737373] text-sm mb-1">Phone</p>
                     <a
-                      href="tel:+18333071917"
+                      href="tel:+19498054031"
                       className="text-xl font-medium hover:text-[#4f76f6] transition-colors"
                     >
-                      (833) 307-1917
+                      (949) 805-4031
                     </a>
                   </div>
                 </ScrollReveal>
