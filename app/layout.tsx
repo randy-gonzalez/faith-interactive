@@ -110,13 +110,13 @@ export default function MarketingLayout({
                 <p className="text-micro text-[#737373] mb-4">Contact</p>
                 <ul className="space-y-3">
                   <li>
-                    <a href="tel:+19498054031" className="footer-link">
-                      (949) 805-4031
+                    <a href="mailto:hello@faith-interactive.com" className="footer-link">
+                      hello@faith-interactive.com
                     </a>
                   </li>
                   <li>
-                    <a href="mailto:hello@faith-interactive.com" className="footer-link">
-                      hello@faith-interactive.com
+                    <a href="tel:+19498054031" className="footer-link">
+                      (949) 805-4031
                     </a>
                   </li>
                   <li className="text-[#737373] text-sm">
