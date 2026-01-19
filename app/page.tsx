@@ -50,15 +50,15 @@ export default async function MarketingHomePage() {
             <h1 className="text-display hero-headline mb-8">
               Church websites that invite &amp; point people to Jesus.
             </h1>
-            <p>Make your website clear and welcoming to first-time visitors.
+            <p className="text-large text-[#525252] max-w-xl mb-10">Make your website clear and welcoming to first-time visitors.
             Get a FREE First-Time Visitor Website Review with checklist.</p>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-              <a href="/work" className="btn-primary">
+              <a href="/website-review" className="btn-primary">
                 Review My Website
               </a>
-              <a href="/contact" className="btn-ghost">
+              <a href="/work" className="btn-ghost">
                 See our work
               </a>
             </div>
