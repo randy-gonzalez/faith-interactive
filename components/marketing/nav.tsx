@@ -64,8 +64,8 @@ export function MarketingNav() {
 
             {/* Desktop CTA */}
             <div className="hidden md:flex items-center gap-6">
-              <Link href="/contact" className="btn-primary">
-                Get in touch
+              <Link href="/website-review" className="btn-primary">
+                Review My Website
               </Link>
             </div>
 
@@ -148,11 +148,11 @@ export function MarketingNav() {
 
           <div className="mt-12">
             <Link
-              href="/contact"
+              href="/website-review"
               onClick={() => setIsMenuOpen(false)}
               className="btn-primary text-lg"
             >
-              Get in touch
+              Review My Website
             </Link>
           </div>
         </div>

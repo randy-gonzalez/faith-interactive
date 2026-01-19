@@ -200,7 +200,7 @@ export function WebsiteReviewForm() {
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary w-full disabled:opacity-50"
+          className="btn-primary disabled:opacity-50"
         >
           {loading ? "Sending..." : "Get Your Free Review"}
         </button>
