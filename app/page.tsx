@@ -156,11 +156,12 @@ export default async function MarketingHomePage() {
       <section className="section-lg">
         <div className="container container-narrow text-center">
           <ScrollReveal>
-            <h2 className="h2 mb-6">FREE Website Support for Churches</h2>
+            <h2 className="h2 mb-6">First-Time Visitor Website Review</h2>
+            <h3 className="h3 mb-6"><em>FREE Checklist Included!</em></h3>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <p className="text-[#525252] max-w-xl mx-auto mb-8">
-              Not sure how first-time visitors experience your site? We&apos;ll review it from a guest&apos;s perspective and send you a simple checklist - no strings attached.
+              Not sure how first-time visitors experience your site? We&apos;ll review it from a guest&apos;s perspective and give recommendations on how to get your website ready for first-time visitors - no strings attached.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={0.2}>
