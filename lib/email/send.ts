@@ -545,3 +545,113 @@ View in admin: https://platform.faith-interactive.com/marketing/consultations/${
     toEmails.map((toEmail) => sendEmail({ to: toEmail, subject, text, html }))
   );
 }
+
+/**
+ * Send a website review request notification email to platform admins.
+ * Used for the "First-Time Visitor Website Review" lead magnet.
+ */
+export async function sendWebsiteReviewNotificationEmail(
+  toEmails: string[],
+  data: {
+    name: string;
+    email: string;
+    churchName: string;
+    websiteUrl: string;
+    role: string | null;
+  },
+  reviewId: string
+): Promise<void> {
+  const subject = `New Website Review Request - ${data.churchName}`;
+
+  const roleLabels: Record<string, string> = {
+    pastor: "Pastor",
+    admin: "Church Administrator",
+    communications: "Communications",
+    volunteer: "Volunteer",
+    other: "Other",
+  };
+
+  const roleDisplay = data.role
+    ? roleLabels[data.role] || data.role
+    : "Not specified";
+
+  const text = `
+New Website Review Request
+
+Name: ${data.name}
+Email: ${data.email}
+Church Name: ${data.churchName}
+Website URL: ${data.websiteUrl}
+Role: ${roleDisplay}
+
+---
+Review ID: ${reviewId}
+Remember to send the review within 24-48 hours.
+`.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #3a5fd4 0%, #4de88a 100%); padding: 24px; border-radius: 8px 8px 0 0;">
+    <h1 style="color: #ffffff; font-size: 24px; margin: 0;">New Website Review Request</h1>
+  </div>
+
+  <div style="background-color: #f9fafb; padding: 24px; border: 1px solid #e5e7eb; border-top: none;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <td style="padding: 8px 0; font-weight: 600; color: #374151; width: 140px;">Name:</td>
+        <td style="padding: 8px 0; color: #1f2937;">${data.name}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; font-weight: 600; color: #374151;">Email:</td>
+        <td style="padding: 8px 0;"><a href="mailto:${data.email}" style="color: #3a5fd4;">${data.email}</a></td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; font-weight: 600; color: #374151;">Church Name:</td>
+        <td style="padding: 8px 0; color: #1f2937;">${data.churchName}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; font-weight: 600; color: #374151;">Website:</td>
+        <td style="padding: 8px 0;"><a href="${data.websiteUrl}" style="color: #3a5fd4;" target="_blank">${data.websiteUrl}</a></td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; font-weight: 600; color: #374151;">Role:</td>
+        <td style="padding: 8px 0; color: #1f2937;">${roleDisplay}</td>
+      </tr>
+    </table>
+
+    <div style="margin-top: 24px; padding: 16px; background-color: #fef3c7; border-radius: 8px;">
+      <p style="margin: 0; color: #92400e; font-size: 14px;">
+        <strong>Reminder:</strong> Send the website review within 24-48 hours.
+      </p>
+    </div>
+
+    <div style="margin-top: 24px; text-align: center;">
+      <a href="${data.websiteUrl}"
+         style="display: inline-block; background: linear-gradient(135deg, #3a5fd4 0%, #4de88a 100%); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;"
+         target="_blank">
+        View Their Website
+      </a>
+    </div>
+  </div>
+
+  <div style="padding: 16px; text-align: center;">
+    <p style="color: #6b7280; font-size: 12px; margin: 0;">
+      Review ID: ${reviewId}<br>
+      This request was submitted through the Faith Interactive website.
+    </p>
+  </div>
+</body>
+</html>
+`.trim();
+
+  // Send to all platform admin recipients
+  await Promise.all(
+    toEmails.map((toEmail) => sendEmail({ to: toEmail, subject, text, html }))
+  );
+}

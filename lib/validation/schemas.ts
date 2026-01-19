@@ -888,3 +888,37 @@ export const consultationUpdateSchema = z.object({
 });
 
 export type ConsultationUpdateInput = z.infer<typeof consultationUpdateSchema>;
+
+// ==============================================================================
+// WEBSITE REVIEW REQUEST SCHEMAS
+// ==============================================================================
+
+/**
+ * Website review request form validation (public submission)
+ * Lead magnet for first-time visitor website review
+ */
+export const websiteReviewRequestSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100, "Name too long"),
+  email: z.string().min(1, "Email is required").email("Invalid email").max(255, "Email too long"),
+  churchName: z.string().min(1, "Church name is required").max(200, "Church name too long"),
+  websiteUrl: z
+    .string()
+    .min(1, "Website URL is required")
+    .max(500, "URL too long")
+    .refine(
+      (val) => {
+        try {
+          new URL(val);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      { message: "Please enter a valid URL (e.g., https://yourchurch.com)" }
+    ),
+  role: z.enum(["pastor", "admin", "communications", "volunteer", "other"]).optional().nullable(),
+  // Honeypot field - should be empty if submitted by a human
+  website: z.string().max(0, "Invalid submission").optional(),
+});
+
+export type WebsiteReviewRequestInput = z.infer<typeof websiteReviewRequestSchema>;

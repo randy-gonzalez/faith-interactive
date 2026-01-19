@@ -48,16 +48,18 @@ export default async function MarketingHomePage() {
         <div className="container">
           <ScrollReveal>
             <h1 className="text-display hero-headline mb-8">
-              Church sites that invite and point people to Jesus.
+              Church websites that invite &amp; point people to Jesus.
             </h1>
+            <p>Make your website clear and welcoming to first-time visitors.
+            Get a FREE First-Time Visitor Website Review with checklist.</p>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
               <a href="/work" className="btn-primary">
-                See our work
+                Review My Website
               </a>
               <a href="/contact" className="btn-ghost">
-                Get in touch
+                See our work
               </a>
             </div>
           </ScrollReveal>
@@ -150,15 +152,20 @@ export default async function MarketingHomePage() {
         </div>
       </section>
 
-      {/* CTA: Direct ask */}
+      {/* Free Website Review: Serving posture */}
       <section className="section-lg">
-        <div className="container text-center">
+        <div className="container container-narrow text-center">
           <ScrollReveal>
-            <h2 className="h2 mb-6">Ready to get started?</h2>
+            <h2 className="h2 mb-6">FREE Website Support for Churches</h2>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
-            <a href="/contact" className="btn-primary">
-              Let&apos;s talk
+            <p className="text-[#525252] max-w-xl mx-auto mb-8">
+              Not sure how first-time visitors experience your site? We&apos;ll review it from a guest&apos;s perspective and send you a simple checklist - no strings attached.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <a href="/website-review" className="btn-primary">
+              Get My Free Review
             </a>
           </ScrollReveal>
         </div>

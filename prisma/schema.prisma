@@ -287,3 +287,41 @@ model ConsultationRequest {
   @@index([createdAt])
   @@index([status, createdAt])
 }
+
+// ==============================================================================
+// WEBSITE REVIEW REQUESTS (Lead Magnet)
+// ==============================================================================
+
+enum WebsiteReviewStatus {
+  NEW
+  IN_PROGRESS
+  COMPLETED
+  CLOSED
+}
+
+model WebsiteReviewRequest {
+  id              String              @id @default(cuid())
+
+  name            String
+  email           String
+  churchName      String
+  websiteUrl      String
+
+  role            String?
+
+  status          WebsiteReviewStatus @default(NEW)
+  notes           String?             @db.Text
+
+  // Tracking when review was sent
+  reviewSentAt    DateTime?
+
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([status, createdAt])
+}
