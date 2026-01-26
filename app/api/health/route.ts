@@ -17,9 +17,15 @@ const APP_VERSION = process.env.npm_package_version || "0.1.0";
 export async function GET() {
   // Database check
   let databaseStatus: "connected" | "disconnected" = "disconnected";
+  let dbHost = "unknown";
 
   try {
-    const sql = neon(process.env.DATABASE_URL!);
+    const dbUrl = process.env.DATABASE_URL || "";
+    // Extract host for debugging (safe - no credentials)
+    const match = dbUrl.match(/@([^/]+)\//);
+    dbHost = match ? match[1] : "parse-error";
+
+    const sql = neon(dbUrl);
     await sql`SELECT 1`;
     databaseStatus = "connected";
   } catch {
@@ -29,11 +35,12 @@ export async function GET() {
   const overallStatus: "ok" | "degraded" | "error" =
     databaseStatus === "disconnected" ? "error" : "ok";
 
-  const response: HealthCheckResponse = {
+  const response: HealthCheckResponse & { dbHost?: string } = {
     status: overallStatus,
     timestamp: new Date().toISOString(),
     database: databaseStatus,
     version: APP_VERSION,
+    dbHost, // Debug: shows which database host is being used
   };
 
   const statusCode = databaseStatus === "connected" ? 200 : 503;
