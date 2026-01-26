@@ -556,7 +556,7 @@ export async function sendWebsiteReviewNotificationEmail(
     name: string;
     email: string;
     churchName: string;
-    websiteUrl: string;
+    websiteUrl: string | null;
     role: string | null;
   },
   reviewId: string
@@ -575,13 +575,15 @@ export async function sendWebsiteReviewNotificationEmail(
     ? roleLabels[data.role] || data.role
     : "Not specified";
 
+  const websiteDisplay = data.websiteUrl || "Not provided";
+
   const text = `
 New Website Review Request
 
 Name: ${data.name}
 Email: ${data.email}
 Church Name: ${data.churchName}
-Website URL: ${data.websiteUrl}
+Website URL: ${websiteDisplay}
 Role: ${roleDisplay}
 
 ---
@@ -617,7 +619,7 @@ Remember to send the review within 24-48 hours.
       </tr>
       <tr>
         <td style="padding: 8px 0; font-weight: 600; color: #374151;">Website:</td>
-        <td style="padding: 8px 0;"><a href="${data.websiteUrl}" style="color: #3a5fd4;" target="_blank">${data.websiteUrl}</a></td>
+        <td style="padding: 8px 0;">${data.websiteUrl ? `<a href="${data.websiteUrl}" style="color: #3a5fd4;" target="_blank">${data.websiteUrl}</a>` : '<span style="color: #6b7280;">Not provided</span>'}</td>
       </tr>
       <tr>
         <td style="padding: 8px 0; font-weight: 600; color: #374151;">Role:</td>

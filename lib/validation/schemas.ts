@@ -903,10 +903,19 @@ export const websiteReviewRequestSchema = z.object({
   churchName: z.string().min(1, "Church name is required").max(200, "Church name too long"),
   websiteUrl: z
     .string()
-    .min(1, "Website URL is required")
     .max(500, "URL too long")
+    .optional()
+    .transform((val) => {
+      if (!val || val.trim() === "") return null;
+      // Auto-prepend https:// if no protocol specified
+      if (!val.match(/^https?:\/\//i)) {
+        return `https://${val}`;
+      }
+      return val;
+    })
     .refine(
       (val) => {
+        if (!val) return true; // Allow empty/null
         try {
           new URL(val);
           return true;
@@ -914,7 +923,7 @@ export const websiteReviewRequestSchema = z.object({
           return false;
         }
       },
-      { message: "Please enter a valid URL (e.g., https://yourchurch.com)" }
+      { message: "Please enter a valid website URL (e.g., yourchurch.com)" }
     ),
   role: z.enum(["pastor", "admin", "communications", "volunteer", "other"]).optional().nullable(),
   // Honeypot field - should be empty if submitted by a human
