@@ -56,7 +56,7 @@ export default async function MarketingHomePage() {
           <ScrollReveal delay={0.1}>
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
               <a href="/website-review" className="btn-primary">
-                Review My Website
+                FREE Website Review
               </a>
               <a href="/work" className="btn-ghost">
                 See our work
@@ -112,7 +112,7 @@ export default async function MarketingHomePage() {
           <ScrollReveal>
             <p className="manifesto">
               We&apos;re a web design &amp; development studio.<br/>
-              We work with churches. We serve Jesus &amp; want to make Him known.
+              We work with Christ-centered churches. We serve Jesus &amp; want to make Him known.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>

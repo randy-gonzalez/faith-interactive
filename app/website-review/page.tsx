@@ -151,7 +151,7 @@ export default function WebsiteReviewPage() {
                 <ul className="space-y-4 text-[#404040]">
                   <li className="flex gap-3">
                     <span className="text-[#4de88a] shrink-0">✓</span>
-                    You serve at a church and want honest outside feedback
+                    You serve at a Christ-centered church and want honest outside feedback
                   </li>
                   <li className="flex gap-3">
                     <span className="text-[#4de88a] shrink-0">✓</span>
@@ -227,30 +227,6 @@ export default function WebsiteReviewPage() {
                   <li className="flex gap-4">
                     <span className="text-[#737373] font-medium shrink-0">4.</span>
                     Is there a clear way to get in touch or ask a question?
-                  </li>
-                </ScrollReveal>
-                <ScrollReveal delay={0.27}>
-                  <li className="flex gap-4">
-                    <span className="text-[#737373] font-medium shrink-0">5.</span>
-                    Does the site load quickly on a phone?
-                  </li>
-                </ScrollReveal>
-                <ScrollReveal delay={0.3}>
-                  <li className="flex gap-4">
-                    <span className="text-[#737373] font-medium shrink-0">6.</span>
-                    Are the next steps for a new visitor obvious?
-                  </li>
-                </ScrollReveal>
-                <ScrollReveal delay={0.33}>
-                  <li className="flex gap-4">
-                    <span className="text-[#737373] font-medium shrink-0">7.</span>
-                    Does the design feel current and welcoming?
-                  </li>
-                </ScrollReveal>
-                <ScrollReveal delay={0.36}>
-                  <li className="flex gap-4">
-                    <span className="text-[#737373] font-medium shrink-0">8.</span>
-                    Is the language warm and free of insider terms?
                   </li>
                 </ScrollReveal>
               </ol>
@@ -359,7 +335,7 @@ export default function WebsiteReviewPage() {
                 <div>
                   <h3 className="h3 mb-3">Who reviews the website?</h3>
                   <p className="text-[#525252]">
-                    Our team at Faith Interactive. We&apos;ve helped churches across the country improve how they communicate online.
+                    Our team at Faith Interactive. We&apos;ve helped Christ-centered churches across the country improve how they communicate online.
                   </p>
                 </div>
               </ScrollReveal>
