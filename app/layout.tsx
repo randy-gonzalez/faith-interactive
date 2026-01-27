@@ -70,7 +70,7 @@ export default function MarketingLayout({
                 <div className="mb-6">
                   <FiLogo variant="horizontal" colorMode="light" size={36} />
                 </div>
-                <p className="text-[#737373]">
+                <p className="text-[#828282]">
                   But those who wait on the Lord<br/>
                   Shall renew their strength;<br/>
                   They shall mount up with wings like eagles,<br/>
@@ -82,7 +82,7 @@ export default function MarketingLayout({
 
               {/* Navigation */}
               <div>
-                <p className="text-micro text-[#737373] mb-4">Navigate</p>
+                <p className="text-micro text-[#828282] mb-4">Navigate</p>
                 <ul className="space-y-3">
                   <li>
                     <a href="/work" className="footer-link">Work</a>
@@ -107,8 +107,8 @@ export default function MarketingLayout({
 
               {/* Contact */}
               <div>
-                <p className="text-micro text-[#737373] mb-4">Contact</p>
-                <ul className="space-y-3">
+                <p className="text-micro text-[#828282] mb-4">Contact</p>
+                <ul className="space-y-3 text-[#828282]">
                   <li>
                     Faith Interactive
                   </li>
@@ -117,10 +117,10 @@ export default function MarketingLayout({
                       (949) 805-4031
                     </a>
                   </li>
-                  <li className="text-[#737373] text-sm">
+                  <li className="text-sm">
                     Orange County, California
                   </li>
-                  <li><a href="/contact" className="footer-link">
+                  <li><a href="/contact">
                       Start A Project
                     </a></li>
                 </ul>
