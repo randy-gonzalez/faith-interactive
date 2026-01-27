@@ -121,7 +121,7 @@ export default function MarketingLayout({
                     Orange County, California
                   </li>
                   <li className="mt-4">
-                    <a href="/contact" className="inline-block border border-[#828282] text-[#828282] px-5 py-2">
+                    <a href="/contact" className="inline-block border border-[#828282] text-[#828282] px-5 py-2 transition-all duration-300 hover:bg-[#828282] hover:text-black">
                       Start A Project
                     </a>
                   </li>
