@@ -8,6 +8,7 @@
 import type { Metadata } from "next";
 import { OrganizationSchema } from "@/components/marketing/structured-data";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { GoogleTagManager, GoogleTagManagerNoScript } from "@/components/analytics/google-tag-manager";
 import { MarketingNav } from "@/components/marketing/nav";
 import { FiLogo } from "@/components/ui/fi-logo";
 import "./marketing.css";
@@ -54,8 +55,10 @@ export default function MarketingLayout({
         />
         <OrganizationSchema />
         <GoogleAnalytics />
+        <GoogleTagManager />
       </head>
       <body className="antialiased">
+        <GoogleTagManagerNoScript />
         <MarketingNav />
 
         {/* Main Content */}
