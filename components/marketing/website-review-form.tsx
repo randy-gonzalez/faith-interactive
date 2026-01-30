@@ -143,12 +143,12 @@ export function WebsiteReviewForm() {
             Website URL
           </label>
           <input
-            type="url"
+            type="text"
             id="websiteUrl"
             value={websiteUrl}
             onChange={(e) => setWebsiteUrl(e.target.value)}
             required
-            placeholder="https://yourchurch.com"
+            placeholder="yourchurch.com"
             className="w-full px-4 py-3 border border-[#d4d4d4] bg-white text-[#171717] placeholder:text-[#a3a3a3] focus:outline-none focus:border-[#171717] transition-colors"
           />
         </div>
