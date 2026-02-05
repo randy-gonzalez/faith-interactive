@@ -53,9 +53,9 @@ export default function PricingPage() {
             {/* Church Plants */}
             <ScrollReveal delay={0.1}>
               <div className="p-8 border border-[#e5e5e5] rounded-sm">
-                <p className="text-micro text-[#737373] mb-4">Church Plants</p>
+                <p className="text-micro text-[#737373] mb-4">New Churches</p>
                 <p className="text-4xl font-medium mb-2">Free</p>
-                <p className="text-[#737373] mb-6">+ $25/mo platform</p>
+                <p className="text-[#737373] mb-6">+ $25/mo hosting & platform</p>
                 <p className="text-[#525252]">
                   New churches have enough to worry about.
                   Your website shouldn&apos;t be one of them.
@@ -66,12 +66,12 @@ export default function PricingPage() {
             {/* Established Churches */}
             <ScrollReveal delay={0.15}>
               <div className="p-8 border border-[#e5e5e5] rounded-sm">
-                <p className="text-micro text-[#737373] mb-4">Established Churches</p>
-                <p className="text-4xl font-medium mb-2">$500–$1,500</p>
-                <p className="text-[#737373] mb-6">+ $25/mo platform</p>
+                <p className="text-micro text-[#737373] mb-4">Small Churches</p>
+                <p className="text-4xl font-medium mb-2">$500</p>
+                <p className="text-[#737373] mb-6">+ $25/mo hosting & platform</p>
                 <p className="text-[#525252]">
-                  Depends on complexity. Most churches land
-                  somewhere in this range.
+                  Comes with everything you need!
+                  Manage Events, sermons, giving, and much more!
                 </p>
               </div>
             </ScrollReveal>
