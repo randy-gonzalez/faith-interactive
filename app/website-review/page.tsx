@@ -11,6 +11,10 @@
 import type { Metadata } from "next";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 import { WebsiteReviewForm } from "@/components/marketing/website-review-form";
+import { db } from "@/lib/db/neon";
+
+// Force dynamic rendering - database queries at runtime
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Free Church Website Review for First-Time Visitors | Faith Interactive",
@@ -18,7 +22,35 @@ export const metadata: Metadata = {
     "Get a free review of your church website from a first-time visitor's perspective. Receive a checklist and clear recommendations within 48 hours.",
 };
 
-export default function WebsiteReviewPage() {
+export default async function WebsiteReviewPage() {
+  // Fetch active church partners from database (with fallback for local dev)
+  let churchPartners: { id: string; name: string; logoUrl: string }[] = [];
+  try {
+    churchPartners = await db.churchPartner.findMany({
+      where: { isActive: true },
+    });
+  } catch {
+    // Database unavailable (local dev) - use blob URLs
+    churchPartners = [
+      { id: "1", name: "Calvary Chapel Downey", logoUrl: "https://assets.faith-interactive.com/church-partners/calvary-chapel-downey.png" },
+      { id: "2", name: "Harvest Crusades", logoUrl: "https://assets.faith-interactive.com/church-partners/harvest-crusades.png" },
+      { id: "3", name: "CHEA", logoUrl: "https://assets.faith-interactive.com/church-partners/chea.png" },
+      { id: "4", name: "Kerusso", logoUrl: "https://assets.faith-interactive.com/church-partners/kerusso.png" },
+      { id: "5", name: "Redeemer City Church", logoUrl: "https://assets.faith-interactive.com/church-partners/redeemer-city-church.png" },
+      { id: "6", name: "Calvary Chapel Golden Springs", logoUrl: "https://assets.faith-interactive.com/church-partners/calvary-chapel-golden-springs.png" },
+      { id: "7", name: "Calvary Chapel Santa Fe Springs", logoUrl: "https://assets.faith-interactive.com/church-partners/calvary-chapel-santa-fe-springs.png" },
+      { id: "8", name: "Coaches of Influence", logoUrl: "https://assets.faith-interactive.com/church-partners/coaches-of-influence.png" },
+      { id: "9", name: "The Sending Church", logoUrl: "https://assets.faith-interactive.com/church-partners/the-sending-church.png" },
+      { id: "10", name: "New Life Christian Fellowship", logoUrl: "https://assets.faith-interactive.com/church-partners/new-life-christian-fellowship.png" },
+      { id: "11", name: "Calvary Chapel Ascend", logoUrl: "https://assets.faith-interactive.com/church-partners/calvary-chapel-ascend.png" },
+      { id: "12", name: "Calvary Chapel Inglewood", logoUrl: "https://assets.faith-interactive.com/church-partners/calvary-chapel-inglewood.png" },
+      { id: "13", name: "Calvary Chapel Signal Hill", logoUrl: "https://assets.faith-interactive.com/church-partners/calvary-chapel-signal-hill.png" },
+      { id: "14", name: "Calvary Chapel Education Association", logoUrl: "https://assets.faith-interactive.com/church-partners/calvary-chapel-education-association.png" },
+      { id: "15", name: "Calvary Chapel University", logoUrl: "https://assets.faith-interactive.com/church-partners/calvary-chapel-university.png" },
+      { id: "16", name: "Calvary Boulder Valley", logoUrl: "https://assets.faith-interactive.com/church-partners/calvary-boulder-valley.png" },
+      { id: "17", name: "Calvary Chapel Fellowship Foley", logoUrl: "https://assets.faith-interactive.com/church-partners/calvary-chapel-fellowship-foley.png" },
+    ];
+  }
   return (
     <>
       {/* Hero */}
@@ -29,13 +61,13 @@ export default function WebsiteReviewPage() {
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <h1 className="h1 max-w-[18ch] mb-8">
-              Is your website ready for first-time visitors?
+              Is your church website ready for first-time visitors?
             </h1>
           </ScrollReveal>
           <ScrollReveal delay={0.2}>
             <p className="text-large text-[#525252] max-w-xl mb-10">
-              Get a free review of your church website from a visitor&apos;s perspective.
-              We&apos;ll send you a simple checklist and a few clear next steps.
+              <strong>Get a FREE review</strong> of your church website from a visitor's perspective.
+              We'll send you a simple checklist and a few clear next steps.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={0.3}>
@@ -188,6 +220,29 @@ export default function WebsiteReviewPage() {
               </div>
             </ScrollReveal>
           </div>
+        </div>
+      </section>
+
+      {/* Trusted By */}
+      <section className="py-12">
+        <div className="container">
+          <ScrollReveal>
+            <p className="text-micro text-[#737373] text-center mb-8">
+              Trusted by churches like yours
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+              {churchPartners.map((partner) => (
+                <img
+                  key={partner.id}
+                  src={partner.logoUrl}
+                  alt={partner.name}
+                  className="h-10 md:h-12 w-auto object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+                />
+              ))}
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 

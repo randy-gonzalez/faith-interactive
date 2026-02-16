@@ -2,7 +2,7 @@
  * Prisma Client Singleton
  *
  * Creates a single Prisma client instance for the application.
- * Uses Neon HTTP adapter for Cloudflare Workers compatibility.
+ * Uses Neon HTTP adapter for serverless compatibility.
  *
  * In development, we store it on the global object to prevent
  * multiple instances during hot reloading.
@@ -17,7 +17,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  // Use Neon HTTP driver for Cloudflare Workers (no WebSockets needed)
+  // Use Neon HTTP driver for serverless (no WebSockets needed)
   const connectionString = process.env.DATABASE_URL!;
   const adapter = new PrismaNeonHTTP(connectionString, {
     arrayMode: false,
@@ -35,7 +35,7 @@ function createPrismaClient() {
 /**
  * Prisma client instance with Neon HTTP adapter.
  *
- * Works directly with your Neon PostgreSQL database on Cloudflare Workers.
+ * Works directly with your Neon PostgreSQL database.
  */
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 

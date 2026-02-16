@@ -24,7 +24,7 @@
 import { AsyncLocalStorage } from "async_hooks";
 import { headers } from "next/headers";
 
-// Request ID header name (also used by Cloudflare)
+// Request ID header name
 export const REQUEST_ID_HEADER = "x-request-id";
 
 /**

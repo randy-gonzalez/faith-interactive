@@ -1,7 +1,7 @@
 /**
  * Neon Database Client
  *
- * Direct Neon serverless queries for Cloudflare Workers compatibility.
+ * Direct Neon serverless queries using HTTP-based connections.
  * Uses HTTP-based queries which work reliably on edge runtimes.
  */
 
@@ -72,6 +72,18 @@ export interface Testimonial {
   featured: boolean;
   sortOrder: number;
   isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ChurchPartner {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string;
+  websiteUrl: string | null;
+  isActive: boolean;
+  sortOrder: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -260,6 +272,33 @@ export const db = {
       return rows.map(mapTestimonialRow);
     },
   },
+
+  churchPartner: {
+    async findMany(options?: {
+      where?: { isActive?: boolean };
+      orderBy?: Array<Record<string, "asc" | "desc">>;
+      take?: number;
+    }): Promise<ChurchPartner[]> {
+      const sql = getSql();
+
+      if (options?.where?.isActive === true) {
+        const rows = await sql`
+          SELECT * FROM "ChurchPartner"
+          WHERE "isActive" = true
+          ORDER BY "sortOrder" ASC
+          LIMIT ${options?.take || 100}
+        `;
+        return rows.map(mapChurchPartnerRow);
+      }
+
+      const rows = await sql`
+        SELECT * FROM "ChurchPartner"
+        ORDER BY "sortOrder" ASC
+        LIMIT ${options?.take || 100}
+      `;
+      return rows.map(mapChurchPartnerRow);
+    },
+  },
 };
 
 // Row mappers
@@ -334,6 +373,20 @@ function mapTestimonialRow(row: Record<string, unknown>): Testimonial {
     featured: row.featured as boolean,
     sortOrder: row.sortOrder as number,
     isActive: row.isActive as boolean,
+    createdAt: new Date(row.createdAt as string),
+    updatedAt: new Date(row.updatedAt as string),
+  };
+}
+
+function mapChurchPartnerRow(row: Record<string, unknown>): ChurchPartner {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    slug: row.slug as string,
+    logoUrl: row.logoUrl as string,
+    websiteUrl: row.websiteUrl as string | null,
+    isActive: row.isActive as boolean,
+    sortOrder: row.sortOrder as number,
     createdAt: new Date(row.createdAt as string),
     updatedAt: new Date(row.updatedAt as string),
   };
