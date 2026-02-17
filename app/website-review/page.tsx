@@ -144,7 +144,7 @@ export default async function WebsiteReviewPage() {
                 <p className="text-micro text-[#3a5fd4] mb-4">Step 1</p>
                 <h3 className="h3 mb-3">Share your website</h3>
                 <p className="text-[#525252]">
-                  Fill out the short form below with your church&apos;s website address.
+                  Fill out the short form below with your church's website address to get started!
                 </p>
               </div>
             </ScrollReveal>
@@ -206,7 +206,7 @@ export default async function WebsiteReviewPage() {
                 <ul className="space-y-4 text-[#525252]">
                   <li className="flex gap-3">
                     <span className="text-[#737373] shrink-0">—</span>
-                    You&apos;re looking for a full redesign proposal
+                    You don't serve at a Christ-centered church
                   </li>
                   <li className="flex gap-3">
                     <span className="text-[#737373] shrink-0">—</span>
@@ -214,7 +214,7 @@ export default async function WebsiteReviewPage() {
                   </li>
                   <li className="flex gap-3">
                     <span className="text-[#737373] shrink-0">—</span>
-                    Your church doesn&apos;t currently have a website
+                    Your church has a dedicated media/communications team on staff
                   </li>
                 </ul>
               </div>
@@ -322,7 +322,7 @@ export default async function WebsiteReviewPage() {
               <div>
                 <h3 className="h3 mb-3">Made for churches.</h3>
                 <p className="text-[#525252]">
-                  We&apos;ve spent years helping churches communicate more clearly online. We understand your context.
+                  We&apos;ve spent years helping christian churches communicate more clearly online. We understand your context.
                 </p>
               </div>
             </ScrollReveal>
@@ -408,7 +408,7 @@ export default async function WebsiteReviewPage() {
             </ScrollReveal>
             <ScrollReveal delay={0.1}>
               <p className="text-[#525252] text-center mb-10">
-                We&apos;d love to take a look at your website and share what we see. Fill out the form below and we&apos;ll send your review within 24 to 48 hours.
+                We&apos;d love to take a look at your church website and share what we see. Fill out the form below and we&apos;ll send your review within 24 to 48 hours.
               </p>
             </ScrollReveal>
             <ScrollReveal delay={0.2}>
