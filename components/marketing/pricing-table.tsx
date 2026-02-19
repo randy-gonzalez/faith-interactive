@@ -3,7 +3,7 @@
  *
  * Displays the three pricing tiers for Faith Interactive services.
  * - FREE (Church Plants): $0 setup + $25/mo hosting
- * - Small Church: $500 setup + $25/mo hosting
+ * - Small Church: $199 setup + $25/mo hosting
  * - Large Church: $1,500 setup + $25/mo hosting
  * - Optional: $100/mo for updates
  */
@@ -42,7 +42,7 @@ const PRICING_TIERS: PricingTier[] = [
   {
     name: "Small Church",
     description: "Ideal for established churches under 200 members",
-    setupPrice: "$500",
+    setupPrice: "$199",
     monthlyPrice: "$25",
     popular: true,
     features: [
@@ -182,7 +182,7 @@ export function PricingTableCompact() {
       </div>
       <div className="p-6 rounded-xl marketing-gradient text-[#000646]">
         <h3 className="font-bold mb-1">Small Church</h3>
-        <p className="text-2xl font-bold mb-1">$500</p>
+        <p className="text-2xl font-bold mb-1">$199</p>
         <p className="text-sm opacity-80">+ $25/mo hosting</p>
       </div>
       <div className="p-6 rounded-xl bg-white border border-gray-200">

@@ -17,7 +17,7 @@ interface ConsultationFormProps {
 const PACKAGE_OPTIONS = [
   { value: "", label: "Select a package..." },
   { value: "free", label: "FREE for Church Plants ($0 setup + $25/mo)" },
-  { value: "small", label: "Small Church ($500 + $25/mo)" },
+  { value: "small", label: "Small Church ($199 + $25/mo)" },
   { value: "large", label: "Large Church ($1,500 + $25/mo)" },
 ];
 

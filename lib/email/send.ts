@@ -453,7 +453,7 @@ export async function sendConsultationNotificationEmail(
 
   const packageLabels: Record<string, string> = {
     free: "FREE (Church Plants) + $25/mo platform",
-    small: "Small Church ($500 setup) + $25/mo platform",
+    small: "Small Church ($199 setup) + $25/mo platform",
     large: "Large Church ($1,500 setup) + $25/mo platform",
   };
 
